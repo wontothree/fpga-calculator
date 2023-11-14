@@ -1,9 +1,10 @@
-module calculator (sw, led, seg, rst, clk, lcd_e, lcd_rs, lcd_rw, lcd_data);
+module calculator1 (sw, dipsw, rst, clk, led, seg, lcd_e, lcd_rs, lcd_rw, lcd_data);
 
+input [11:0] sw;
+input [7:0] dipsw;
 input rst, clk;
 output lcd_e, lcd_rs, lcd_rw;
-input [11:0] sw;
-output [3:0] led;
+output [7:0] led;
 output [7:0] seg;
 output [7:0] lcd_data;
 
@@ -13,7 +14,6 @@ reg [7:0] reg_temp;
 reg [7:0] reg_temp1;
 reg [7:0] reg_temp2;
 reg [7:0] reg_temp3;
-
 wire lcd_e;
 reg lcd_rs, lcd_rw;
 reg [7:0] lcd_data;
@@ -27,25 +27,39 @@ parameter delay = 3'b000,
         line2 = 3'b101,
         delay_t = 3'b110,
         clear_disp = 3'b111,
+        
+        seg_blk = 8'b0000_0000,
+        seg_zer = 8'b1111_1100,
+        seg_one = 8'b0110_0000,
+        seg_two = 8'b1101_1010,
+        seg_thr = 8'b1111_0010,
+        seg_fou = 8'b0110_0110,
+        seg_fiv = 8'b1011_0110,
+        seg_six = 8'b1011_1110,
+        seg_sev = 8'b1110_0000,
+        seg_eig = 8'b1111_1110,
+        seg_nin = 8'b1111_0110,
 
-        zero = 8'b0011_0000,
-        one = 8'b0011_0001,
-        two = 8'b0011_0010,
-        three = 8'b0011_0011,
-        four = 8'b0011_0100,
-        five = 8'b0011_0101,
-        six = 8'b0011_0110,
-        seven = 8'b0011_0111,
-        eight = 8'b0011_1000,
-        nine = 8'b0011_1001,
+        lcd_blk = 8'b0010_0000,
+        lcd_zer = 8'b0011_0000,
+        lcd_one = 8'b0011_0001,
+        lcd_two = 8'b0011_0010,
+        lcd_thr = 8'b0011_0011,
+        lcd_fou = 8'b0011_0100,
+        lcd_fiv = 8'b0011_0101,
+        lcd_six = 8'b0011_0110,
+        lcd_sev = 8'b0011_0111,
+        lcd_eig = 8'b0011_1000,
+        lcd_nin = 8'b0011_1001,
         
-        plus = 8'b0010_1011,
-        sub = 8'b0010_1101,
-        mul = 8'b1101_0111,
-        div = 8'b1111_0111,
-        equ = 8'b0011_1101,
-        
-        blank = 8'b0010_0000;
+        lcd_sum = 8'b0010_1011,
+        lcd_sub = 8'b0010_1101,
+        lcd_mul = 8'b1101_0111,
+        lcd_div = 8'b0010_1111,
+        lcd_rem = 8'b1111_0111,
+        lcd_pow = 8'b0101_1110,
+        lcd_fac = 8'b0010_0001,
+        lcd_equ = 8'b0011_1101;
 
 integer cnt;
 integer cnt_100hz;
@@ -55,16 +69,9 @@ integer swcnt;
 
 always @(posedge rst or posedge clk)
 begin
-    if (rst)
-        begin
-        cnt_100hz = 0;  clk_100hz = 1'b0;
-        end
-    else if (cnt_100hz >= 4)
-        begin
-        cnt_100hz = 0; clk_100hz = ~clk_100hz;
-        end
-    else
-        cnt_100hz = cnt_100hz + 1;
+    if (rst) begin cnt_100hz = 0;  clk_100hz = 1'b0; end
+    else if (cnt_100hz >= 4) begin cnt_100hz = 0; clk_100hz = ~clk_100hz; end
+    else cnt_100hz = cnt_100hz + 1;
 end
 
 always @(posedge rst or posedge clk_100hz)
@@ -124,45 +131,52 @@ begin
 end
 
 
-//
+
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
-        begin led = 4'b0000; seg = 8'b0000_0000; reg_temp = blank; end
+        begin led = 4'b0000; seg = 8'b0000_0000; reg_temp = 8'b0000_0000; end
     else
         begin
-              if (sw == 12'b0000_0000_0000) led = 4'b0000; 
-              else if (sw == 12'b1000_0000_0000) begin led = 4'b0000; seg = 8'b1111_1100; reg_temp = zero; end // 0
-              else if (sw == 12'b0100_0000_0000) begin led = 4'b0001; seg = 8'b0110_0000; reg_temp = one; end // 1
-              else if (sw == 12'b0010_0000_0000) begin led = 4'b0010; seg = 8'b1101_1010; reg_temp = two; end // 2
-              else if (sw == 12'b0001_0000_0000) begin led = 4'b0011; seg = 8'b1111_0010; reg_temp = three; end // 3
-              else if (sw == 12'b0000_1000_0000) begin led = 4'b0100; seg = 8'b0110_0110; reg_temp = four; end // 4
-              else if (sw == 12'b0000_0100_0000) begin led = 4'b0101; seg = 8'b1011_0110; reg_temp = five; end // 5
-              else if (sw == 12'b0000_0010_0000) begin led = 4'b0110; seg = 8'b1011_1110; reg_temp = six; end // 6
-              else if (sw == 12'b0000_0001_0000) begin led = 4'b0111; seg = 8'b1110_0000; reg_temp = seven; end // 7
-              else if (sw == 12'b0000_0000_1000) begin led = 4'b1000; seg = 8'b1111_1110; reg_temp = eight; end // 8
-              else if (sw == 12'b0000_0000_0100) begin led = 4'b1001; seg = 8'b1111_0110; reg_temp = nine; end // 9
-              else if (sw == 12'b0000_0000_0010) begin led = 4'b0000; seg = 8'b1111_1110; reg_temp = blank; end // rst
-              else if (sw == 12'b0000_0000_0001) begin led = 4'b1111; seg = 8'b1111_1110; reg_temp = blank; end // rst
-              
-//              case (sw)
-//                12'b1000_0000_0000 : begin led = 4'b0000; seg = 8'b1111_1100; reg_temp = zero; end // 0
-//                12'b0100_0000_0000 : begin led = 4'b0001; seg = 8'b0110_0000; reg_temp = one; end // 1
-//                12'b0010_0000_0000 : begin led = 4'b0010; seg = 8'b1101_1010; reg_temp = two; end // 2
-//                12'b0001_0000_0000 : begin led = 4'b0011; seg = 8'b1111_0010; reg_temp = three; end // 3
-//                12'b0000_1000_0000 : begin led = 4'b0100; seg = 8'b0110_0110; reg_temp = four; end // 4
-//                12'b0000_0100_0000 : begin led = 4'b0101; seg = 8'b1011_0110; reg_temp = five; end // 5
-//                12'b0000_0010_0000 : begin led = 4'b0110; seg = 8'b1011_1110; reg_temp = six; end // 6
-//                12'b0000_0001_0000 : begin led = 4'b0111; seg = 8'b1110_0000; reg_temp = seven; end // 7
-//                12'b0000_0000_1000 : begin led = 4'b1000; seg = 8'b1111_1110; reg_temp = eight; end // 8
-//                12'b0000_0000_0100 : begin led = 4'b1001; seg = 8'b1111_0110; reg_temp = nine; end // 9
-//                12'b0000_0000_0010 : begin led = 4'b0000; seg = 8'b1111_1110; reg_temp = blank; end // rst
-//                12'b0000_0000_0001 : begin led = 4'b1111; seg = 8'b1111_1110; reg_temp = blank; end // rst
-//                default : led = 4'b0000;
-//              endcase
+            case (sw)
+                12'b1000_0000_0000 : begin seg = seg_zer; reg_temp = lcd_zer;   end // 0
+                12'b0100_0000_0000 : begin seg = seg_one; reg_temp = lcd_one;   end // 1
+                12'b0010_0000_0000 : begin seg = seg_two; reg_temp = lcd_two;   end // 2
+                12'b0001_0000_0000 : begin seg = seg_thr; reg_temp = lcd_thr;   end // 3
+                12'b0000_1000_0000 : begin seg = seg_fou; reg_temp = lcd_fou;   end // 4
+                12'b0000_0100_0000 : begin seg = seg_fiv; reg_temp = lcd_fiv;   end // 5
+                12'b0000_0010_0000 : begin seg = seg_six; reg_temp = lcd_six;   end // 6
+                12'b0000_0001_0000 : begin seg = seg_sev; reg_temp = lcd_sev;   end // 7
+                12'b0000_0000_1000 : begin seg = seg_eig; reg_temp = lcd_eig;   end // 8
+                12'b0000_0000_0100 : begin seg = seg_nin; reg_temp = lcd_nin;   end // 9
+                12'b0000_0000_0010 : begin seg = seg_blk; reg_temp = lcd_blk;   end // rst
+                12'b0000_0000_0001 : begin seg = seg_blk; reg_temp = lcd_blk;   end // rst
+                default : led = 4'b0000;
+            endcase
         end
 end
-//
+
+
+always@(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+        begin led = 4'b0000_0000; end
+    else
+        begin
+            case (dipsw)
+                8'b1000_0000 : begin led = 8'b1000_0000; reg_temp = lcd_sum;    end 
+                8'b0100_0000 : begin led = 8'b0100_0000; reg_temp = lcd_sub;    end 
+                8'b0010_0000 : begin led = 8'b0010_0000; reg_temp = lcd_mul;    end 
+                8'b0001_0000 : begin led = 8'b0001_0000; reg_temp = lcd_div;    end 
+                8'b0000_1000 : begin led = 8'b0000_1000; reg_temp = lcd_rem;    end 
+                8'b0000_0100 : begin led = 8'b0000_0100; reg_temp = lcd_pow;    end 
+                8'b0000_0010 : begin led = 8'b0000_0010; reg_temp = lcd_fac;    end 
+                8'b0000_0001 : begin led = 8'b0000_0001; reg_temp = lcd_equ;    end 
+                default : led = 4'b0000;
+            endcase
+        end
+end
+
 
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -173,7 +187,7 @@ end
 
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_temp = blank;
+    if (rst) begin reg_temp = 8'b0000_0000; reg_temp1 = 8'b0000_0000; reg_temp2 = 8'b0000_0000; end
     else
         begin
             case (swcnt)
@@ -224,16 +238,16 @@ begin
                                     lcd_rs = 1'b1;  lcd_data = reg_temp1;
                                 end
                             2 : begin
-                                    lcd_rs = 1'b1;  lcd_data = plus;
+                                    lcd_rs = 1'b1;  lcd_data = lcd_sum;
                                 end
                             3 : begin
                                     lcd_rs = 1'b1;  lcd_data = reg_temp2;
                                 end
                             4 : begin
-                                    lcd_rs = 1'b1;  lcd_data = equ;
+                                    lcd_rs = 1'b1;  lcd_data = lcd_equ;
                                 end
                             5 : begin
-                                    lcd_rs = 1'b1;  lcd_data = blank;
+                                    lcd_rs = 1'b1;  lcd_data = lcd_blk;
                                 end
                             6 : begin
                                     lcd_rs = 1'b1;  lcd_data = reg_temp;
