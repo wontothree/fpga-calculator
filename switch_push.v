@@ -1,8 +1,9 @@
-module switch_push (i_sw_push, o_seg, reg_lcd, rst, clk);
+module switch_push (
+    input [11:0] i_sw_push,
+    input rst, clk,
+    output [7:0] o_seg, reg_lcd
+ );
 
-input [11:0] i_sw_push;
-input rst, clk;
-output [7:0] o_seg, reg_lcd;
 reg [7:0] o_seg, reg_lcd;
 
 parameter 
@@ -33,23 +34,23 @@ parameter
 always@(posedge rst or posedge clk)
 begin
     if (rst)
-        begin o_seg = seg_blk; reg_lcd = lcd_blk; end
+        begin o_seg <= seg_blk; reg_lcd <= lcd_blk; end
     else
         begin
             case (i_sw_push)
-                12'b1000_0000_0000 : begin o_seg = seg_zer; reg_lcd = lcd_zer;   end // 0
-                12'b0100_0000_0000 : begin o_seg = seg_one; reg_lcd = lcd_one;   end // 1
-                12'b0010_0000_0000 : begin o_seg = seg_two; reg_lcd = lcd_two;   end // 2
-                12'b0001_0000_0000 : begin o_seg = seg_thr; reg_lcd = lcd_thr;   end // 3
-                12'b0000_1000_0000 : begin o_seg = seg_fou; reg_lcd = lcd_fou;   end // 4
-                12'b0000_0100_0000 : begin o_seg = seg_fiv; reg_lcd = lcd_fiv;   end // 5
-                12'b0000_0010_0000 : begin o_seg = seg_six; reg_lcd = lcd_six;   end // 6
-                12'b0000_0001_0000 : begin o_seg = seg_sev; reg_lcd = lcd_sev;   end // 7
-                12'b0000_0000_1000 : begin o_seg = seg_eig; reg_lcd = lcd_eig;   end // 8
-                12'b0000_0000_0100 : begin o_seg = seg_nin; reg_lcd = lcd_nin;   end // 9
-                12'b0000_0000_0010 : begin o_seg = seg_blk; reg_lcd = lcd_blk;   end // rst
-                12'b0000_0000_0001 : begin o_seg = seg_blk; reg_lcd = lcd_blk;   end // rst
-                default : begin o_seg = seg_blk; reg_lcd = lcd_blk; end
+                12'b1000_0000_0000 : begin o_seg <= seg_zer; reg_lcd <= lcd_zer;   end // 0
+                12'b0100_0000_0000 : begin o_seg <= seg_one; reg_lcd <= lcd_one;   end // 1
+                12'b0010_0000_0000 : begin o_seg <= seg_two; reg_lcd <= lcd_two;   end // 2
+                12'b0001_0000_0000 : begin o_seg <= seg_thr; reg_lcd <= lcd_thr;   end // 3
+                12'b0000_1000_0000 : begin o_seg <= seg_fou; reg_lcd <= lcd_fou;   end // 4
+                12'b0000_0100_0000 : begin o_seg <= seg_fiv; reg_lcd <= lcd_fiv;   end // 5
+                12'b0000_0010_0000 : begin o_seg <= seg_six; reg_lcd <= lcd_six;   end // 6
+                12'b0000_0001_0000 : begin o_seg <= seg_sev; reg_lcd <= lcd_sev;   end // 7
+                12'b0000_0000_1000 : begin o_seg <= seg_eig; reg_lcd <= lcd_eig;   end // 8
+                12'b0000_0000_0100 : begin o_seg <= seg_nin; reg_lcd <= lcd_nin;   end // 9
+                12'b0000_0000_0010 : begin o_seg <= seg_blk; reg_lcd <= lcd_blk;   end // rst
+                12'b0000_0000_0001 : begin o_seg <= seg_blk; reg_lcd <= lcd_blk;   end // rst
+                default : begin o_seg <= seg_blk; reg_lcd <= lcd_blk; end
             endcase
         end
 end

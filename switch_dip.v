@@ -1,8 +1,8 @@
-module switch_dip(i_sw_dip, o_led, reg_lcd, rst, clk);
+module switch_dip(
+    input [7:0] i_sw_dip,
+    input rst, clk,
+    output [7:0] o_led, reg_lcd);
 
-input [7:0] i_sw_dip;
-input rst, clk;
-output [7:0] o_led, reg_lcd;
 reg [7:0] o_led, reg_lcd;
 
 parameter 
@@ -16,22 +16,22 @@ parameter
         lcd_fac = 8'b0010_0001,
         lcd_equ = 8'b0011_1101;
 
-always@(posedge rst or posedge clk_100hz)
+always@(posedge rst or posedge clk)           
 begin
     if (rst)
-        begin o_led = 8'b0000_0000; reg_lcd = lcd_blk; end
+        begin o_led <= 8'b0000_0000; reg_lcd <= lcd_blk; end
     else
         begin
             case (i_sw_dip)
-                8'b1000_0000 : begin o_led = 8'b1000_0000; reg_lcd = lcd_sum;    end 
-                8'b0100_0000 : begin o_led = 8'b0100_0000; reg_lcd = lcd_sub;    end 
-                8'b0010_0000 : begin o_led = 8'b0010_0000; reg_lcd = lcd_mul;    end 
-                8'b0001_0000 : begin o_led = 8'b0001_0000; reg_lcd = lcd_div;    end 
-                8'b0000_1000 : begin o_led = 8'b0000_1000; reg_lcd = lcd_rem;    end 
-                8'b0000_0100 : begin o_led = 8'b0000_0100; reg_lcd = lcd_pow;    end 
-                8'b0000_0010 : begin o_led = 8'b0000_0010; reg_lcd = lcd_fac;    end 
-                8'b0000_0001 : begin o_led = 8'b0000_0001; reg_lcd = lcd_equ;    end 
-                default :      begin o_led = 8'b0000_0000; reg_lcd = lcd_blk;    end
+                8'b1000_0000 : begin o_led <= 8'b1000_0000; reg_lcd <= lcd_sum;    end 
+                8'b0100_0000 : begin o_led <= 8'b0100_0000; reg_lcd <= lcd_sub;    end 
+                8'b0010_0000 : begin o_led <= 8'b0010_0000; reg_lcd <= lcd_mul;    end 
+                8'b0001_0000 : begin o_led <= 8'b0001_0000; reg_lcd <= lcd_div;    end 
+                8'b0000_1000 : begin o_led <= 8'b0000_1000; reg_lcd <= lcd_rem;    end 
+                8'b0000_0100 : begin o_led <= 8'b0000_0100; reg_lcd <= lcd_pow;    end 
+                8'b0000_0010 : begin o_led <= 8'b0000_0010; reg_lcd <= lcd_fac;    end 
+                8'b0000_0001 : begin o_led <= 8'b0000_0001; reg_lcd <= lcd_equ;    end 
+                default :      begin o_led <= 8'b0000_0000; reg_lcd <= lcd_blk;    end
             endcase
         end
 end
