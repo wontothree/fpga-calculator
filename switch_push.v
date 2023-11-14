@@ -3,7 +3,7 @@ module switch_push (i_sw_push, o_seg, reg_lcd, rst, clk);
 input [11:0] i_sw_push;
 input rst, clk;
 output [7:0] o_seg, reg_lcd;
-reg reg_lcd;
+reg [7:0] o_seg, reg_lcd;
 
 parameter 
         seg_blk = 8'b0000_0000,
@@ -28,7 +28,7 @@ parameter
         lcd_six = 8'b0011_0110,
         lcd_sev = 8'b0011_0111,
         lcd_eig = 8'b0011_1000,
-        lcd_nin = 8'b0011_1001,
+        lcd_nin = 8'b0011_1001;
 
 always@(posedge rst or posedge clk)
 begin

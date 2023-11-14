@@ -3,7 +3,7 @@ module switch_dip(i_sw_dip, o_led, reg_lcd, rst, clk);
 input [7:0] i_sw_dip;
 input rst, clk;
 output [7:0] o_led, reg_lcd;
-reg [7:0] reg_lcd;
+reg [7:0] o_led, reg_lcd;
 
 parameter 
         lcd_blk = 8'b0010_0000,
@@ -19,7 +19,7 @@ parameter
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
-        begin o_led = 8'b0000_0000; reg_lcd = reg_blk; end
+        begin o_led = 8'b0000_0000; reg_lcd = lcd_blk; end
     else
         begin
             case (i_sw_dip)
@@ -31,7 +31,7 @@ begin
                 8'b0000_0100 : begin o_led = 8'b0000_0100; reg_lcd = lcd_pow;    end 
                 8'b0000_0010 : begin o_led = 8'b0000_0010; reg_lcd = lcd_fac;    end 
                 8'b0000_0001 : begin o_led = 8'b0000_0001; reg_lcd = lcd_equ;    end 
-                default :      begin o_led = 8'b0000_0000; reg_lcd = reg_blk;    end
+                default :      begin o_led = 8'b0000_0000; reg_lcd = lcd_blk;    end
             endcase
         end
 end

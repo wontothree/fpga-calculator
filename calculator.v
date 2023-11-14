@@ -137,7 +137,7 @@ end
 switch_push switch_push (i_sw_push, o_seg, reg_lcd, rst, clk_100hz);
 
 // dip sw
-switch_push switch_push (i_sw_dip, o_led, reg_lcd, rst, clk_100hz);
+switch_dip switch_dip (i_sw_dip, o_led, reg_lcd, rst, clk_100hz);
 
 
 
