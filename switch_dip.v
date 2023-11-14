@@ -1,4 +1,4 @@
-module switch_push(i_sw_dip, o_led, reg_lcd, rst, clk);
+module switch_dip(i_sw_dip, o_led, reg_lcd, rst, clk);
 
 input [7:0] i_sw_dip;
 input rst, clk;
