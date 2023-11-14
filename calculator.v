@@ -1,4 +1,4 @@
-module calculator1 (sw, dipsw, rst, clk, led, seg, lcd_e, lcd_rs, lcd_rw, lcd_data);
+module calculator (i_sw_push, o_seg, dipsw, rst, clk, led, lcd_e, lcd_rs, lcd_rw, lcd_data);
 
 input [11:0] sw;
 input [7:0] dipsw;
@@ -13,7 +13,7 @@ reg [7:0] seg;
 reg [7:0] reg_temp;
 reg [7:0] reg_temp1;
 reg [7:0] reg_temp2;
-reg [7:0] reg_temp3;
+reg [7:0] reg_lcd;
 wire lcd_e;
 reg lcd_rs, lcd_rw;
 reg [7:0] lcd_data;
@@ -66,7 +66,7 @@ integer cnt_100hz;
 reg clk_100hz;
 integer swcnt;
 
-
+// clock divider
 always @(posedge rst or posedge clk)
 begin
     if (rst) begin cnt_100hz = 0;  clk_100hz = 1'b0; end
@@ -74,6 +74,7 @@ begin
     else cnt_100hz = cnt_100hz + 1;
 end
 
+// cnt
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -110,6 +111,7 @@ begin
         end
 end
 
+// state
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -117,65 +119,26 @@ begin
     else
         begin
             case (state)
-                delay :             if (cnt == 70) state = function_set;
-                function_set :      if (cnt == 30) state = disp_onoff;
-                disp_onoff :        if (cnt == 30) state = entry_mode;
-                entry_mode :        if (cnt == 30) state = line1;
-                line1 :             if (cnt == 20) state = line2;
-                line2 :             if (cnt == 20) state = delay_t;
-                delay_t :           if (cnt == 400) state = clear_disp;
-                clear_disp :        if (cnt == 200) state = line1;
-                default : state = delay;
+                delay :         if (cnt == 70)  state = function_set;
+                function_set :  if (cnt == 30)  state = disp_onoff;
+                disp_onoff :    if (cnt == 30)  state = entry_mode;
+                entry_mode :    if (cnt == 30)  state = line1;
+                line1 :         if (cnt == 20)  state = line2;
+                line2 :         if (cnt == 20)  state = delay_t;
+                delay_t :       if (cnt == 400) state = clear_disp;
+                clear_disp :    if (cnt == 200) state = line1;
+                default :                       state = delay;
             endcase
         end
 end
 
 
+// push sw
+switch_push switch_push (i_sw_push, o_seg, reg_lcd, rst, clk_100hz);
 
-always@(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        begin led = 4'b0000; seg = 8'b0000_0000; reg_temp = 8'b0000_0000; end
-    else
-        begin
-            case (sw)
-                12'b1000_0000_0000 : begin seg = seg_zer; reg_temp = lcd_zer;   end // 0
-                12'b0100_0000_0000 : begin seg = seg_one; reg_temp = lcd_one;   end // 1
-                12'b0010_0000_0000 : begin seg = seg_two; reg_temp = lcd_two;   end // 2
-                12'b0001_0000_0000 : begin seg = seg_thr; reg_temp = lcd_thr;   end // 3
-                12'b0000_1000_0000 : begin seg = seg_fou; reg_temp = lcd_fou;   end // 4
-                12'b0000_0100_0000 : begin seg = seg_fiv; reg_temp = lcd_fiv;   end // 5
-                12'b0000_0010_0000 : begin seg = seg_six; reg_temp = lcd_six;   end // 6
-                12'b0000_0001_0000 : begin seg = seg_sev; reg_temp = lcd_sev;   end // 7
-                12'b0000_0000_1000 : begin seg = seg_eig; reg_temp = lcd_eig;   end // 8
-                12'b0000_0000_0100 : begin seg = seg_nin; reg_temp = lcd_nin;   end // 9
-                12'b0000_0000_0010 : begin seg = seg_blk; reg_temp = lcd_blk;   end // rst
-                12'b0000_0000_0001 : begin seg = seg_blk; reg_temp = lcd_blk;   end // rst
-                default : led = 4'b0000;
-            endcase
-        end
-end
+// dip sw
+switch_push switch_push (i_sw_dip, o_led, reg_lcd, rst, clk_100hz);
 
-
-always@(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        begin led = 4'b0000_0000; end
-    else
-        begin
-            case (dipsw)
-                8'b1000_0000 : begin led = 8'b1000_0000; reg_temp = lcd_sum;    end 
-                8'b0100_0000 : begin led = 8'b0100_0000; reg_temp = lcd_sub;    end 
-                8'b0010_0000 : begin led = 8'b0010_0000; reg_temp = lcd_mul;    end 
-                8'b0001_0000 : begin led = 8'b0001_0000; reg_temp = lcd_div;    end 
-                8'b0000_1000 : begin led = 8'b0000_1000; reg_temp = lcd_rem;    end 
-                8'b0000_0100 : begin led = 8'b0000_0100; reg_temp = lcd_pow;    end 
-                8'b0000_0010 : begin led = 8'b0000_0010; reg_temp = lcd_fac;    end 
-                8'b0000_0001 : begin led = 8'b0000_0001; reg_temp = lcd_equ;    end 
-                default : led = 4'b0000;
-            endcase
-        end
-end
 
 
 always @(posedge rst or posedge clk_100hz)
@@ -191,15 +154,12 @@ begin
     else
         begin
             case (swcnt)
-                1 : reg_temp1 = reg_temp;
-                2 : reg_temp2 = reg_temp;
+                1 :     reg_temp1 = reg_temp;
+                2 :     reg_temp2 = reg_temp;
                 default reg_temp3 = reg_temp;
             endcase
         end
 end
-
-//always @(posedge rst or posedge clk)
-//begin
 
 
 
