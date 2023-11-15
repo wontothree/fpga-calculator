@@ -3,16 +3,16 @@ module calculator (
     input [7:0] i_sw_dip,
     input rst, clk,
     output [7:0] o_led, o_seg,
-    output [7:0] lcd_data,
-    output lcd_e, lcd_rs, lcd_rw);
+    output reg [7:0] lcd_data,
+    output wire lcd_e, 
+    output reg lcd_rs, lcd_rw
+    );
     
-wire lcd_e;
-reg lcd_rs, lcd_rw;
-reg [7:0] lcd_data;
-//reg [2:0] state;
 
 reg [7:0] reg_temp1;
 reg [7:0] reg_temp2;
+
+integer cnt_sw;
 
 parameter 
         delay           = 3'b000,
@@ -35,72 +35,12 @@ parameter
         
         lcd_blk = 8'b0010_0000;
 
-//integer cnt;
-integer cnt_sw;
 
 // clock divider
 clock_divider clock_divider(rst, clk, clk_100hz);
 
-//// count
-//always @(posedge rst or posedge clk_100hz)
-//begin
-//    if (rst)
-//        cnt <= 0;
-//    else
-//        begin
-//            case (state)
-//                delay :
-//                    if (cnt >= 70) cnt = 0;
-//                    else cnt <= cnt + 1;
-//                function_set :
-//                    if (cnt >= 30) cnt = 0;
-//                    else cnt <= cnt + 1;
-//                disp_onoff :
-//                    if (cnt >= 30) cnt = 0;
-//                    else cnt <= cnt + 1;
-//                entry_mode :
-//                    if (cnt >= 30) cnt = 0;
-//                    else cnt <= cnt + 1;
-//                line1 :
-//                    if (cnt >= 20) cnt = 0;
-//                    else cnt <= cnt + 1;
-//                line2 :
-//                    if (cnt >= 20) cnt = 0;
-//                    else cnt <= cnt + 1;
-//                delay_t :
-//                    if (cnt >= 400) cnt = 0;
-//                    else cnt <= cnt + 1;
-//                clear_disp :
-//                    if (cnt >= 200) cnt = 0;
-//                    else cnt <= cnt + 1;
-//                default : cnt <= 0;
-//            endcase
-//        end
-//end
-
-//// state
-//always@(posedge rst or posedge clk_100hz)
-//begin
-//    if (rst)
-//        state <= delay;
-//    else
-//        begin
-//            case (state)
-//                delay :         if (cnt == 70)  state <= function_set;
-//                function_set :  if (cnt == 30)  state <= disp_onoff;
-//                disp_onoff :    if (cnt == 30)  state <= entry_mode;
-//                entry_mode :    if (cnt == 30)  state <= line1;
-//                line1 :         if (cnt == 20)  state <= line2;
-//                line2 :         if (cnt == 20)  state <= delay_t;
-//                delay_t :       if (cnt == 400) state <= clear_disp;
-//                clear_disp :    if (cnt == 200) state <= line1;
-//                default :                       state <= delay;
-//            endcase
-//        end
-//end
-
+// state machine
 state_machine state_machine(rst, clk_100hz, state, cnt);
-
 
 // push switch
 switch_push switch_push (i_sw_push, rst, clk_100hz, o_seg, reg_lcd);
@@ -125,7 +65,7 @@ begin
             case (cnt_sw)
                 1 :     reg_temp1 <= reg_lcd;
                 2 :     reg_temp2 <= reg_lcd;
-                default ;
+                default:     reg_temp2 <= reg_lcd;
             endcase
         end
 end
