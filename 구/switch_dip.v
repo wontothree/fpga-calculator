@@ -1,9 +1,9 @@
 module switch_dip(
     input [7:0] i_sw_dip,
     input rst, clk,
-    output [7:0] o_led, reg_lcd);
-
-reg [7:0] o_led, reg_lcd;
+    output reg [7:0] o_led,
+    output reg [7:0] reg_lcd
+);
 
 parameter 
         lcd_blk = 8'b0010_0000,

@@ -1,8 +1,10 @@
 module switch_push (
     input [11:0] i_sw_push,
-    input rst, clk,
-    output reg [7:0] o_seg, reg_lcd
+    input wire rst, clk,
+    output reg [7:0] o_seg, reg_lcd, 
+    output reg [7:0] reg_temp1, reg_temp2
  );
+integer cnt_sw;
 
 parameter 
         seg_blk = 8'b0000_0000,
@@ -104,6 +106,26 @@ begin
                         o_seg <= seg_blk; 
                         reg_lcd <= lcd_blk; 
                     end
+            endcase
+        end
+end
+
+always @(posedge rst or posedge clk)
+begin
+    if (rst) cnt_sw <= 0;
+    else if (cnt_sw >= 2) cnt_sw <= 0;
+    else if (i_sw_push) cnt_sw <= cnt_sw + 1;
+end
+
+always @(posedge rst or posedge clk)
+begin
+    if (rst) begin reg_temp1 <= 8'b0000_0000; reg_temp2 <= 8'b0000_0000; end
+    else
+        begin
+            case (cnt_sw)
+                1 :     reg_temp1 <= reg_lcd;
+                2 :     reg_temp2 <= reg_lcd;
+                default:     reg_temp2 <= reg_lcd;
             endcase
         end
 end
