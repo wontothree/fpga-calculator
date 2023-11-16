@@ -14,19 +14,21 @@ reg [3:0] reg_num, reg_num1, reg_num2;
 reg [4:0] reg_sum;
 reg reg_cout;
 
+reg reg_os;
+assign one_shot = sw & ~reg_os;
 
 reg [7:0] lcd_data;
 reg [2:0] state;
 
 parameter 
-        delay = 3'b000,
-        function_set = 3'b001,
-        entry_mode = 3'b010,
-        disp_onoff = 3'b011,
-        line1 = 3'b100,
-        line2 = 3'b101,
-        delay_t = 3'b110,
-        clear_disp = 3'b111,
+        delay           = 3'b000,
+        function_set    = 3'b001,
+        entry_mode      = 3'b010,
+        disp_onoff      = 3'b011,
+        line1           = 3'b100,
+        line2           = 3'b101,
+        delay_t         = 3'b110,
+        clear_disp      = 3'b111,
 
         lcd_zer = 8'b0011_0000,
         lcd_one = 8'b0011_0001,
@@ -126,8 +128,7 @@ begin
         end
 end
 
-
-
+// push switch
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -143,71 +144,90 @@ begin
                 12'b0000_0100_0000 : begin led = 4'b0101; seg = 8'b1011_0110; reg_num = 4'b0101; reg_temp = lcd_fiv;    end // 5
                 12'b0000_0010_0000 : begin led = 4'b0110; seg = 8'b1011_1110; reg_num = 4'b0110; reg_temp = lcd_six;    end // 6
                 12'b0000_0001_0000 : begin led = 4'b0111; seg = 8'b1110_0000; reg_num = 4'b0111; reg_temp = lcd_sev;    end // 7
+                12'b0000_0000_1000 : begin led = 4'b1000; seg = 8'b1111_1110; reg_num = 4'b1000; reg_temp = lcd_eig;    end // 8
                 12'b0000_0000_0100 : begin led = 4'b1001; seg = 8'b1111_0110; reg_num = 4'b1001; reg_temp = lcd_nin;    end // 9
-                12'b0000_0000_0010 : begin led = 4'b0000; seg = 8'b1111_1110; reg_num = 4'b0000; reg_temp = lcd_blk;    end // rst
-                12'b0000_0000_0001 : begin led = 4'b1111; seg = 8'b1111_1110; reg_num = 4'b0000; reg_temp = lcd_blk;    end // rst
-                default : led = 4'b0000;
+                12'b0000_0000_0010 : begin led = 4'b0000; seg = 8'b0000_0000; reg_num = 4'b0000; reg_temp = lcd_blk;    end // rst
+                12'b0000_0000_0001 : begin led = 4'b0000; seg = 8'b0000_0000; reg_num = 4'b0000; reg_temp = lcd_blk;    end // rst
             endcase
         end
+end
+
+// one shot code
+always@ (posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+        reg_os = 0;
+    else
+        reg_os = sw;
+end
+
+// switch count
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) cnt_sw = 0;
+    else if (cnt_sw >= 2) cnt_sw = 0;
+    else if (one_shot) cnt_sw = cnt_sw + 1;
 end
 
 // sum
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst) cnt_sw = 0;
-    else if (cnt_sw >= 2) cnt_sw = 0;
-    else if (sw) cnt_sw = cnt_sw + 1;
-end
-
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) begin reg_temp = lcd_blk; reg_lcd_l1_1 = lcd_blk; reg_lcd_l1_3 = lcd_blk; end
+    if (rst) 
+        begin 
+            reg_temp = lcd_blk; 
+            reg_lcd_l1_1 = lcd_blk; 
+            reg_lcd_l1_3 = lcd_blk; 
+            
+            reg_num1 = 4'b0000;
+            reg_num2 = 4'b0000;
+            reg_sum = 5'b00000;
+        end
     else
         begin
-            case (cnt_sw)
-                1 : begin
-                        reg_lcd_l1_1 = reg_temp;
-                        reg_num1 = reg_num;
-                    end
-                2 : begin
-                        reg_lcd_l1_3 = reg_temp;
-                        reg_num2 = reg_num;
-                        
-                        reg_sum = reg_num1 + reg_num2;
-                        if(reg_sum >= 5'b01010) 
-                            begin
-                                reg_lcd_l1_5 = lcd_one;
-                                case(reg_sum - 5'b01010)
-                                    0: reg_lcd_l1_6 = lcd_zer;
-                                    1: reg_lcd_l1_6 = lcd_one;
-                                    2: reg_lcd_l1_6 = lcd_two;
-                                    3: reg_lcd_l1_6 = lcd_thr;
-                                    4: reg_lcd_l1_6 = lcd_fou;
-                                    5: reg_lcd_l1_6 = lcd_fiv;
-                                    6: reg_lcd_l1_6 = lcd_six;
-                                    7: reg_lcd_l1_6 = lcd_sev;
-                                    8: reg_lcd_l1_6 = lcd_eig;
-                                    9: reg_lcd_l1_6 = lcd_nin;
-                                endcase
-                            end
-                        else 
-                            begin
-                                reg_lcd_l1_5 = lcd_zer;
-                                case(reg_sum)
-                                    0: reg_lcd_l1_6 = lcd_zer;
-                                    1: reg_lcd_l1_6 = lcd_one;
-                                    2: reg_lcd_l1_6 = lcd_two;
-                                    3: reg_lcd_l1_6 = lcd_thr;
-                                    4: reg_lcd_l1_6 = lcd_fou;
-                                    5: reg_lcd_l1_6 = lcd_fiv;
-                                    6: reg_lcd_l1_6 = lcd_six;
-                                    7: reg_lcd_l1_6 = lcd_sev;
-                                    8: reg_lcd_l1_6 = lcd_eig;
-                                    9: reg_lcd_l1_6 = lcd_nin;
-                                endcase
-                            end
-                    end
-            endcase
+            if (cnt_sw == 1) 
+                begin
+                    reg_lcd_l1_1 = reg_temp;
+                    reg_num1 = reg_num;
+                end
+            else if (cnt_sw == 2)
+                begin
+                    reg_lcd_l1_3 = reg_temp;
+                    reg_num2 = reg_num;
+
+                    reg_sum = reg_num1 + reg_num2;
+                    if(reg_sum >= 5'b01010) 
+                        begin
+                            reg_lcd_l1_5 = lcd_one;
+                            case(reg_sum - 5'b01010)
+                                0: reg_lcd_l1_6 = lcd_zer;
+                                1: reg_lcd_l1_6 = lcd_one;
+                                2: reg_lcd_l1_6 = lcd_two;
+                                3: reg_lcd_l1_6 = lcd_thr;
+                                4: reg_lcd_l1_6 = lcd_fou;
+                                5: reg_lcd_l1_6 = lcd_fiv;
+                                6: reg_lcd_l1_6 = lcd_six;
+                                7: reg_lcd_l1_6 = lcd_sev;
+                                8: reg_lcd_l1_6 = lcd_eig;
+                                9: reg_lcd_l1_6 = lcd_nin;
+                            endcase
+                        end
+                    else 
+                        begin
+                            reg_lcd_l1_5 = lcd_zer;
+                            case(reg_sum)
+                                0: reg_lcd_l1_6 = lcd_zer;
+                                1: reg_lcd_l1_6 = lcd_one;
+                                2: reg_lcd_l1_6 = lcd_two;
+                                3: reg_lcd_l1_6 = lcd_thr;                                    4: reg_lcd_l1_6 = lcd_fou;
+                                5: reg_lcd_l1_6 = lcd_fiv;
+                                6: reg_lcd_l1_6 = lcd_six;
+                                7: reg_lcd_l1_6 = lcd_sev;
+                                8: reg_lcd_l1_6 = lcd_eig;
+                                9: reg_lcd_l1_6 = lcd_nin;
+                            endcase
+                        end
+
+                end
         end
 end
 
