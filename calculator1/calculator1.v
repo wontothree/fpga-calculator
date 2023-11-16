@@ -169,8 +169,7 @@ begin
                         reg_lcd_l1_1 = reg_temp;
                         reg_num1 = reg_num;
                     end
-                2 : 
-                    begin
+                2 : begin
                         reg_lcd_l1_3 = reg_temp;
                         reg_num2 = reg_num;
                         
@@ -191,7 +190,6 @@ begin
                                     9: reg_lcd_l1_6 = lcd_nin;
                                 endcase
                             end
-                        
                         else 
                             begin
                                 reg_lcd_l1_5 = lcd_zer;
