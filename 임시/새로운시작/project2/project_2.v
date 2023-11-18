@@ -325,22 +325,22 @@ begin
                                     lcd_rs = 1'b0;  lcd_data = 8'b10000000;
                                 end
                             1 : begin
-                                    lcd_rs = 1'b1;  lcd_data = reg_lcd_l1_1;
+                                    lcd_rs = 1'b1;  lcd_data = reg_one;
                                 end
                             2 : begin
                                     lcd_rs = 1'b1;  lcd_data = lcd_sum;
                                 end
                             3 : begin
-                                    lcd_rs = 1'b1;  lcd_data = reg_lcd_l1_3;
+                                    lcd_rs = 1'b1;  lcd_data = reg_two;
                                 end
                             4 : begin
                                     lcd_rs = 1'b1;  lcd_data = lcd_equ;
                                 end
                             5 : begin
-                                    lcd_rs = 1'b1;  lcd_data = reg_lcd_l1_5;
+                                    lcd_rs = 1'b1;  lcd_data = reg_thr;
                                 end
                             6 : begin
-                                    lcd_rs = 1'b1;  lcd_data = reg_lcd_l1_6;
+                                    lcd_rs = 1'b1;  lcd_data = reg_fou;
                                 end
                             default : begin
                                             lcd_rs = 1'b1;  lcd_data = lcd_blk;
