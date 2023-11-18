@@ -37,9 +37,9 @@ parameter
         
         lcd_blk = 8'b0010_0000;
 
+// push switch
 reg [7:0] reg_lcd;
 reg [3:0] reg_num;
-// push switch
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)

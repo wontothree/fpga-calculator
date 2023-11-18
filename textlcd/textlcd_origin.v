@@ -1,92 +1,27 @@
-module textlcd(
-    input swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd,
-    input [7:0] swd,
-    input clk, 
+module textlcd(rst, clk, lcd_e, lcd_rs, lcd_rw, lcd_data);
 
-    output reg [7:0] seg,
-    output reg [7:0] led,
-    
-    output wire lcd_e,
-    output reg lcd_rs, lcd_rw, 
-    output reg [7:0] lcd_data
-);
+input rst, clk;
+output lcd_e, lcd_rs, lcd_rw;
+output [7:0] lcd_data;
 
-parameter 
-        delay           = 3'b000,
-        function_set    = 3'b001,
-        entry_mode      = 3'b010,
-        disp_onoff      = 3'b011,
-        line1           = 3'b100,
-        line2           = 3'b101,
-        delay_t         = 3'b110,
-        clear_disp      = 3'b111,
+wire lcd_e;
+reg lcd_rs, lcd_rw;
+reg [7:0] lcd_data;
 
-        lcd_zer = 8'b0011_0000,
-        lcd_one = 8'b0011_0001,
-        lcd_two = 8'b0011_0010,
-        lcd_thr = 8'b0011_0011,
-        lcd_fou = 8'b0011_0100,
-        lcd_fiv = 8'b0011_0101,
-        lcd_six = 8'b0011_0110,
-        lcd_sev = 8'b0011_0111,
-        lcd_eig = 8'b0011_1000,
-        lcd_nin = 8'b0011_1001,
-        
-        lcd_sum = 8'b0010_1011,
-        lcd_sub = 8'b0010_1101,
-        lcd_mul = 8'b1101_0111,
-        lcd_div = 8'b1111_0111,
-        lcd_equ = 8'b0011_1101,
-        
-        lcd_blk = 8'b0010_0000;
+reg [2:0] state;
+parameter delay = 3'b000,
+        function_set = 3'b001,
+        entry_mode = 3'b010,
+        disp_onoff = 3'b011,
+        line1 = 3'b100,
+        line2 = 3'b101,
+        delay_t = 3'b110,
+        clear_disp = 3'b111;
 
-
-// push switch one shot code
-assign pulse_swp = swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swp0 | lrd;
-reg reg_swp_os;
-assign pulse_swp_os = pulse_swp & ~reg_swp_os;
-always@ (posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        reg_swp_os = 0;
-    else
-        reg_swp_os = pulse_swp;
-end
-
-// push switch count
-integer cnt_swp;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) cnt_swp = 0;
-    else if (pulse_swp_os) cnt_swp = cnt_swp + 1;
-end
-
-// dip switch one shot code
-assign pulse_swd = (swd == 8'b1000_0000) | (swd == 8'b0100_0000) | (swd == 8'b0010_0000) | (swd == 8'b0001_0000) | (swd == 8'b0000_1000) | (swd == 8'b0000_0010) | (swd == 8'b00000001);
-reg reg_swd_os;
-assign pulse_swd_os = pulse_swd & ~reg_swd_os;
-always@ (posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        reg_swd_os = 0;
-    else
-        reg_swd_os = pulse_swd;
-end
-
-// dip switch count
-integer cnt_swd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) cnt_swd = 0;
-    else if (pulse_swd_os) cnt_swd = cnt_swd + 1;
-end
-
-
-
-
-// clock divider
+integer cnt;
 integer cnt_100hz;
 reg clk_100hz;
+
 always @(posedge rst or posedge clk)
 begin
     if (rst)
@@ -101,8 +36,6 @@ begin
         cnt_100hz = cnt_100hz + 1;
 end
 
-// count
-integer cnt;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -139,8 +72,6 @@ begin
         end
 end
 
-// state machine
-reg [2:0] state;
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -161,7 +92,6 @@ begin
         end
 end
 
-// lcd
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)

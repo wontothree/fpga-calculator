@@ -11,6 +11,7 @@ module textlcd(
     output reg [7:0] lcd_data
 );
 
+reg [2:0] state;
 parameter 
         delay           = 3'b000,
         function_set    = 3'b001,
@@ -40,53 +41,46 @@ parameter
         
         lcd_blk = 8'b0010_0000;
 
+integer cnt;
+integer cnt_100hz;
+reg clk_100hz;
 
-// push switch one shot code
-assign pulse_swp = swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swp0 | lrd;
-reg reg_swp_os;
-assign pulse_swp_os = pulse_swp & ~reg_swp_os;
+
+// one shot code
+assign swp = swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swp0 | lrd;
+reg reg_os_swp;
+assign one_shot_swp = swp & ~reg_os_swp;
 always@ (posedge rst or posedge clk_100hz)
 begin
     if (rst)
-        reg_swp_os = 0;
+        reg_os_swp = 0;
     else
-        reg_swp_os = pulse_swp;
+        reg_os_swp = swp;
 end
 
-// push switch count
+assign regswd = swd;
+
+// switch count
 integer cnt_swp;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) cnt_swp = 0;
-    else if (pulse_swp_os) cnt_swp = cnt_swp + 1;
-end
-
-// dip switch one shot code
-assign pulse_swd = (swd == 8'b1000_0000) | (swd == 8'b0100_0000) | (swd == 8'b0010_0000) | (swd == 8'b0001_0000) | (swd == 8'b0000_1000) | (swd == 8'b0000_0010) | (swd == 8'b00000001);
-reg reg_swd_os;
-assign pulse_swd_os = pulse_swd & ~reg_swd_os;
-always@ (posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        reg_swd_os = 0;
-    else
-        reg_swd_os = pulse_swd;
-end
-
-// dip switch count
-integer cnt_swd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) cnt_swd = 0;
-    else if (pulse_swd_os) cnt_swd = cnt_swd + 1;
+    else if (reg_os_swp) cnt_swp = cnt_swp + 1;
 end
 
 
 
 
-// clock divider
-integer cnt_100hz;
-reg clk_100hz;
+
+
+
+
+
+
+
+
+
+
 always @(posedge rst or posedge clk)
 begin
     if (rst)
@@ -101,8 +95,6 @@ begin
         cnt_100hz = cnt_100hz + 1;
 end
 
-// count
-integer cnt;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -139,8 +131,6 @@ begin
         end
 end
 
-// state machine
-reg [2:0] state;
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -161,7 +151,6 @@ begin
         end
 end
 
-// lcd
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
