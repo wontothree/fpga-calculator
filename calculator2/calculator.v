@@ -134,15 +134,26 @@ begin
         end
 end
 
+
+
+
+
+
+
+
+
+
+
+
 // push switch
-reg [7:0] reg_lcd;
+reg [7:0] reg_lcd_swp;
 reg [3:0] reg_num;
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
         begin 
             reg_num = 4'b0000;
-            reg_lcd = ascii_lcd_blk; 
+            reg_lcd_swp = ascii_lcd_blk; 
             seg = 8'b0000_0000;
         end
     else
@@ -151,61 +162,61 @@ begin
                 12'b1000_0000_0000 : 
                     begin
                         reg_num = 4'b0001;
-                        reg_lcd = ascii_lcd_one;
+                        reg_lcd_swp = ascii_lcd_one;
                         seg = 8'b0110_0000;
                     end
                 12'b0100_0000_0000 :
                     begin
                         reg_num = 4'b0010;
-                        reg_lcd = ascii_lcd_two;
+                        reg_lcd_swp = ascii_lcd_two;
                         seg = 8'b1101_1010;
                     end
                 12'b0010_0000_0000 :
                     begin
                         reg_num = 4'b0011;
-                        reg_lcd = ascii_lcd_thr;
+                        reg_lcd_swp = ascii_lcd_thr;
                         seg = 8'b1111_0010;
                     end
                 12'b0001_0000_0000 :
                     begin
                         reg_num = 4'b0100;
-                        reg_lcd = ascii_lcd_fou;
+                        reg_lcd_swp = ascii_lcd_fou;
                         seg = 8'b0110_0110;
                     end
                 12'b0000_1000_0000 :
                     begin
                         reg_num = 4'b0101;
-                        reg_lcd = ascii_lcd_fiv;
+                        reg_lcd_swp = ascii_lcd_fiv;
                         seg = 8'b1011_0110;
                     end
                 12'b0000_0100_0000 :
                     begin
                         reg_num = 4'b0110;
-                        reg_lcd = ascii_lcd_six;
+                        reg_lcd_swp = ascii_lcd_six;
                         seg = 8'b1011_1110;
                     end
                 12'b0000_0010_0000 :
                     begin
                         reg_num = 4'b111;
-                        reg_lcd = ascii_lcd_sev;
+                        reg_lcd_swp = ascii_lcd_sev;
                         seg = 8'b1110_0000;
                     end
                 12'b0000_0001_0000 :
                     begin
                         reg_num = 4'b1000;
-                        reg_lcd = ascii_lcd_eig;
+                        reg_lcd_swp = ascii_lcd_eig;
                         seg = 8'b1111_1110;
                     end
                 12'b0000_0000_1000 :
                     begin
                         reg_num = 4'b1001;
-                        reg_lcd = ascii_lcd_nin;
+                        reg_lcd_swp = ascii_lcd_nin;
                         seg = 8'b1111_0110;
                     end
                 12'b0000_0000_0010 :
                     begin
                         reg_num = 4'b0000;
-                        reg_lcd = ascii_lcd_zer;
+                        reg_lcd_swp = ascii_lcd_zer;
                         seg = 8'b1111_1100;
                     end
             endcase
@@ -213,6 +224,7 @@ begin
 end
 
 // dip switch
+reg [7:0] reg_lcd_swd;
 reg [7:0] reg_opr;
 always@(posedge rst or posedge clk_100hz)
 begin
@@ -220,6 +232,7 @@ begin
         begin 
             reg_opr <= 8'b0000_0000;
             led <= 8'b0000_0000; 
+            reg_lcd_swd = ascii_lcd_blk; 
         end
     else
         begin
@@ -227,49 +240,49 @@ begin
                 8'b1000_0000 : 
                     begin 
                         reg_opr <= sum;
-                        reg_lcd <= ascii_lcd_sum;   
+                        reg_lcd_swd <= ascii_lcd_sum;   
                         led <= 8'b1000_0000;  
                     end 
                 8'b0100_0000 : 
                     begin 
                         reg_opr <= sub;
-                        reg_lcd <= ascii_lcd_sub;    
+                        reg_lcd_swd <= ascii_lcd_sub;    
                         led <= 8'b0100_0000; 
                     end 
                 8'b0010_0000 : 
                     begin 
                         reg_opr <= mul;
-                        reg_lcd <= ascii_lcd_mul;    
+                        reg_lcd_swd <= ascii_lcd_mul;    
                         led <= 8'b0010_0000; 
                     end 
                 8'b0001_0000 : 
                     begin 
                         reg_opr <= div;
-                        reg_lcd <= ascii_lcd_div;    
+                        reg_lcd_swd <= ascii_lcd_div;    
                         led <= 8'b0001_0000; 
                     end 
                 8'b0000_1000 : 
                     begin 
                         reg_opr <= exp;
-                        reg_lcd <= ascii_lcd_sum;   
+                        reg_lcd_swd <= ascii_lcd_sum;   
                         led <= 8'b0000_1000;  
                     end 
                 8'b0000_0100 : 
                     begin 
                         reg_opr <= lpr;
-                        reg_lcd <= ascii_lcd_sum;    
+                        reg_lcd_swd <= ascii_lcd_sum;    
                         led <= 8'b0000_0100; 
                     end 
                 8'b0000_0010 : 
                     begin 
                         reg_opr <= rpr;
-                        reg_lcd <= ascii_lcd_sum;    
+                        reg_lcd_swd <= ascii_lcd_sum;    
                         led <= 8'b0000_0010; 
                     end 
                 8'b0000_0001 : 
                     begin 
                         reg_opr <= equ;
-                        reg_lcd <= ascii_lcd_equ;    
+                        reg_lcd_swd <= ascii_lcd_equ;    
                         led <= 8'b0000_0001; 
                     end 
             endcase
@@ -313,18 +326,16 @@ begin
 end
 
 // term
+// summation and substraction operation
 reg [31:0] reg_trm;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) reg_trm <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-    else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num;
-end
-
-// summation and subtraction operation
 reg [31:0] reg_result;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_result <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
+    if (rst) 
+        begin
+            reg_result  = 32'b0000_0000_0000_0000_0000_0000_0000_0000;
+            reg_trm     = 32'b0000_0000_0000_0000_0000_0000_0000_0000;
+        end
     else if (pul_swd_os)
         begin
             case (reg_opr)
@@ -333,6 +344,7 @@ begin
             endcase
             reg_trm = 0;
         end
+    else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num;
 end
 
 // count lcd position
@@ -341,6 +353,15 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) cnt_lcd = 0;
     else if (pul_swp_os | pul_swd_os) cnt_lcd = cnt_lcd + 1;
+end
+
+// 
+reg [7:0] reg_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) reg_lcd = ascii_lcd_blk;
+    else if (pul_swp_os) reg_lcd = reg_lcd_swp;
+    else if (pul_swd_os) reg_lcd = reg_lcd_swd;
 end
 
 // lcd assignment
@@ -378,7 +399,7 @@ reg [7:0]
         reg_lcd_l2_14,
         reg_lcd_l2_15,
         reg_lcd_l2_16;
-
+reg [31:0] reg_result_neg;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -421,12 +442,12 @@ begin
         begin
             if (reg_result >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                 begin
-                    reg_result = ~(reg_result - 32'd1);
+                    reg_result_neg = ~(reg_result - 32'd1);
 
-                    if (reg_result < 32'd10)
+                    if (reg_result_neg < 32'd10)
                         begin
                             reg_lcd_l2_15 = ascii_lcd_sub;
-                            case (reg_result)
+                            case (reg_result_neg)
                                 0 : reg_lcd_l2_16 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_16 = ascii_lcd_one;
                                 2 : reg_lcd_l2_16 = ascii_lcd_two;
@@ -439,10 +460,10 @@ begin
                                 9 : reg_lcd_l2_16 = ascii_lcd_nin;
                             endcase
                         end
-                    else if (reg_result < 32'd100)
+                    else if (reg_result_neg < 32'd100)
                         begin
                             reg_lcd_l2_14 = ascii_lcd_sub;
-                            case (reg_result % 32'd10)
+                            case (reg_result_neg % 32'd10)
                                 0 : reg_lcd_l2_16 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_16 = ascii_lcd_one;
                                 2 : reg_lcd_l2_16 = ascii_lcd_two;
@@ -455,7 +476,7 @@ begin
                                 9 : reg_lcd_l2_16 = ascii_lcd_nin;
                             endcase
 
-                            case (reg_result / 32'd10)
+                            case (reg_result_neg / 32'd10)
                                 0 : reg_lcd_l2_15 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_15 = ascii_lcd_one;
                                 2 : reg_lcd_l2_15 = ascii_lcd_two;
@@ -468,10 +489,10 @@ begin
                                 9 : reg_lcd_l2_15 = ascii_lcd_nin;
                             endcase        
                         end
-                    else if (reg_result < 32'd1000)
+                    else if (reg_result_neg < 32'd1000)
                         begin
                             reg_lcd_l2_13 = ascii_lcd_sub;
-                            case (reg_result % 32'd10)
+                            case (reg_result_neg % 32'd10)
                                 0 : reg_lcd_l2_16 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_16 = ascii_lcd_one;
                                 2 : reg_lcd_l2_16 = ascii_lcd_two;
@@ -484,7 +505,7 @@ begin
                                 9 : reg_lcd_l2_16 = ascii_lcd_nin;
                             endcase
 
-                            case (reg_result % 32'd100 / 32'd10)
+                            case (reg_result_neg % 32'd100 / 32'd10)
                                 0 : reg_lcd_l2_15 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_15 = ascii_lcd_one;
                                 2 : reg_lcd_l2_15 = ascii_lcd_two;
@@ -497,7 +518,7 @@ begin
                                 9 : reg_lcd_l2_15 = ascii_lcd_nin;
                             endcase 
 
-                            case (reg_result / 32'd100)
+                            case (reg_result_neg / 32'd100)
                                 0 : reg_lcd_l2_14 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_14 = ascii_lcd_one;
                                 2 : reg_lcd_l2_14 = ascii_lcd_two;
@@ -510,10 +531,10 @@ begin
                                 9 : reg_lcd_l2_14 = ascii_lcd_nin;
                             endcase 
                         end
-                    else if (reg_result < 32'd10000)
+                    else if (reg_result_neg < 32'd10000)
                         begin
                             reg_lcd_l2_12 <= ascii_lcd_sub;
-                            case (reg_result % 32'd10)
+                            case (reg_result_neg % 32'd10)
                                 0 : reg_lcd_l2_16 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_16 = ascii_lcd_one;
                                 2 : reg_lcd_l2_16 = ascii_lcd_two;
@@ -526,7 +547,7 @@ begin
                                 9 : reg_lcd_l2_16 = ascii_lcd_nin;
                             endcase
 
-                            case (reg_result % 32'd100 / 32'd10)
+                            case (reg_result_neg % 32'd100 / 32'd10)
                                 0 : reg_lcd_l2_15 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_15 = ascii_lcd_one;
                                 2 : reg_lcd_l2_15 = ascii_lcd_two;
@@ -539,7 +560,7 @@ begin
                                 9 : reg_lcd_l2_15 = ascii_lcd_nin;
                             endcase 
 
-                            case (reg_result % 32'd1000 / 32'd100)
+                            case (reg_result_neg % 32'd1000 / 32'd100)
                                 0 : reg_lcd_l2_14 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_14 = ascii_lcd_one;
                                 2 : reg_lcd_l2_14 = ascii_lcd_two;
@@ -552,7 +573,7 @@ begin
                                 9 : reg_lcd_l2_14 = ascii_lcd_nin;
                             endcase
 
-                            case (reg_result / 32'd1000)
+                            case (reg_result_neg / 32'd1000)
                                 0 : reg_lcd_l2_13 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_13 = ascii_lcd_one;
                                 2 : reg_lcd_l2_13 = ascii_lcd_two;
@@ -565,10 +586,10 @@ begin
                                 9 : reg_lcd_l2_13 = ascii_lcd_nin;
                             endcase
                         end
-                    else if (reg_result < 32'd100000)
+                    else if (reg_result_neg < 32'd100000)
                         begin
                             reg_lcd_l2_11 <= ascii_lcd_sub;
-                            case (reg_result % 32'd10)
+                            case (reg_result_neg % 32'd10)
                                 0 : reg_lcd_l2_16 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_16 = ascii_lcd_one;
                                 2 : reg_lcd_l2_16 = ascii_lcd_two;
@@ -581,7 +602,7 @@ begin
                                 9 : reg_lcd_l2_16 = ascii_lcd_nin;
                             endcase
 
-                            case (reg_result % 32'd100 / 32'd10)
+                            case (reg_result_neg % 32'd100 / 32'd10)
                                 0 : reg_lcd_l2_15 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_15 = ascii_lcd_one;
                                 2 : reg_lcd_l2_15 = ascii_lcd_two;
@@ -594,7 +615,7 @@ begin
                                 9 : reg_lcd_l2_15 = ascii_lcd_nin;
                             endcase 
 
-                            case (reg_result % 32'd1000 / 32'd100)
+                            case (reg_result_neg % 32'd1000 / 32'd100)
                                 0 : reg_lcd_l2_14 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_14 = ascii_lcd_one;
                                 2 : reg_lcd_l2_14 = ascii_lcd_two;
@@ -607,7 +628,7 @@ begin
                                 9 : reg_lcd_l2_14 = ascii_lcd_nin;
                             endcase
 
-                            case (reg_result % 32'd10000 / 32'd1000)
+                            case (reg_result_neg % 32'd10000 / 32'd1000)
                                 0 : reg_lcd_l2_13 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_13 = ascii_lcd_one;
                                 2 : reg_lcd_l2_13 = ascii_lcd_two;
@@ -620,7 +641,7 @@ begin
                                 9 : reg_lcd_l2_13 = ascii_lcd_nin;
                             endcase
 
-                            case (reg_result / 32'd10000)
+                            case (reg_result_neg / 32'd10000)
                                 0 : reg_lcd_l2_12 = ascii_lcd_zer;
                                 1 : reg_lcd_l2_12 = ascii_lcd_one;
                                 2 : reg_lcd_l2_12 = ascii_lcd_two;
