@@ -4,6 +4,7 @@ module testbench ();
 reg [11:0] swp;
 reg [7:0] swd;
 reg rst, clk;
+wire [7:0] seg, led;
 
 wire lcd_e, lcd_rs, lcd_rw;
 wire [7:0] lcd_data;

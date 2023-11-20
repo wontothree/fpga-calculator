@@ -219,7 +219,7 @@ always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
         begin 
-            reg_opr <= 8'b0000_0000;
+            reg_opr <= sum; // logic 상 그럼
             reg_lcd_swd <= ascii_blk; 
             led <= 8'b0000_0000; 
         end
@@ -391,7 +391,7 @@ reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
    if (rst) reg_trm <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-   else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num;
+   else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num; // 반드시 후위 os를 사용해야 함 - 다른 걸로 하면 term 자체를 인식 못함
    else if (pul_swd_os) reg_trm <= 0;
 end
 
@@ -400,7 +400,7 @@ reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
    if (rst) reg_rlt <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-   else if (pul_swd_os2)
+   else if (pul_swd_os2) // 반드시 전위 os를 사용해야 함 - 다른 걸로 하면 result가 달라짐
        begin
            case (reg_opr)
                sum : reg_rlt <= reg_rlt + reg_trm;
