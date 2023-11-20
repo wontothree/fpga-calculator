@@ -45,14 +45,14 @@ parameter
         ascii_blk = 8'b0010_0000,
         ascii_lar = 8'b0001_0001,
 
-	 	sum = 8'b1000_0000,
-        sub = 8'b0100_0000,
-        mul = 8'b0010_0000,
-        div = 8'b0001_0000,
-		exp = 8'b0000_1000,
-        lpr = 8'b0000_0100,
-        rpr = 8'b0000_0010,
-        equ = 8'b0000_0001;
+        sum = 3'b000,
+        sub = 3'b001,
+        mul = 3'b010,
+        div = 3'b011,
+        exp = 3'b100,
+        lpr = 3'b101,
+        rpr = 3'b110,
+        equ = 3'b111;
 
 
 // clock divider
@@ -62,16 +62,16 @@ always @(posedge rst or posedge clk)
 begin
     if (rst)
         begin
-            cnt_100hz <= 0;  
-            clk_100hz <= 1'b0;
+            cnt_100hz = 0;  
+            clk_100hz = 1'b0;
         end
     else if (cnt_100hz >= 4)
         begin
-            cnt_100hz <= 0; 
-            clk_100hz <= ~clk_100hz;
+            cnt_100hz = 0; 
+            clk_100hz = ~clk_100hz;
         end
     else
-        cnt_100hz <= cnt_100hz + 1;
+        cnt_100hz = cnt_100hz + 1;
 end
 
 // count
@@ -80,35 +80,35 @@ reg [2:0] state;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
-        cnt <= 0;
+        cnt = 0;
     else
         begin
             case (state)
                 delay :
                     if (cnt >= 70) cnt = 0;
-                    else cnt <= cnt + 1;
+                    else cnt = cnt + 1;
                 function_set :
                     if (cnt >= 30) cnt = 0;
-                    else cnt <= cnt + 1;
+                    else cnt = cnt + 1;
                 disp_onoff :
                     if (cnt >= 30) cnt = 0;
-                    else cnt <= cnt + 1;
+                    else cnt = cnt + 1;
                 entry_mode :
                     if (cnt >= 30) cnt = 0;
-                    else cnt <= cnt + 1;
+                    else cnt = cnt + 1;
                 line1 :
                     if (cnt >= 20) cnt = 0;
-                    else cnt <= cnt + 1;
+                    else cnt = cnt + 1;
                 line2 :
                     if (cnt >= 20) cnt = 0;
-                    else cnt <= cnt + 1;
+                    else cnt = cnt + 1;
                 delay_t :
                     if (cnt >= 400) cnt = 0;
-                    else cnt <= cnt + 1;
+                    else cnt = cnt + 1;
                 clear_disp :
                     if (cnt >= 200) cnt = 0;
-                    else cnt <= cnt + 1;
-                default : cnt <= 0;
+                    else cnt = cnt + 1;
+                default : cnt = 0;
             endcase
         end
 end
@@ -117,19 +117,19 @@ end
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
-        state <= delay;
+        state = delay;
     else
         begin
             case (state)
-                delay :             if (cnt == 70)  state <= function_set;
-                function_set :      if (cnt == 30)  state <= disp_onoff;
-                disp_onoff :        if (cnt == 30)  state <= entry_mode;
-                entry_mode :        if (cnt == 30)  state <= line1;
-                line1 :             if (cnt == 20)  state <= line2;
-                line2 :             if (cnt == 20)  state <= delay_t;
-                delay_t :           if (cnt == 400) state <= clear_disp;
-                clear_disp :        if (cnt == 200) state <= line1;
-                default :                           state <= delay;
+                delay :             if (cnt == 70)  state = function_set;
+                function_set :      if (cnt == 30)  state = disp_onoff;
+                disp_onoff :        if (cnt == 30)  state = entry_mode;
+                entry_mode :        if (cnt == 30)  state = line1;
+                line1 :             if (cnt == 20)  state = line2;
+                line2 :             if (cnt == 20)  state = delay_t;
+                delay_t :           if (cnt == 400) state = clear_disp;
+                clear_disp :        if (cnt == 200) state = line1;
+                default :                           state = delay;
             endcase
         end
 end
@@ -335,8 +335,8 @@ reg reg_swp2;
 assign pul_swp_os2 = pul_swp2 & ~reg_swp2;
 always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_swp2 = 0;
-    else reg_swp2 = pul_swp2;
+    if (rst) reg_swp2 <= 0;
+    else reg_swp2 <= pul_swp2;
 end
 
 // dip switch one shot code 2
@@ -352,41 +352,13 @@ reg reg_swd2;
 assign pul_swd_os2 = pul_swd2 & ~reg_swd2;
 always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_swd2 = 0;
-    else reg_swd2 = pul_swd2;
+    if (rst) reg_swd2 <= 0;
+    else reg_swd2 <= pul_swd2;
 end
 
 
 
 
-
-
-
-
-
-
-// term
-// summation and substraction operation
-// reg [31:0] reg_trm;
-// reg [31:0] reg_rlt;
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst) 
-//         begin
-//             reg_trm     <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-//             reg_rlt  <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-//         end
-//     else if (pul_swd_os)
-//         begin
-//             case (reg_opr)
-//                 sum : reg_rlt <= reg_rlt + reg_trm;
-//                 sub : reg_rlt <= reg_rlt - reg_trm;
-//             endcase
-//             reg_trm <= 0;
-//         end
-//     else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num;
-// end
-// term
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -465,6 +437,7 @@ reg [7:0]
         reg_lcd_l2_14,
         reg_lcd_l2_15,
         reg_lcd_l2_16;
+
 reg [31:0] reg_result_neg;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -935,42 +908,42 @@ begin
             if (cnt_lcd <= 16)
                 begin
                     case (cnt_lcd)
-                        1 :     reg_lcd_l1_01 <= reg_lcd;
-                        2 :     reg_lcd_l1_02 <= reg_lcd;
-                        3 :     reg_lcd_l1_03 <= reg_lcd;
-                        4 :     reg_lcd_l1_04 <= reg_lcd;
-                        5 :     reg_lcd_l1_05 <= reg_lcd;
-                        6 :     reg_lcd_l1_06 <= reg_lcd;
-                        7 :     reg_lcd_l1_07 <= reg_lcd;
-                        8 :     reg_lcd_l1_08 <= reg_lcd;
-                        9 :     reg_lcd_l1_09 <= reg_lcd;
-                        10 :    reg_lcd_l1_10 <= reg_lcd;
-                        11 :    reg_lcd_l1_11 <= reg_lcd;
-                        12 :    reg_lcd_l1_12 <= reg_lcd;
-                        13 :    reg_lcd_l1_13 <= reg_lcd;
-                        14 :    reg_lcd_l1_14 <= reg_lcd;
-                        15 :    reg_lcd_l1_15 <= reg_lcd;
-                        16 :    reg_lcd_l1_16 <= reg_lcd;
+                        1 :     reg_lcd_l1_01 = reg_lcd;
+                        2 :     reg_lcd_l1_02 = reg_lcd;
+                        3 :     reg_lcd_l1_03 = reg_lcd;
+                        4 :     reg_lcd_l1_04 = reg_lcd;
+                        5 :     reg_lcd_l1_05 = reg_lcd;
+                        6 :     reg_lcd_l1_06 = reg_lcd;
+                        7 :     reg_lcd_l1_07 = reg_lcd;
+                        8 :     reg_lcd_l1_08 = reg_lcd;
+                        9 :     reg_lcd_l1_09 = reg_lcd;
+                        10 :    reg_lcd_l1_10 = reg_lcd;
+                        11 :    reg_lcd_l1_11 = reg_lcd;
+                        12 :    reg_lcd_l1_12 = reg_lcd;
+                        13 :    reg_lcd_l1_13 = reg_lcd;
+                        14 :    reg_lcd_l1_14 = reg_lcd;
+                        15 :    reg_lcd_l1_15 = reg_lcd;
+                        16 :    reg_lcd_l1_16 = reg_lcd;
                     endcase
                 end
-            // else
-            //     begin
-            //         reg_lcd_l1_01 <= ascii_lar;
-            //         reg_lcd_l1_02 <= reg_lcd_l1_03;
-            //         reg_lcd_l1_03 <= reg_lcd_l1_04;
-            //         reg_lcd_l1_04 <= reg_lcd_l1_05;
-            //         reg_lcd_l1_05 <= reg_lcd_l1_06;
-            //         reg_lcd_l1_06 <= reg_lcd_l1_07;
-            //         reg_lcd_l1_07 <= reg_lcd_l1_08;
-            //         reg_lcd_l1_08 <= reg_lcd_l1_09;
-            //         reg_lcd_l1_09 <= reg_lcd_l1_10;
-            //         reg_lcd_l1_10 <= reg_lcd_l1_11;
-            //         reg_lcd_l1_11 <= reg_lcd_l1_12;
-            //         reg_lcd_l1_12 <= reg_lcd_l1_13;
-            //         reg_lcd_l1_13 <= reg_lcd_l1_14;
-            //         reg_lcd_l1_14 <= reg_lcd_l1_15;
-            //         reg_lcd_l1_16 <= reg_lcd;
-            //     end
+            else
+                begin
+                    reg_lcd_l1_01 = ascii_lar;
+                    reg_lcd_l1_02 = reg_lcd_l1_03;
+                    reg_lcd_l1_03 = reg_lcd_l1_04;
+                    reg_lcd_l1_04 = reg_lcd_l1_05;
+                    reg_lcd_l1_05 = reg_lcd_l1_06;
+                    reg_lcd_l1_06 = reg_lcd_l1_07;
+                    reg_lcd_l1_07 = reg_lcd_l1_08;
+                    reg_lcd_l1_08 = reg_lcd_l1_09;
+                    reg_lcd_l1_09 = reg_lcd_l1_10;
+                    reg_lcd_l1_10 = reg_lcd_l1_11;
+                    reg_lcd_l1_11 = reg_lcd_l1_12;
+                    reg_lcd_l1_12 = reg_lcd_l1_13;
+                    reg_lcd_l1_13 = reg_lcd_l1_14;
+                    reg_lcd_l1_14 = reg_lcd_l1_15;
+                    reg_lcd_l1_16 = reg_lcd;
+                end
         end
 end
 
