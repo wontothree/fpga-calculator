@@ -54,66 +54,6 @@ begin
         cnt_100hz = cnt_100hz + 1;
 end
 
-// count
-reg [2:0] state;
-integer cnt;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        cnt = 0;
-    else
-        begin
-            case (state)
-                delay :
-                    if (cnt >= 70) cnt = 0;
-                    else cnt = cnt + 1;
-                function_set :
-                    if (cnt >= 30) cnt = 0;
-                    else cnt = cnt + 1;
-                disp_onoff :
-                    if (cnt >= 30) cnt = 0;
-                    else cnt = cnt + 1;
-                entry_mode :
-                    if (cnt >= 30) cnt = 0;
-                    else cnt = cnt + 1;
-                line1 :
-                    if (cnt >= 20) cnt = 0;
-                    else cnt = cnt + 1;
-                line2 :
-                    if (cnt >= 20) cnt = 0;
-                    else cnt = cnt + 1;
-                delay_t :
-                    if (cnt >= 400) cnt = 0;
-                    else cnt = cnt + 1;
-                clear_disp :
-                    if (cnt >= 200) cnt = 0;
-                    else cnt = cnt + 1;
-                default : cnt = 0;
-            endcase
-        end
-end
-
-// state machine
-always@(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        state = delay;
-    else
-        begin
-            case (state)
-                delay :     if (cnt == 70) state = function_set;
-                function_set :      if (cnt == 30) state = disp_onoff;
-                disp_onoff :        if (cnt == 30) state = entry_mode;
-                entry_mode :        if (cnt == 30) state = line1;
-                line1 :             if (cnt == 20) state = line2;
-                line2 :             if (cnt == 20) state = delay_t;
-                delay_t :           if (cnt == 400) state = clear_disp;
-                clear_disp :        if (cnt == 200) state = line1;
-                default : state = delay;
-            endcase
-        end
-end
-
 // push switch
 reg [7:0] reg_lcd;
 reg [3:0] reg_num;
@@ -218,13 +158,16 @@ end
 
 
 // sum
-reg [3:0] reg_num1, reg_num2, reg_num4;
+reg [3:0] reg_num1, reg_num2;
 reg reg_num3;
+reg [3:0] reg_num4;
+
 reg [7:0] reg_lcd_l1_1, reg_lcd_l1_3, reg_lcd_l1_5, reg_lcd_l1_6;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) 
         begin 
+//            reg_lcd = lcd_blk; 
             reg_lcd_l1_1 = lcd_blk; 
             reg_lcd_l1_3 = lcd_blk;
             reg_lcd_l1_5 = lcd_blk;
@@ -232,6 +175,7 @@ begin
             
             reg_num1 = 4'b0000;
             reg_num2 = 4'b0000;
+
         end
     else
         begin
@@ -348,6 +292,68 @@ end
 
 
 
+
+
+// count
+reg [2:0] state;
+integer cnt;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+        cnt = 0;
+    else
+        begin
+            case (state)
+                delay :
+                    if (cnt >= 70) cnt = 0;
+                    else cnt = cnt + 1;
+                function_set :
+                    if (cnt >= 30) cnt = 0;
+                    else cnt = cnt + 1;
+                disp_onoff :
+                    if (cnt >= 30) cnt = 0;
+                    else cnt = cnt + 1;
+                entry_mode :
+                    if (cnt >= 30) cnt = 0;
+                    else cnt = cnt + 1;
+                line1 :
+                    if (cnt >= 20) cnt = 0;
+                    else cnt = cnt + 1;
+                line2 :
+                    if (cnt >= 20) cnt = 0;
+                    else cnt = cnt + 1;
+                delay_t :
+                    if (cnt >= 400) cnt = 0;
+                    else cnt = cnt + 1;
+                clear_disp :
+                    if (cnt >= 200) cnt = 0;
+                    else cnt = cnt + 1;
+                default : cnt = 0;
+            endcase
+        end
+end
+
+// state machine
+always@(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+        state = delay;
+    else
+        begin
+            case (state)
+                delay :     if (cnt == 70) state = function_set;
+                function_set :      if (cnt == 30) state = disp_onoff;
+                disp_onoff :        if (cnt == 30) state = entry_mode;
+                entry_mode :        if (cnt == 30) state = line1;
+                line1 :             if (cnt == 20) state = line2;
+                line2 :             if (cnt == 20) state = delay_t;
+                delay_t :           if (cnt == 400) state = clear_disp;
+                clear_disp :        if (cnt == 200) state = line1;
+                default : state = delay;
+            endcase
+        end
+end
+
 // lcd
 always@(posedge rst or posedge clk_100hz)
 begin
@@ -362,18 +368,15 @@ begin
             case (state)
                 function_set :
                     begin
-                        lcd_rs = 1'b0; lcd_rw = 1'b0; 
-                        lcd_data = 8'b00111100;
+                        lcd_rs = 1'b0; lcd_rw = 1'b0; lcd_data = 8'b00111100;
                     end
                 disp_onoff :
                     begin
-                        lcd_rs = 1'b0; lcd_rw = 1'b0; 
-                        lcd_data = 8'b00001100;
+                        lcd_rs = 1'b0; lcd_rw = 1'b0; lcd_data = 8'b00001100;
                     end
                 entry_mode :
                     begin
-                        lcd_rs = 1'b0;  lcd_rw = 1'b0; 
-                        lcd_data = 8'b00001100;
+                        lcd_rs = 1'b0;  lcd_rw = 1'b0; lcd_data = 8'b00001100;
                     end
                 line1 :
                     begin
@@ -408,11 +411,9 @@ begin
                                     lcd_rs = 1'b1;  
                                     lcd_data = reg_lcd_l1_6;
                                 end
-                            default : 
-                                begin
-                                    lcd_rw = 1'b0;   
-                                    lcd_data = lcd_blk;
-                                end
+                            default : begin
+                                            lcd_rs = 1'b1; lcd_rw = 1'b0;   lcd_data = lcd_blk;
+                                      end
                         endcase
                     end
                 line2 :
@@ -421,30 +422,25 @@ begin
 
                         case (cnt)
                             0 : begin
-                                    lcd_rs = 1'b0; 
-                                    lcd_data = 8'b11000000;
+                                    lcd_rs = 1'b0; lcd_data = 8'b11000000;
                                 end
                             default : 
                                 begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = lcd_blk; 
+                                    lcd_rs = 1'b1; lcd_data = 8'b00100000; 
                                 end
                         endcase
                     end                        
                 delay_t :
                     begin
-                        lcd_rs = 1'b0; lcd_rw = 1'b0; 
-                        lcd_data = 89'b00000010;
+                        lcd_rs = 1'b0; lcd_rw = 1'b0; lcd_data = 89'b00000010;
                     end
                 clear_disp :
                     begin
-                        lcd_rs = 1'b1; lcd_rw = 1'b1; 
-                        lcd_data = 8'b00000000;
+                        lcd_rs = 1'b1; lcd_rw = 1'b1; lcd_data = 8'b00000000;
                     end
                 default :
                     begin
-                        lcd_rs = 1'b1;  lcd_rw = 1'b1;  
-                        lcd_data = 8'b00000000;
+                        lcd_rs = 1'b1;  lcd_rw = 1'b1;  lcd_data = 8'b00000000;
                     end
             endcase
         end
