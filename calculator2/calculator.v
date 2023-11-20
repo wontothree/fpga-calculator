@@ -54,7 +54,6 @@ parameter
         rpr = 3'b110,
         equ = 3'b111;
 
-
 // clock divider
 integer cnt_100hz;
 reg clk_100hz;
@@ -62,16 +61,16 @@ always @(posedge rst or posedge clk)
 begin
     if (rst)
         begin
-            cnt_100hz = 0;  
-            clk_100hz = 1'b0;
+            cnt_100hz <= 0;  
+            clk_100hz <= 1'b0;
         end
     else if (cnt_100hz >= 4)
         begin
-            cnt_100hz = 0; 
-            clk_100hz = ~clk_100hz;
+            cnt_100hz <= 0; 
+            clk_100hz <= ~clk_100hz;
         end
     else
-        cnt_100hz = cnt_100hz + 1;
+        cnt_100hz <= cnt_100hz + 1;
 end
 
 // count
@@ -80,35 +79,35 @@ reg [2:0] state;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
-        cnt = 0;
+        cnt <= 0;
     else
         begin
             case (state)
                 delay :
-                    if (cnt >= 70) cnt = 0;
-                    else cnt = cnt + 1;
+                    if (cnt >= 70) cnt <= 0;
+                    else cnt <= cnt + 1;
                 function_set :
-                    if (cnt >= 30) cnt = 0;
-                    else cnt = cnt + 1;
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
                 disp_onoff :
-                    if (cnt >= 30) cnt = 0;
-                    else cnt = cnt + 1;
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
                 entry_mode :
-                    if (cnt >= 30) cnt = 0;
-                    else cnt = cnt + 1;
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
                 line1 :
-                    if (cnt >= 20) cnt = 0;
-                    else cnt = cnt + 1;
+                    if (cnt >= 20) cnt <= 0;
+                    else cnt <= cnt + 1;
                 line2 :
-                    if (cnt >= 20) cnt = 0;
-                    else cnt = cnt + 1;
+                    if (cnt >= 20) cnt <= 0;
+                    else cnt <= cnt + 1;
                 delay_t :
-                    if (cnt >= 400) cnt = 0;
-                    else cnt = cnt + 1;
+                    if (cnt >= 400) cnt <= 0;
+                    else cnt <= cnt + 1;
                 clear_disp :
-                    if (cnt >= 200) cnt = 0;
-                    else cnt = cnt + 1;
-                default : cnt = 0;
+                    if (cnt >= 200) cnt <= 0;
+                    else cnt <= cnt + 1;
+                default : cnt <= 0;
             endcase
         end
 end
@@ -121,15 +120,15 @@ begin
     else
         begin
             case (state)
-                delay :             if (cnt == 70)  state = function_set;
-                function_set :      if (cnt == 30)  state = disp_onoff;
-                disp_onoff :        if (cnt == 30)  state = entry_mode;
-                entry_mode :        if (cnt == 30)  state = line1;
-                line1 :             if (cnt == 20)  state = line2;
-                line2 :             if (cnt == 20)  state = delay_t;
-                delay_t :           if (cnt == 400) state = clear_disp;
-                clear_disp :        if (cnt == 200) state = line1;
-                default :                           state = delay;
+                delay :             if (cnt == 70)  state <= function_set;
+                function_set :      if (cnt == 30)  state <= disp_onoff;
+                disp_onoff :        if (cnt == 30)  state <= entry_mode;
+                entry_mode :        if (cnt == 30)  state <= line1;
+                line1 :             if (cnt == 20)  state <= line2;
+                line2 :             if (cnt == 20)  state <= delay_t;
+                delay_t :           if (cnt == 400) state <= clear_disp;
+                clear_disp :        if (cnt == 200) state <= line1;
+                default :                           state <= delay;
             endcase
         end
 end
@@ -219,7 +218,7 @@ always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
         begin 
-            reg_opr <= sum; // logic 상 그럼
+            reg_opr <= sum; // not zero
             reg_lcd_swd <= ascii_blk; 
             led <= 8'b0000_0000; 
         end
@@ -278,7 +277,7 @@ begin
         end
 end
 
-// push switch one shot code 
+// push switch one shot code (poster)
 wire pul_swp;
 wire pul_swp_os;
 reg [1:0] reg_swp;
@@ -299,7 +298,7 @@ begin
 end
 assign pul_swp_os = reg_swp[0] & ~reg_swp[1];
 
-// dip switch one shot code
+// dip switch one shot code (poster)
 wire pul_swd;
 wire pul_swd_os;
 reg [1:0] reg_swd;
@@ -320,7 +319,7 @@ assign pul_swd_os = reg_swd[0] & ~reg_swd[1];
 
 
 
-// push switch one shot code 2
+// push switch one shot code 2 (prior)
 assign pul_swp2 =   (swp == 12'b1000_0000_0000) |
                     (swp == 12'b0100_0000_0000) |
                     (swp == 12'b0010_0000_0000) |
@@ -339,7 +338,7 @@ begin
     else reg_swp2 <= pul_swp2;
 end
 
-// dip switch one shot code 2
+// dip switch one shot code 2 (prior)
 assign pul_swd2 =   (swd == 8'b1000_0000) |
                     (swd == 8'b0100_0000) |
                     (swd == 8'b0010_0000) |
@@ -358,12 +357,12 @@ end
 
 
 
-
+// term
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
    if (rst) reg_trm <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-   else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num; // 반드시 후위 os를 사용해야 함 - 다른 걸로 하면 term 자체를 인식 못함
+   else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num; // using poster one shot code
    else if (pul_swd_os) reg_trm <= 0;
 end
 
@@ -372,7 +371,7 @@ reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
    if (rst) reg_rlt <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-   else if (pul_swd_os2) // 반드시 전위 os를 사용해야 함 - 다른 걸로 하면 result가 달라짐
+   else if (pul_swd_os2) // using prior one shot code
        begin
            case (reg_opr)
                sum : reg_rlt <= reg_rlt + reg_trm;
@@ -382,10 +381,7 @@ begin
 end
 
 
-
-
-
-// 
+// lcd
 reg [7:0] reg_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -394,7 +390,7 @@ begin
     else if (pul_swd_os) reg_lcd <= reg_lcd_swd;
 end
 
-// count lcd position
+// lcd position count
 integer cnt_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -402,7 +398,7 @@ begin
     else if (pul_swp_os | pul_swd_os) cnt_lcd <= cnt_lcd + 1;
 end
 
-// lcd assignment
+// lcd position passignment
 reg [7:0]
         reg_lcd_l1_01,
         reg_lcd_l1_02,
