@@ -218,7 +218,7 @@ always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
         begin 
-            reg_opr <= sum; // not zero
+            reg_opr <= sum; // sum
             reg_lcd_swd <= ascii_blk; 
             led <= 8'b0000_0000; 
         end
@@ -376,6 +376,8 @@ begin
            case (reg_opr)
                sum : reg_rlt <= reg_rlt + reg_trm;
                sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
            endcase
        end
 end
