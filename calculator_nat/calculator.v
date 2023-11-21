@@ -441,254 +441,254 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
         begin
-            reg_lcd_l1_01 = ascii_blk;
-            reg_lcd_l1_02 = ascii_blk;
-            reg_lcd_l1_03 = ascii_blk;
-            reg_lcd_l1_04 = ascii_blk;
-            reg_lcd_l1_05 = ascii_blk;
-            reg_lcd_l1_06 = ascii_blk;
-            reg_lcd_l1_07 = ascii_blk;
-            reg_lcd_l1_08 = ascii_blk;
-            reg_lcd_l1_09 = ascii_blk;
-            reg_lcd_l1_10 = ascii_blk;
-            reg_lcd_l1_11 = ascii_blk;
-            reg_lcd_l1_12 = ascii_blk;
-            reg_lcd_l1_13 = ascii_blk;
-            reg_lcd_l1_14 = ascii_blk;
-            reg_lcd_l1_15 = ascii_blk;
-            reg_lcd_l1_16 = ascii_blk;
+            reg_lcd_l1_01 <= ascii_blk;
+            reg_lcd_l1_02 <= ascii_blk;
+            reg_lcd_l1_03 <= ascii_blk;
+            reg_lcd_l1_04 <= ascii_blk;
+            reg_lcd_l1_05 <= ascii_blk;
+            reg_lcd_l1_06 <= ascii_blk;
+            reg_lcd_l1_07 <= ascii_blk;
+            reg_lcd_l1_08 <= ascii_blk;
+            reg_lcd_l1_09 <= ascii_blk;
+            reg_lcd_l1_10 <= ascii_blk;
+            reg_lcd_l1_11 <= ascii_blk;
+            reg_lcd_l1_12 <= ascii_blk;
+            reg_lcd_l1_13 <= ascii_blk;
+            reg_lcd_l1_14 <= ascii_blk;
+            reg_lcd_l1_15 <= ascii_blk;
+            reg_lcd_l1_16 <= ascii_blk;
 
-            reg_lcd_l2_01 = ascii_blk;
-            reg_lcd_l2_02 = ascii_blk;
-            reg_lcd_l2_03 = ascii_blk;
-            reg_lcd_l2_04 = ascii_blk;
-            reg_lcd_l2_05 = ascii_blk;
-            reg_lcd_l2_06 = ascii_blk;
-            reg_lcd_l2_07 = ascii_blk;
-            reg_lcd_l2_08 = ascii_blk;
-            reg_lcd_l2_09 = ascii_blk;
-            reg_lcd_l2_10 = ascii_blk;
-            reg_lcd_l2_11 = ascii_blk;
-            reg_lcd_l2_12 = ascii_blk;
-            reg_lcd_l2_13 = ascii_blk;
-            reg_lcd_l2_14 = ascii_blk;
-            reg_lcd_l2_15 = ascii_blk;
-            reg_lcd_l2_16 = ascii_blk;
+            reg_lcd_l2_01 <= ascii_blk;
+            reg_lcd_l2_02 <= ascii_blk;
+            reg_lcd_l2_03 <= ascii_blk;
+            reg_lcd_l2_04 <= ascii_blk;
+            reg_lcd_l2_05 <= ascii_blk;
+            reg_lcd_l2_06 <= ascii_blk;
+            reg_lcd_l2_07 <= ascii_blk;
+            reg_lcd_l2_08 <= ascii_blk;
+            reg_lcd_l2_09 <= ascii_blk;
+            reg_lcd_l2_10 <= ascii_blk;
+            reg_lcd_l2_11 <= ascii_blk;
+            reg_lcd_l2_12 <= ascii_blk;
+            reg_lcd_l2_13 <= ascii_blk;
+            reg_lcd_l2_14 <= ascii_blk;
+            reg_lcd_l2_15 <= ascii_blk;
+            reg_lcd_l2_16 <= ascii_blk;
         end
     else if (swd == 8'b0000_0001) // result
         begin
             if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                 begin
-                    reg_result_neg = ~(reg_rlt - 32'd1);
+                    reg_result_neg <= ~(reg_rlt - 32'd1);
 
                     if (reg_result_neg < 32'd10)
                         begin
-                            reg_lcd_l2_15 = ascii_sub;
+                            reg_lcd_l2_15 <= ascii_sub;
                             case (reg_result_neg)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
                         end
                     else if (reg_result_neg < 32'd100)
                         begin
-                            reg_lcd_l2_14 = ascii_sub;
+                            reg_lcd_l2_14 <= ascii_sub;
                             case (reg_result_neg % 32'd10)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
 
                             case (reg_result_neg / 32'd10)
-                                0 : reg_lcd_l2_15 = ascii_0;
-                                1 : reg_lcd_l2_15 = ascii_1;
-                                2 : reg_lcd_l2_15 = ascii_2;
-                                3 : reg_lcd_l2_15 = ascii_3;
-                                4 : reg_lcd_l2_15 = ascii_4;
-                                5 : reg_lcd_l2_15 = ascii_5;
-                                6 : reg_lcd_l2_15 = ascii_6;
-                                7 : reg_lcd_l2_15 = ascii_7;
-                                8 : reg_lcd_l2_15 = ascii_8;
-                                9 : reg_lcd_l2_15 = ascii_9;
+                                0 : reg_lcd_l2_15 <= ascii_0;
+                                1 : reg_lcd_l2_15 <= ascii_1;
+                                2 : reg_lcd_l2_15 <= ascii_2;
+                                3 : reg_lcd_l2_15 <= ascii_3;
+                                4 : reg_lcd_l2_15 <= ascii_4;
+                                5 : reg_lcd_l2_15 <= ascii_5;
+                                6 : reg_lcd_l2_15 <= ascii_6;
+                                7 : reg_lcd_l2_15 <= ascii_7;
+                                8 : reg_lcd_l2_15 <= ascii_8;
+                                9 : reg_lcd_l2_15 <= ascii_9;
                             endcase        
                         end
                     else if (reg_result_neg < 32'd1000)
                         begin
-                            reg_lcd_l2_13 = ascii_sub;
+                            reg_lcd_l2_13 <= ascii_sub;
                             case (reg_result_neg % 32'd10)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
 
                             case (reg_result_neg % 32'd100 / 32'd10)
-                                0 : reg_lcd_l2_15 = ascii_0;
-                                1 : reg_lcd_l2_15 = ascii_1;
-                                2 : reg_lcd_l2_15 = ascii_2;
-                                3 : reg_lcd_l2_15 = ascii_3;
-                                4 : reg_lcd_l2_15 = ascii_4;
-                                5 : reg_lcd_l2_15 = ascii_5;
-                                6 : reg_lcd_l2_15 = ascii_6;
-                                7 : reg_lcd_l2_15 = ascii_7;
-                                8 : reg_lcd_l2_15 = ascii_8;
-                                9 : reg_lcd_l2_15 = ascii_9;
+                                0 : reg_lcd_l2_15 <= ascii_0;
+                                1 : reg_lcd_l2_15 <= ascii_1;
+                                2 : reg_lcd_l2_15 <= ascii_2;
+                                3 : reg_lcd_l2_15 <= ascii_3;
+                                4 : reg_lcd_l2_15 <= ascii_4;
+                                5 : reg_lcd_l2_15 <= ascii_5;
+                                6 : reg_lcd_l2_15 <= ascii_6;
+                                7 : reg_lcd_l2_15 <= ascii_7;
+                                8 : reg_lcd_l2_15 <= ascii_8;
+                                9 : reg_lcd_l2_15 <= ascii_9;
                             endcase 
 
                             case (reg_result_neg / 32'd100)
-                                0 : reg_lcd_l2_14 = ascii_0;
-                                1 : reg_lcd_l2_14 = ascii_1;
-                                2 : reg_lcd_l2_14 = ascii_2;
-                                3 : reg_lcd_l2_14 = ascii_3;
-                                4 : reg_lcd_l2_14 = ascii_4;
-                                5 : reg_lcd_l2_14 = ascii_5;
-                                6 : reg_lcd_l2_14 = ascii_6;
-                                7 : reg_lcd_l2_14 = ascii_7;
-                                8 : reg_lcd_l2_14 = ascii_8;
-                                9 : reg_lcd_l2_14 = ascii_9;
+                                0 : reg_lcd_l2_14 <= ascii_0;
+                                1 : reg_lcd_l2_14 <= ascii_1;
+                                2 : reg_lcd_l2_14 <= ascii_2;
+                                3 : reg_lcd_l2_14 <= ascii_3;
+                                4 : reg_lcd_l2_14 <= ascii_4;
+                                5 : reg_lcd_l2_14 <= ascii_5;
+                                6 : reg_lcd_l2_14 <= ascii_6;
+                                7 : reg_lcd_l2_14 <= ascii_7;
+                                8 : reg_lcd_l2_14 <= ascii_8;
+                                9 : reg_lcd_l2_14 <= ascii_9;
                             endcase 
                         end
                     else if (reg_result_neg < 32'd10000)
                         begin
                             reg_lcd_l2_12 <= ascii_sub;
                             case (reg_result_neg % 32'd10)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
 
                             case (reg_result_neg % 32'd100 / 32'd10)
-                                0 : reg_lcd_l2_15 = ascii_0;
-                                1 : reg_lcd_l2_15 = ascii_1;
-                                2 : reg_lcd_l2_15 = ascii_2;
-                                3 : reg_lcd_l2_15 = ascii_3;
-                                4 : reg_lcd_l2_15 = ascii_4;
-                                5 : reg_lcd_l2_15 = ascii_5;
-                                6 : reg_lcd_l2_15 = ascii_6;
-                                7 : reg_lcd_l2_15 = ascii_7;
-                                8 : reg_lcd_l2_15 = ascii_8;
-                                9 : reg_lcd_l2_15 = ascii_9;
+                                0 : reg_lcd_l2_15 <= ascii_0;
+                                1 : reg_lcd_l2_15 <= ascii_1;
+                                2 : reg_lcd_l2_15 <= ascii_2;
+                                3 : reg_lcd_l2_15 <= ascii_3;
+                                4 : reg_lcd_l2_15 <= ascii_4;
+                                5 : reg_lcd_l2_15 <= ascii_5;
+                                6 : reg_lcd_l2_15 <= ascii_6;
+                                7 : reg_lcd_l2_15 <= ascii_7;
+                                8 : reg_lcd_l2_15 <= ascii_8;
+                                9 : reg_lcd_l2_15 <= ascii_9;
                             endcase 
 
                             case (reg_result_neg % 32'd1000 / 32'd100)
-                                0 : reg_lcd_l2_14 = ascii_0;
-                                1 : reg_lcd_l2_14 = ascii_1;
-                                2 : reg_lcd_l2_14 = ascii_2;
-                                3 : reg_lcd_l2_14 = ascii_3;
-                                4 : reg_lcd_l2_14 = ascii_4;
-                                5 : reg_lcd_l2_14 = ascii_5;
-                                6 : reg_lcd_l2_14 = ascii_6;
-                                7 : reg_lcd_l2_14 = ascii_7;
-                                8 : reg_lcd_l2_14 = ascii_8;
-                                9 : reg_lcd_l2_14 = ascii_9;
+                                0 : reg_lcd_l2_14 <= ascii_0;
+                                1 : reg_lcd_l2_14 <= ascii_1;
+                                2 : reg_lcd_l2_14 <= ascii_2;
+                                3 : reg_lcd_l2_14 <= ascii_3;
+                                4 : reg_lcd_l2_14 <= ascii_4;
+                                5 : reg_lcd_l2_14 <= ascii_5;
+                                6 : reg_lcd_l2_14 <= ascii_6;
+                                7 : reg_lcd_l2_14 <= ascii_7;
+                                8 : reg_lcd_l2_14 <= ascii_8;
+                                9 : reg_lcd_l2_14 <= ascii_9;
                             endcase
 
                             case (reg_result_neg / 32'd1000)
-                                0 : reg_lcd_l2_13 = ascii_0;
-                                1 : reg_lcd_l2_13 = ascii_1;
-                                2 : reg_lcd_l2_13 = ascii_2;
-                                3 : reg_lcd_l2_13 = ascii_3;
-                                4 : reg_lcd_l2_13 = ascii_4;
-                                5 : reg_lcd_l2_13 = ascii_5;
-                                6 : reg_lcd_l2_13 = ascii_6;
-                                7 : reg_lcd_l2_13 = ascii_7;
-                                8 : reg_lcd_l2_13 = ascii_8;
-                                9 : reg_lcd_l2_13 = ascii_9;
+                                0 : reg_lcd_l2_13 <= ascii_0;
+                                1 : reg_lcd_l2_13 <= ascii_1;
+                                2 : reg_lcd_l2_13 <= ascii_2;
+                                3 : reg_lcd_l2_13 <= ascii_3;
+                                4 : reg_lcd_l2_13 <= ascii_4;
+                                5 : reg_lcd_l2_13 <= ascii_5;
+                                6 : reg_lcd_l2_13 <= ascii_6;
+                                7 : reg_lcd_l2_13 <= ascii_7;
+                                8 : reg_lcd_l2_13 <= ascii_8;
+                                9 : reg_lcd_l2_13 <= ascii_9;
                             endcase
                         end
                     else if (reg_result_neg < 32'd100000)
                         begin
                             reg_lcd_l2_11 <= ascii_sub;
                             case (reg_result_neg % 32'd10)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
 
                             case (reg_result_neg % 32'd100 / 32'd10)
-                                0 : reg_lcd_l2_15 = ascii_0;
-                                1 : reg_lcd_l2_15 = ascii_1;
-                                2 : reg_lcd_l2_15 = ascii_2;
-                                3 : reg_lcd_l2_15 = ascii_3;
-                                4 : reg_lcd_l2_15 = ascii_4;
-                                5 : reg_lcd_l2_15 = ascii_5;
-                                6 : reg_lcd_l2_15 = ascii_6;
-                                7 : reg_lcd_l2_15 = ascii_7;
-                                8 : reg_lcd_l2_15 = ascii_8;
-                                9 : reg_lcd_l2_15 = ascii_9;
+                                0 : reg_lcd_l2_15 <= ascii_0;
+                                1 : reg_lcd_l2_15 <= ascii_1;
+                                2 : reg_lcd_l2_15 <= ascii_2;
+                                3 : reg_lcd_l2_15 <= ascii_3;
+                                4 : reg_lcd_l2_15 <= ascii_4;
+                                5 : reg_lcd_l2_15 <= ascii_5;
+                                6 : reg_lcd_l2_15 <= ascii_6;
+                                7 : reg_lcd_l2_15 <= ascii_7;
+                                8 : reg_lcd_l2_15 <= ascii_8;
+                                9 : reg_lcd_l2_15 <= ascii_9;
                             endcase 
 
                             case (reg_result_neg % 32'd1000 / 32'd100)
-                                0 : reg_lcd_l2_14 = ascii_0;
-                                1 : reg_lcd_l2_14 = ascii_1;
-                                2 : reg_lcd_l2_14 = ascii_2;
-                                3 : reg_lcd_l2_14 = ascii_3;
-                                4 : reg_lcd_l2_14 = ascii_4;
-                                5 : reg_lcd_l2_14 = ascii_5;
-                                6 : reg_lcd_l2_14 = ascii_6;
-                                7 : reg_lcd_l2_14 = ascii_7;
-                                8 : reg_lcd_l2_14 = ascii_8;
-                                9 : reg_lcd_l2_14 = ascii_9;
+                                0 : reg_lcd_l2_14 <= ascii_0;
+                                1 : reg_lcd_l2_14 <= ascii_1;
+                                2 : reg_lcd_l2_14 <= ascii_2;
+                                3 : reg_lcd_l2_14 <= ascii_3;
+                                4 : reg_lcd_l2_14 <= ascii_4;
+                                5 : reg_lcd_l2_14 <= ascii_5;
+                                6 : reg_lcd_l2_14 <= ascii_6;
+                                7 : reg_lcd_l2_14 <= ascii_7;
+                                8 : reg_lcd_l2_14 <= ascii_8;
+                                9 : reg_lcd_l2_14 <= ascii_9;
                             endcase
 
                             case (reg_result_neg % 32'd10000 / 32'd1000)
-                                0 : reg_lcd_l2_13 = ascii_0;
-                                1 : reg_lcd_l2_13 = ascii_1;
-                                2 : reg_lcd_l2_13 = ascii_2;
-                                3 : reg_lcd_l2_13 = ascii_3;
-                                4 : reg_lcd_l2_13 = ascii_4;
-                                5 : reg_lcd_l2_13 = ascii_5;
-                                6 : reg_lcd_l2_13 = ascii_6;
-                                7 : reg_lcd_l2_13 = ascii_7;
-                                8 : reg_lcd_l2_13 = ascii_8;
-                                9 : reg_lcd_l2_13 = ascii_9;
+                                0 : reg_lcd_l2_13 <= ascii_0;
+                                1 : reg_lcd_l2_13 <= ascii_1;
+                                2 : reg_lcd_l2_13 <= ascii_2;
+                                3 : reg_lcd_l2_13 <= ascii_3;
+                                4 : reg_lcd_l2_13 <= ascii_4;
+                                5 : reg_lcd_l2_13 <= ascii_5;
+                                6 : reg_lcd_l2_13 <= ascii_6;
+                                7 : reg_lcd_l2_13 <= ascii_7;
+                                8 : reg_lcd_l2_13 <= ascii_8;
+                                9 : reg_lcd_l2_13 <= ascii_9;
                             endcase
 
                             case (reg_result_neg / 32'd10000)
-                                0 : reg_lcd_l2_12 = ascii_0;
-                                1 : reg_lcd_l2_12 = ascii_1;
-                                2 : reg_lcd_l2_12 = ascii_2;
-                                3 : reg_lcd_l2_12 = ascii_3;
-                                4 : reg_lcd_l2_12 = ascii_4;
-                                5 : reg_lcd_l2_12 = ascii_5;
-                                6 : reg_lcd_l2_12 = ascii_6;
-                                7 : reg_lcd_l2_12 = ascii_7;
-                                8 : reg_lcd_l2_12 = ascii_8;
-                                9 : reg_lcd_l2_12 = ascii_9;
+                                0 : reg_lcd_l2_12 <= ascii_0;
+                                1 : reg_lcd_l2_12 <= ascii_1;
+                                2 : reg_lcd_l2_12 <= ascii_2;
+                                3 : reg_lcd_l2_12 <= ascii_3;
+                                4 : reg_lcd_l2_12 <= ascii_4;
+                                5 : reg_lcd_l2_12 <= ascii_5;
+                                6 : reg_lcd_l2_12 <= ascii_6;
+                                7 : reg_lcd_l2_12 <= ascii_7;
+                                8 : reg_lcd_l2_12 <= ascii_8;
+                                9 : reg_lcd_l2_12 <= ascii_9;
                             endcase
                         end
                 end
@@ -697,206 +697,206 @@ begin
                     if (reg_rlt < 32'd10)
                         begin
                             case (reg_rlt)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
                         end
                     else if (reg_rlt < 32'd100)
                         begin
                             case (reg_rlt % 32'd10)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
 
                             case (reg_rlt / 32'd10)
-                                0 : reg_lcd_l2_15 = ascii_0;
-                                1 : reg_lcd_l2_15 = ascii_1;
-                                2 : reg_lcd_l2_15 = ascii_2;
-                                3 : reg_lcd_l2_15 = ascii_3;
-                                4 : reg_lcd_l2_15 = ascii_4;
-                                5 : reg_lcd_l2_15 = ascii_5;
-                                6 : reg_lcd_l2_15 = ascii_6;
-                                7 : reg_lcd_l2_15 = ascii_7;
-                                8 : reg_lcd_l2_15 = ascii_8;
-                                9 : reg_lcd_l2_15 = ascii_9;
+                                0 : reg_lcd_l2_15 <= ascii_0;
+                                1 : reg_lcd_l2_15 <= ascii_1;
+                                2 : reg_lcd_l2_15 <= ascii_2;
+                                3 : reg_lcd_l2_15 <= ascii_3;
+                                4 : reg_lcd_l2_15 <= ascii_4;
+                                5 : reg_lcd_l2_15 <= ascii_5;
+                                6 : reg_lcd_l2_15 <= ascii_6;
+                                7 : reg_lcd_l2_15 <= ascii_7;
+                                8 : reg_lcd_l2_15 <= ascii_8;
+                                9 : reg_lcd_l2_15 <= ascii_9;
                             endcase        
                         end
                     else if (reg_rlt < 32'd1000)
                         begin
                             case (reg_rlt % 32'd10)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
 
                             case (reg_rlt % 32'd100 / 32'd10)
-                                0 : reg_lcd_l2_15 = ascii_0;
-                                1 : reg_lcd_l2_15 = ascii_1;
-                                2 : reg_lcd_l2_15 = ascii_2;
-                                3 : reg_lcd_l2_15 = ascii_3;
-                                4 : reg_lcd_l2_15 = ascii_4;
-                                5 : reg_lcd_l2_15 = ascii_5;
-                                6 : reg_lcd_l2_15 = ascii_6;
-                                7 : reg_lcd_l2_15 = ascii_7;
-                                8 : reg_lcd_l2_15 = ascii_8;
-                                9 : reg_lcd_l2_15 = ascii_9;
+                                0 : reg_lcd_l2_15 <= ascii_0;
+                                1 : reg_lcd_l2_15 <= ascii_1;
+                                2 : reg_lcd_l2_15 <= ascii_2;
+                                3 : reg_lcd_l2_15 <= ascii_3;
+                                4 : reg_lcd_l2_15 <= ascii_4;
+                                5 : reg_lcd_l2_15 <= ascii_5;
+                                6 : reg_lcd_l2_15 <= ascii_6;
+                                7 : reg_lcd_l2_15 <= ascii_7;
+                                8 : reg_lcd_l2_15 <= ascii_8;
+                                9 : reg_lcd_l2_15 <= ascii_9;
                             endcase 
 
                             case (reg_rlt / 32'd100)
-                                0 : reg_lcd_l2_14 = ascii_0;
-                                1 : reg_lcd_l2_14 = ascii_1;
-                                2 : reg_lcd_l2_14 = ascii_2;
-                                3 : reg_lcd_l2_14 = ascii_3;
-                                4 : reg_lcd_l2_14 = ascii_4;
-                                5 : reg_lcd_l2_14 = ascii_5;
-                                6 : reg_lcd_l2_14 = ascii_6;
-                                7 : reg_lcd_l2_14 = ascii_7;
-                                8 : reg_lcd_l2_14 = ascii_8;
-                                9 : reg_lcd_l2_14 = ascii_9;
+                                0 : reg_lcd_l2_14 <= ascii_0;
+                                1 : reg_lcd_l2_14 <= ascii_1;
+                                2 : reg_lcd_l2_14 <= ascii_2;
+                                3 : reg_lcd_l2_14 <= ascii_3;
+                                4 : reg_lcd_l2_14 <= ascii_4;
+                                5 : reg_lcd_l2_14 <= ascii_5;
+                                6 : reg_lcd_l2_14 <= ascii_6;
+                                7 : reg_lcd_l2_14 <= ascii_7;
+                                8 : reg_lcd_l2_14 <= ascii_8;
+                                9 : reg_lcd_l2_14 <= ascii_9;
                             endcase 
                         end
                     else if (reg_rlt < 32'd10000)
                         begin
                             case (reg_rlt % 32'd10)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
 
                             case (reg_rlt % 32'd100 / 32'd10)
-                                0 : reg_lcd_l2_15 = ascii_0;
-                                1 : reg_lcd_l2_15 = ascii_1;
-                                2 : reg_lcd_l2_15 = ascii_2;
-                                3 : reg_lcd_l2_15 = ascii_3;
-                                4 : reg_lcd_l2_15 = ascii_4;
-                                5 : reg_lcd_l2_15 = ascii_5;
-                                6 : reg_lcd_l2_15 = ascii_6;
-                                7 : reg_lcd_l2_15 = ascii_7;
-                                8 : reg_lcd_l2_15 = ascii_8;
-                                9 : reg_lcd_l2_15 = ascii_9;
+                                0 : reg_lcd_l2_15 <= ascii_0;
+                                1 : reg_lcd_l2_15 <= ascii_1;
+                                2 : reg_lcd_l2_15 <= ascii_2;
+                                3 : reg_lcd_l2_15 <= ascii_3;
+                                4 : reg_lcd_l2_15 <= ascii_4;
+                                5 : reg_lcd_l2_15 <= ascii_5;
+                                6 : reg_lcd_l2_15 <= ascii_6;
+                                7 : reg_lcd_l2_15 <= ascii_7;
+                                8 : reg_lcd_l2_15 <= ascii_8;
+                                9 : reg_lcd_l2_15 <= ascii_9;
                             endcase 
 
                             case (reg_rlt % 32'd1000 / 32'd100)
-                                0 : reg_lcd_l2_14 = ascii_0;
-                                1 : reg_lcd_l2_14 = ascii_1;
-                                2 : reg_lcd_l2_14 = ascii_2;
-                                3 : reg_lcd_l2_14 = ascii_3;
-                                4 : reg_lcd_l2_14 = ascii_4;
-                                5 : reg_lcd_l2_14 = ascii_5;
-                                6 : reg_lcd_l2_14 = ascii_6;
-                                7 : reg_lcd_l2_14 = ascii_7;
-                                8 : reg_lcd_l2_14 = ascii_8;
-                                9 : reg_lcd_l2_14 = ascii_9;
+                                0 : reg_lcd_l2_14 <= ascii_0;
+                                1 : reg_lcd_l2_14 <= ascii_1;
+                                2 : reg_lcd_l2_14 <= ascii_2;
+                                3 : reg_lcd_l2_14 <= ascii_3;
+                                4 : reg_lcd_l2_14 <= ascii_4;
+                                5 : reg_lcd_l2_14 <= ascii_5;
+                                6 : reg_lcd_l2_14 <= ascii_6;
+                                7 : reg_lcd_l2_14 <= ascii_7;
+                                8 : reg_lcd_l2_14 <= ascii_8;
+                                9 : reg_lcd_l2_14 <= ascii_9;
                             endcase
 
                             case (reg_rlt / 32'd1000)
-                                0 : reg_lcd_l2_13 = ascii_0;
-                                1 : reg_lcd_l2_13 = ascii_1;
-                                2 : reg_lcd_l2_13 = ascii_2;
-                                3 : reg_lcd_l2_13 = ascii_3;
-                                4 : reg_lcd_l2_13 = ascii_4;
-                                5 : reg_lcd_l2_13 = ascii_5;
-                                6 : reg_lcd_l2_13 = ascii_6;
-                                7 : reg_lcd_l2_13 = ascii_7;
-                                8 : reg_lcd_l2_13 = ascii_8;
-                                9 : reg_lcd_l2_13 = ascii_9;
+                                0 : reg_lcd_l2_13 <= ascii_0;
+                                1 : reg_lcd_l2_13 <= ascii_1;
+                                2 : reg_lcd_l2_13 <= ascii_2;
+                                3 : reg_lcd_l2_13 <= ascii_3;
+                                4 : reg_lcd_l2_13 <= ascii_4;
+                                5 : reg_lcd_l2_13 <= ascii_5;
+                                6 : reg_lcd_l2_13 <= ascii_6;
+                                7 : reg_lcd_l2_13 <= ascii_7;
+                                8 : reg_lcd_l2_13 <= ascii_8;
+                                9 : reg_lcd_l2_13 <= ascii_9;
                             endcase
                         end
                     else if (reg_rlt < 32'd100000)
                         begin
                             case (reg_rlt % 32'd10)
-                                0 : reg_lcd_l2_16 = ascii_0;
-                                1 : reg_lcd_l2_16 = ascii_1;
-                                2 : reg_lcd_l2_16 = ascii_2;
-                                3 : reg_lcd_l2_16 = ascii_3;
-                                4 : reg_lcd_l2_16 = ascii_4;
-                                5 : reg_lcd_l2_16 = ascii_5;
-                                6 : reg_lcd_l2_16 = ascii_6;
-                                7 : reg_lcd_l2_16 = ascii_7;
-                                8 : reg_lcd_l2_16 = ascii_8;
-                                9 : reg_lcd_l2_16 = ascii_9;
+                                0 : reg_lcd_l2_16 <= ascii_0;
+                                1 : reg_lcd_l2_16 <= ascii_1;
+                                2 : reg_lcd_l2_16 <= ascii_2;
+                                3 : reg_lcd_l2_16 <= ascii_3;
+                                4 : reg_lcd_l2_16 <= ascii_4;
+                                5 : reg_lcd_l2_16 <= ascii_5;
+                                6 : reg_lcd_l2_16 <= ascii_6;
+                                7 : reg_lcd_l2_16 <= ascii_7;
+                                8 : reg_lcd_l2_16 <= ascii_8;
+                                9 : reg_lcd_l2_16 <= ascii_9;
                             endcase
 
                             case (reg_rlt % 32'd100 / 32'd10)
-                                0 : reg_lcd_l2_15 = ascii_0;
-                                1 : reg_lcd_l2_15 = ascii_1;
-                                2 : reg_lcd_l2_15 = ascii_2;
-                                3 : reg_lcd_l2_15 = ascii_3;
-                                4 : reg_lcd_l2_15 = ascii_4;
-                                5 : reg_lcd_l2_15 = ascii_5;
-                                6 : reg_lcd_l2_15 = ascii_6;
-                                7 : reg_lcd_l2_15 = ascii_7;
-                                8 : reg_lcd_l2_15 = ascii_8;
-                                9 : reg_lcd_l2_15 = ascii_9;
+                                0 : reg_lcd_l2_15 <= ascii_0;
+                                1 : reg_lcd_l2_15 <= ascii_1;
+                                2 : reg_lcd_l2_15 <= ascii_2;
+                                3 : reg_lcd_l2_15 <= ascii_3;
+                                4 : reg_lcd_l2_15 <= ascii_4;
+                                5 : reg_lcd_l2_15 <= ascii_5;
+                                6 : reg_lcd_l2_15 <= ascii_6;
+                                7 : reg_lcd_l2_15 <= ascii_7;
+                                8 : reg_lcd_l2_15 <= ascii_8;
+                                9 : reg_lcd_l2_15 <= ascii_9;
                             endcase 
 
                             case (reg_rlt % 32'd1000 / 32'd100)
-                                0 : reg_lcd_l2_14 = ascii_0;
-                                1 : reg_lcd_l2_14 = ascii_1;
-                                2 : reg_lcd_l2_14 = ascii_2;
-                                3 : reg_lcd_l2_14 = ascii_3;
-                                4 : reg_lcd_l2_14 = ascii_4;
-                                5 : reg_lcd_l2_14 = ascii_5;
-                                6 : reg_lcd_l2_14 = ascii_6;
-                                7 : reg_lcd_l2_14 = ascii_7;
-                                8 : reg_lcd_l2_14 = ascii_8;
-                                9 : reg_lcd_l2_14 = ascii_9;
+                                0 : reg_lcd_l2_14 <= ascii_0;
+                                1 : reg_lcd_l2_14 <= ascii_1;
+                                2 : reg_lcd_l2_14 <= ascii_2;
+                                3 : reg_lcd_l2_14 <= ascii_3;
+                                4 : reg_lcd_l2_14 <= ascii_4;
+                                5 : reg_lcd_l2_14 <= ascii_5;
+                                6 : reg_lcd_l2_14 <= ascii_6;
+                                7 : reg_lcd_l2_14 <= ascii_7;
+                                8 : reg_lcd_l2_14 <= ascii_8;
+                                9 : reg_lcd_l2_14 <= ascii_9;
                             endcase
 
                             case (reg_rlt % 32'd10000 / 32'd1000)
-                                0 : reg_lcd_l2_13 = ascii_0;
-                                1 : reg_lcd_l2_13 = ascii_1;
-                                2 : reg_lcd_l2_13 = ascii_2;
-                                3 : reg_lcd_l2_13 = ascii_3;
-                                4 : reg_lcd_l2_13 = ascii_4;
-                                5 : reg_lcd_l2_13 = ascii_5;
-                                6 : reg_lcd_l2_13 = ascii_6;
-                                7 : reg_lcd_l2_13 = ascii_7;
-                                8 : reg_lcd_l2_13 = ascii_8;
-                                9 : reg_lcd_l2_13 = ascii_9;
+                                0 : reg_lcd_l2_13 <= ascii_0;
+                                1 : reg_lcd_l2_13 <= ascii_1;
+                                2 : reg_lcd_l2_13 <= ascii_2;
+                                3 : reg_lcd_l2_13 <= ascii_3;
+                                4 : reg_lcd_l2_13 <= ascii_4;
+                                5 : reg_lcd_l2_13 <= ascii_5;
+                                6 : reg_lcd_l2_13 <= ascii_6;
+                                7 : reg_lcd_l2_13 <= ascii_7;
+                                8 : reg_lcd_l2_13 <= ascii_8;
+                                9 : reg_lcd_l2_13 <= ascii_9;
                             endcase
 
                             case (reg_rlt / 32'd10000)
-                                0 : reg_lcd_l2_12 = ascii_0;
-                                1 : reg_lcd_l2_12 = ascii_1;
-                                2 : reg_lcd_l2_12 = ascii_2;
-                                3 : reg_lcd_l2_12 = ascii_3;
-                                4 : reg_lcd_l2_12 = ascii_4;
-                                5 : reg_lcd_l2_12 = ascii_5;
-                                6 : reg_lcd_l2_12 = ascii_6;
-                                7 : reg_lcd_l2_12 = ascii_7;
-                                8 : reg_lcd_l2_12 = ascii_8;
-                                9 : reg_lcd_l2_12 = ascii_9;
+                                0 : reg_lcd_l2_12 <= ascii_0;
+                                1 : reg_lcd_l2_12 <= ascii_1;
+                                2 : reg_lcd_l2_12 <= ascii_2;
+                                3 : reg_lcd_l2_12 <= ascii_3;
+                                4 : reg_lcd_l2_12 <= ascii_4;
+                                5 : reg_lcd_l2_12 <= ascii_5;
+                                6 : reg_lcd_l2_12 <= ascii_6;
+                                7 : reg_lcd_l2_12 <= ascii_7;
+                                8 : reg_lcd_l2_12 <= ascii_8;
+                                9 : reg_lcd_l2_12 <= ascii_9;
                             endcase
                         end
                 end
@@ -950,206 +950,206 @@ always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
         begin
-            lcd_rs = 1'b1;
-            lcd_rw = 1'b1;
-            lcd_data = 8'b00000000;
+            lcd_rs <= 1'b1;
+            lcd_rw <= 1'b1;
+            lcd_data <= 8'b00000000;
         end
     else
         begin
             case (state)
                 function_set :
                     begin
-                        lcd_rs = 1'b0; 
-                        lcd_rw = 1'b0; 
-                        lcd_data = 8'b00111100;
+                        lcd_rs <= 1'b0; 
+                        lcd_rw <= 1'b0; 
+                        lcd_data <= 8'b00111100;
                     end
                 disp_onoff :
                     begin
-                        lcd_rs = 1'b0; 
-                        lcd_rw = 1'b0; 
-                        lcd_data = 8'b00001100;
+                        lcd_rs <= 1'b0; 
+                        lcd_rw <= 1'b0; 
+                        lcd_data <= 8'b00001100;
                     end
                 entry_mode :
                     begin
-                        lcd_rs = 1'b0;  
-                        lcd_rw = 1'b0; 
-                        lcd_data = 8'b00001100;
+                        lcd_rs <= 1'b0;  
+                        lcd_rw <= 1'b0; 
+                        lcd_data <= 8'b00001100;
                     end
                 line1 :
                     begin
-                        lcd_rw = 1'b0;
+                        lcd_rw <= 1'b0;
                         
                         case (cnt)
                             0 : begin
-                                    lcd_rs = 1'b0;  
-                                    lcd_data = 8'b10000000;
+                                    lcd_rs <= 1'b0;  
+                                    lcd_data <= 8'b10000000;
                                 end
                             1 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_01;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_01;
                                 end
                             2 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_02;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_02;
                                 end
                             3 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_03;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_03;
                                 end
                             4 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_04;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_04;
                                 end
                             5 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_05;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_05;
                                 end
                             6 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_06;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_06;
                                 end
                             7 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_07;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_07;
                                 end
                             8 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_08;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_08;
                                 end
                             9 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_09;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_09;
                                 end
                             10 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_10;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_10;
                                 end
                             11 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_11;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_11;
                                 end
                             12 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_12;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_12;
                                 end
                             13 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_13;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_13;
                                 end
                             14 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_14;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_14;
                                 end
                             15 : begin
-                                    lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_15;
+                                    lcd_rs <= 1'b1;  
+                                    lcd_data <= reg_lcd_l1_15;
                                 end
                             16 : begin
                                     lcd_rs = 1'b1;  
-                                    lcd_data = reg_lcd_l1_16;
+                                    lcd_data <= reg_lcd_l1_16;
                                 end
                             default : begin
-                                            lcd_rs = 1'b1;   
-                                            lcd_data = 8'b00000001;
+                                            lcd_rs <= 1'b1;   
+                                            lcd_data <= 8'b00000001;
                                       end
                         endcase
                     end
                 line2 :
                     begin
-                        lcd_rw = 1'b0;
+                        lcd_rw <= 1'b0;
 
                         case (cnt)
                             0 : begin
-                                    lcd_rs = 1'b0; 
-                                    lcd_data = 8'b11000000;
+                                    lcd_rs <= 1'b0; 
+                                    lcd_data <= 8'b11000000;
                                 end
                             1 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_01;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_01;
                                 end
                             2 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_02;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_02;
                                 end
                             3 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_03;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_03;
                                 end
                             4 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_04;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_04;
                                 end
                             5 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_05;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_05;
                                 end
                             6 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_06;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_06;
                                 end
                             7 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_07;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_07;
                                 end
                             8 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_08;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_08;
                                 end
                             9 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_09;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_09;
                                 end
                             10 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_10;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_10;
                                 end
                             11 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_11;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_11;
                                 end
                             12 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_12;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_12;
                                 end
                             13 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_13;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_13;
                                 end
                             14 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_14;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_14;
                                 end
                             15 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_15;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_15;
                                 end
                             16 : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = reg_lcd_l2_16;
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= reg_lcd_l2_16;
                                 end
                             default : begin
-                                    lcd_rs = 1'b1; 
-                                    lcd_data = 8'b00100000; 
+                                    lcd_rs <= 1'b1; 
+                                    lcd_data <= 8'b00100000; 
                                 end
                         endcase
                     end                        
                 delay_t :
                     begin
-                        lcd_rs = 1'b0; 
-                        lcd_rw = 1'b0; 
-                        lcd_data = 89'b00000010;
+                        lcd_rs <= 1'b0; 
+                        lcd_rw <= 1'b0; 
+                        lcd_data <= 89'b00000010;
                     end
                 clear_disp :
                     begin
-                        lcd_rs = 1'b1; 
-                        lcd_rw = 1'b1; 
-                        lcd_data = 8'b00000000;
+                        lcd_rs <= 1'b1; 
+                        lcd_rw <= 1'b1; 
+                        lcd_data <= 8'b00000000;
                     end
                 default :
                     begin
-                        lcd_rs = 1'b1;  
-                        lcd_rw = 1'b1;  
-                        lcd_data = 8'b00000000;
+                        lcd_rs <= 1'b1;  
+                        lcd_rw <= 1'b1;  
+                        lcd_data <= 8'b00000000;
                     end
             endcase
         end
