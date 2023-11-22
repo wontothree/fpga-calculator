@@ -18,6 +18,12 @@ HBE-Combo II DLD (Xilinx), Verilog HDL
 
 연산자의 우선순위(스택)
 
+데이터 입력 범위 : 오버플로우 발생 범위(결과), 입력 범위 제한
+
+10진수 -> 2진수 -> BCD
+
+유한 상태 기계를 어떻게 섦계할까
+
 ## Variable declaration
 
 |Variable|Description|
