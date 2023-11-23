@@ -90,6 +90,8 @@ Hundreds Tens Ones   Original
 3. 스크래치 공간을 모두 0으로 초기화한다.
 4. 알고리즘을 n번 반복한다. 각 반복에서 최소 5인 모든 bCD 자릿수는 3이 추가된다. 그런 다음 전체 스크래치 공간이 한 비트 왼쪽으로 이동한다.
 
+이때 Original number는 unsigned number이다.
+
 ## Pin setting
 
 <img src="img/pin1.png">

@@ -40,12 +40,23 @@
 |reg |reg_trm_sgn|항의 부호|
 |reg [31:0]|reg_trm_mgn|항의 절대값|
 |reg [31:0]|reg_trm|항의 값|
-||||
+
+**Sign-magnitude form**
+|Declaration|Variable|Description|
+|---|---|---|
 |reg [31:0]|reg_rlt|연산 결과를 저장한다.(입력) / -21_4748_3648 ~ 21_4748_3647|
 |reg |reg_rlt_sgn|reg_rlt의 부호를 저장한다.|
 |reg [31:0]|reg_rlt_mag|reg_rlt의 값을 저장한다. reg_rlt와 같은 32비트로 선언된다.|
-|reg [127:0]|reg_rlt_bcd|연산 결과를 bcd로 저장한다.(출력) / LCD line2의 16칸에 들어갈 10진수 값을 위한 코드이다. 1칸 당 상위 4비트에는 0000을 할당하고 하위 4비트에는 bcd를 할당하여, 총 8비트를 할당한다. bcd가 십진수 한 자리 당 4비트인데 반해, 1칸 당 8비트씩 할당하는 이유는 각 자릿수 값에 8'b0011_0000를 더함으로써 바로 ascii 코드로 바꿀 수 있기 때문이다.|
-|||
+
+**BCD transformation**
+|Declaration|Variable|Description|
+|---|---|---|
+|reg [39:0]|reg_rlt_bcd|연산 결과를 bcd로 저장한다.(출력) / LCD line2의 16칸에 들어갈 10진수 값을 위한 코드이다. 1칸 당 상위 4비트에는 0000을 할당하고 하위 4비트에는 bcd를 할당하여, 총 8비트를 할당한다. bcd가 십진수 한 자리 당 4비트인데 반해, 1칸 당 8비트씩 할당하는 이유는 각 자릿수 값에 8'b0011_0000를 더함으로써 바로 ascii 코드로 바꿀 수 있기 때문이다.|
+
+BCD 변환은 =이 눌린 이후에 진행된다.
+
+|Declaration|Variable|Description|
+|---|---|---|
 |reg [7:0]|reg_lcd|lcd에 띄울 아스키 값이 들어간다. reg_lcd_swp 또는 reg_lcd_swd에 들어 있는 8비트 아스키 값이 들어간다.|
 
 시뮬레이션 할 때 중요한 변수
