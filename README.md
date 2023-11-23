@@ -38,6 +38,10 @@ HBE-Combo II DLD (Xilinx), Verilog HDL
 
 |Declaration|Variable|Description|
 |---|---|---|
+|reg [3:0]|reg_num|눌린 push 스위치에 해당하는 값이 들어간다.|
+|reg [2:0]|reg_opr|눌린 dip 스위치에 해당하는 값이 들어간다.|
+||||
+|reg [31:0]|reg_trm|항의 값|
 |reg |reg_trm_sgn|항의 부호|
 |reg [31:0]|reg_trm_mgn|항의 절대값|
 ||||
