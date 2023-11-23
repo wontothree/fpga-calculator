@@ -45,11 +45,11 @@ parameter
         ascii_blk = 8'b0010_0000,
         ascii_lar = 8'b0001_0001,
 
-        sum = 3'b000,
-        sub = 3'b001,
-        mul = 3'b010,
-        div = 3'b011,
-        exp = 3'b100,
+        min = 3'b000,
+        sum = 3'b001,
+        sub = 3'b010,
+        mul = 3'b011,
+        div = 3'b100,
         lpr = 3'b101,
         rpr = 3'b110,
         equ = 3'b111;
@@ -227,31 +227,31 @@ begin
             case (swd)
                 8'b1000_0000 : 
                     begin 
-                        reg_opr <= sum;
+                        reg_opr <= min;
                         reg_lcd_swd <= ascii_sum;   
                         led <= 8'b1000_0000;  
                     end 
                 8'b0100_0000 : 
                     begin 
-                        reg_opr <= sub;
+                        reg_opr <= sum;
                         reg_lcd_swd <= ascii_sub;    
                         led <= 8'b0100_0000; 
                     end 
                 8'b0010_0000 : 
                     begin 
-                        reg_opr <= mul;
+                        reg_opr <= sub;
                         reg_lcd_swd <= ascii_mul;    
                         led <= 8'b0010_0000; 
                     end 
                 8'b0001_0000 : 
                     begin 
-                        reg_opr <= div;
+                        reg_opr <= mul;
                         reg_lcd_swd <= ascii_div;    
                         led <= 8'b0001_0000; 
                     end 
                 8'b0000_1000 : 
                     begin 
-                        reg_opr <= exp;
+                        reg_opr <= div;
                         reg_lcd_swd <= ascii_exp;   
                         led <= 8'b0000_1000;  
                     end 
@@ -358,12 +358,29 @@ begin
 end
 
 // term
-reg [31:0] reg_trm;
+reg reg_trm_sgn;
+reg [31:0] reg_trm_mag;
 always @(posedge rst or posedge clk_100hz)
 begin
-   if (rst) reg_trm <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-   else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num; // using poster one shot code
-   else if (pul_swd_os) reg_trm <= 0;
+   if (rst)
+   begin 
+        reg_trm_sgn <= 0;
+        reg_trm_mag <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
+   end
+   else if (pul_swp_os)
+        if (reg_opr == main)reg_trm_sgn = 1;
+        else reg_trm_mag <= 10 * reg_trm_mag + reg_trm_mag; // using poster one shot code
+        
+   
+
+
+    if (pul_swp_os)
+    begin
+        reg_trm_sgn <= 0;
+        reg_trm_mag <= 0;
+    end
+
+    if (pul_swp_os && reg_trm_sgn == 1) reg_trm_mag <= ~reg_trm_mag + 1;
 end
 
 // summation and subtraction operation
@@ -374,16 +391,15 @@ begin
    else if (pul_swd_os2) // using prior one shot code
        begin
            case (reg_opr)
-               sum : reg_rlt <= reg_rlt + reg_trm;
-               sub : reg_rlt <= reg_rlt - reg_trm;
-               mul : reg_rlt <= reg_rlt * reg_trm;
-               div : reg_rlt <= reg_rlt / reg_trm;
+               sum : reg_rlt <= reg_rlt + reg_trm_mag;
+               sub : reg_rlt <= reg_rlt - reg_trm_mag;
+               mul : reg_rlt <= reg_rlt * reg_trm_mag;
+               div : reg_rlt <= reg_rlt / reg_trm_mag;
            endcase
        end
 end
 
-
-// lcd
+// lcd reg
 reg [7:0] reg_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -400,23 +416,25 @@ begin
     else if (pul_swp_os | pul_swd_os) cnt_lcd <= cnt_lcd + 1;
 end
 
-// bin2bcd
+// bin2bcd and sign-magnitude form
 reg [39:0] reg_rlt_bcd;
-reg reg_sgn;
+reg reg_rlt_sgn;
+reg [31:0] reg_rlt_mag;
 integer i;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) 
     begin 
         reg_rlt_bcd = 0;
-        reg_sgn = 0;
+        reg_rlt_sgn = 0;
+        reg_rlt_mag = reg_rlt;
     end
     else if (swd == 8'b0000_0001)
     begin
         if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000)
         begin 
-            reg_rlt = ~(reg_rlt - 1);
-            reg_sgn = 1;
+            reg_rlt_mag = ~(reg_rlt - 1);
+            reg_rlt_sgn = 1;
         end
 
         reg_rlt_bcd = 0;
