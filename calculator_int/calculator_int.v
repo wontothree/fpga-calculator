@@ -209,6 +209,7 @@ begin
 end
 
 // dip switch
+reg reg_trm_sgn;
 reg [7:0] reg_opr;
 reg [7:0] reg_opr_ascii; // reg_lcd_swd
 always@(posedge rst or posedge clk_100hz)
@@ -223,8 +224,8 @@ begin
     begin
         if (swd1)
         begin 
-            reg_opr <= min;
-            reg_opr_ascii <= ascii_min;   
+            reg_trm_sgn <= 1;
+            reg_opr_ascii <= ascii_min;
             led <= 8'b1000_0000;  
         end 
         else if (swd2)
@@ -326,22 +327,24 @@ begin
 end
 
 // Term
-reg reg_trm_sgn;
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
 begin
-   if (rst) 
-   begin 
+    if (rst) 
+    begin 
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
-   end
-   else if (reg_opr == min) reg_trm_sgn <= 1; // vvvvv
-   else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using poster one shot code
-   else if (swd_os_pst) 
-   begin 
+    end
+    else if (swp_os_pst) 
+    begin
+        // if (reg_opr == min) reg_trm_sgn <= 1;
+        reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using post one shot code
+    end
+    else if (swd_os_pst) 
+    begin 
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
-   end
+    end
 end
 
 // Term
@@ -349,7 +352,7 @@ reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_trm <= 0;
-    else if (swd_os_pst && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
+    else if (swd_os_pre && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
     else reg_trm <= reg_trm_mgn;
 end
 
@@ -357,33 +360,31 @@ end
 reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
-   if (rst) reg_rlt <= 0;
-   else if (swd_os_pre) // using prior one shot code
-       begin
+    if (rst) reg_rlt <= 0;
+    else if (reg_trm_sgn) // negative
+    begin
+        if (swd_os_pst)
+        begin
            case (reg_opr)
                sum : reg_rlt <= reg_rlt + reg_trm;
                sub : reg_rlt <= reg_rlt - reg_trm;
                mul : reg_rlt <= reg_rlt * reg_trm;
                div : reg_rlt <= reg_rlt / reg_trm;
            endcase
-       end
-end
-
-// lcd reg
-reg [7:0] reg_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) reg_lcd <= ascii_blk;
-    else if (swp_os_pst) reg_lcd <= reg_num_ascii;
-    else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
-end
-
-// lcd position count
-integer cnt_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) cnt_lcd <= 0;
-    else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
+        end
+    end
+    else // positvie
+    begin
+        if (swd_os_pre)
+        begin
+           case (reg_opr)
+               sum : reg_rlt <= reg_rlt + reg_trm;
+               sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
+           endcase
+        end
+    end
 end
 
 // Sign-magnitude form
@@ -433,7 +434,23 @@ begin
     else if (swd8) j <= j + 1;
 end
 
-// lcd position assignment
+// lcd reg
+reg [7:0] reg_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) reg_lcd <= ascii_blk;
+    else if (swp_os_pst) reg_lcd <= reg_num_ascii;
+    else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
+end
+
+// lcd position count
+integer cnt_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) cnt_lcd <= 0;
+    else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
+end
+
 reg [8*16-1 : 0] reg_lcd_l1;
 reg [8*16-1 : 0] reg_lcd_l2;
 integer i;
@@ -679,7 +696,7 @@ begin
                                 end
                             16 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*0 +: 8];
+                                    lcd_data <= reg_lcd_l2[8*15 +: 8];
                                 end
                             default : begin
                                     lcd_rs <= 1'b1; 
