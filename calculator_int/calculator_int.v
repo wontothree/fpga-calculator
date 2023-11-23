@@ -33,7 +33,7 @@ parameter
         ascii_8 = 8'b0011_1000,
         ascii_9 = 8'b0011_1001,
         
-        ascii_min = 8'b1101_0111,
+        ascii_min = 8'b0010_1101,
         ascii_sum = 8'b0010_1011,
         ascii_sub = 8'b0010_1101,
         ascii_mul = 8'b1101_0111,
@@ -368,7 +368,7 @@ begin
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
    end
-//    else if (reg_opr == min) reg_trm_sgn <= 1;
+   else if (reg_opr == min) reg_trm_sgn <= 1; // vvvvv
    else if (pul_swp_os) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using poster one shot code
    else if (pul_swd_os) 
    begin 
