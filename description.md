@@ -343,12 +343,13 @@ end
 
 ```v
 // Push switch preceding one shot code
+reg reg_swp_pre; // reg_swp2
+
 wire swp; // pul_swp2
 wire swp_os_pre; // pul_swp_os2
 assign swp = swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swp0;
 assign swp_os_pre = swp & ~reg_swp_pre;
 
-reg reg_swp_pre; // reg_swp2
 always@ (posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_swp_pre <= 0;
@@ -356,10 +357,11 @@ begin
 end
 
 // Push switch post one shot code
+reg [1:0] reg_swp_pst; // reg_swp
+
 wire swp_os_pst; // pul_swp_os
 assign swp_os_pst = reg_swp_pst[0] & ~reg_swp_pst[1];
 
-reg [1:0] reg_swp_pst; // reg_swp
 always@ (posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_swp_pst <= 2'b00;
@@ -367,12 +369,13 @@ begin
 end
 
 // Dip switch preceding one shot code
+reg reg_swd_pre; // reg_swd2
+
 wire swd; // pul_swd2
 wire swd_os_pre; // pul_swd_os2
 assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 assign swd_os_pre = swd & ~reg_swd_pre;
 
-reg reg_swd_pre; // reg_swd2
 always@ (posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_swd_pre <= 0;
@@ -380,10 +383,11 @@ begin
 end
 
 // Dip switch preceding one shot code
+reg [1:0] reg_swd_pst; // reg_swd
+
 wire swd_os_pst; // pul_swd_os
 assign swd_os_pst = reg_swd_pst[0] & ~reg_swd_pst[1];
 
-reg [1:0] reg_swd_pst; // reg_swd
 assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 always@ (posedge rst or posedge clk_100hz)
 begin
@@ -444,7 +448,7 @@ begin
 end
 ```
 
-### 9 - lcd leg
+### 9. LCD reg and LCD position count
 
 ```v
 // lcd reg
@@ -455,11 +459,7 @@ begin
     else if (swp_os_pst) reg_lcd <= reg_lcd_swp;
     else if (swd_os_pst) reg_lcd <= reg_lcd_swd;
 end
-```
 
-## 10 - lcd position count
-
-```v
 // lcd position count
 integer cnt_lcd;
 always @(posedge rst or posedge clk_100hz)
