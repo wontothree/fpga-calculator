@@ -423,6 +423,42 @@ begin
 end
 
 // bin2bcd and sign-magnitude form
+// reg [39:0] reg_rlt_bcd;
+// reg reg_rlt_sgn;
+// reg [31:0] reg_rlt_mgn;
+// integer i;
+// always @(posedge rst or posedge clk_100hz)
+// begin
+//     if (rst) 
+//     begin 
+//         reg_rlt_bcd = 0;
+//         reg_rlt_sgn = 0;
+//         reg_rlt_mgn = reg_rlt;
+//     end
+//     else if (swd == 8'b0000_0001)
+//     begin
+//         if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000)
+//         begin 
+//             reg_rlt_mgn = ~(reg_rlt - 1);
+//             reg_rlt_sgn = 1;
+//         end
+
+//         reg_rlt_bcd = 0;
+//         for (i = 0; i < 32; i = i + 1)
+//         begin
+//             if (reg_rlt_bcd[3:0] >= 4'b0101) reg_rlt_bcd[3:0] = reg_rlt_bcd[3:0] + 3;
+//             if (reg_rlt_bcd[7:4] >= 4'b0101) reg_rlt_bcd[7:4] = reg_rlt_bcd[7:4] + 3;
+//             if (reg_rlt_bcd[11:8] >= 4'b0101) reg_rlt_bcd[11:8] = reg_rlt_bcd[11:8] + 3;
+//             if (reg_rlt_bcd[15:12] >= 4'b0101) reg_rlt_bcd[15:12] = reg_rlt_bcd[15:12] + 3;
+//             if (reg_rlt_bcd[19:16] >= 4'b0101) reg_rlt_bcd[19:16] = reg_rlt_bcd[19:16] + 3;
+//             if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
+//             if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
+//             if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;                
+//             reg_rlt_bcd = {reg_rlt_bcd[38:0], reg_rlt_mgn[31-i]};
+//         end
+//     end
+// end
+
 reg [39:0] reg_rlt_bcd;
 reg reg_rlt_sgn;
 reg [31:0] reg_rlt_mgn;
@@ -433,7 +469,7 @@ begin
     begin 
         reg_rlt_bcd = 0;
         reg_rlt_sgn = 0;
-        reg_rlt_mgn = reg_rlt;
+        reg_rlt_mgn = 0;
     end
     else if (swd == 8'b0000_0001)
     begin
@@ -442,6 +478,7 @@ begin
             reg_rlt_mgn = ~(reg_rlt - 1);
             reg_rlt_sgn = 1;
         end
+        else reg_rlt_mgn = reg_rlt;
 
         reg_rlt_bcd = 0;
         for (i = 0; i < 32; i = i + 1)
