@@ -1,6 +1,44 @@
 
 # Description
 
+## Variable declaration
+
+|Declaration|Variable|Description|
+|---|---|---|
+|**Module**|||
+|input|swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd,|12개의 푸시 스위치는 0~9의 수와 reset 버튼, 그리고 load 버튼으로 구성된다.|
+|input|input swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8,|음의 부호(-), 사칙연산(+, -, x, %), 왼쪽 괄호, 오른쪽 괄호, 등호(=)|
+|input|clk|1Hz ~ 500Mz 진동수를 조절할 수 있다. 여기서는 대략 10kHz를 사용한다.|
+|output reg [7:0]|seg|푸시 스위치로 입력된 수를 7-segment에 출력한다.|
+|output reg [7:0]|led|딥 스위치로 입력된 연산을 LED에 출력한다.|
+|**Switch input**|||
+|reg [3:0]|reg_num|눌린 push 스위치에 해당하는 값이 저장된다.|
+|reg [7:0]|reg_lcd_swp|눌린 push 스위치에 해당하는 아스키 코드가 저장된다.|
+|reg [2:0]|reg_opr|눌린 dip 스위치에 해당하는 값이 저장된다.|
+|reg [7:0]|reg_lcd_swd|눌린 dip 스위치에 해당하는 아스키 코드가 저장된다.|
+|**One shot code**|||
+|assign wire|swp|0~9에 해당하는 어떤 push switch를 누르면 1이 되고 떼면 0이 된다.|
+|assign wire|swp_os_pre|push 스위치가 눌릴 때부터 가장 가까운 상승 에지까지 1이다.|
+|reg|reg_swp_pre|push 스위치가 눌리는 지점에 가장 가까운 상승 에지부터 스위치가 떼지는 지점에 가장 가까운 상승 에지까지 1만 이다.|
+|assign wire|swp_os_pst|push 스위치가 눌리는 시점에 가장 가까운 상승 에지부터 다음 상승 에지까지 1이다.|
+|reg [1:0]|reg_swp_pst||
+|assign wire|swd||
+|assign wire|swd_os_pre||
+|reg|reg_swd_pre||
+|assign wire|swd_os_pst||
+|reg [1:0]|reg_swd_pst||
+|**Term**|||
+|reg |reg_trm_sgn|항의 부호|
+|reg [31:0]|reg_trm_mgn|항의 절대값|
+|reg [31:0]|reg_trm|항의 값|
+||||
+|reg [31:0]|reg_rlt|연산 결과를 저장한다.(입력) / -21_4748_3648 ~ 21_4748_3647|
+|reg |reg_rlt_sgn|reg_rlt의 부호를 저장한다.|
+|reg [31:0]|reg_rlt_mag|reg_rlt의 값을 저장한다. reg_rlt와 같은 32비트로 선언된다.|
+|reg [127:0]|reg_rlt_bcd|연산 결과를 bcd로 저장한다.(출력) / LCD line2의 16칸에 들어갈 10진수 값을 위한 코드이다. 1칸 당 상위 4비트에는 0000을 할당하고 하위 4비트에는 bcd를 할당하여, 총 8비트를 할당한다. bcd가 십진수 한 자리 당 4비트인데 반해, 1칸 당 8비트씩 할당하는 이유는 각 자릿수 값에 8'b0011_0000를 더함으로써 바로 ascii 코드로 바꿀 수 있기 때문이다.|
+|||
+|reg [7:0]|reg_lcd|lcd에 띄울 아스키 값이 들어간다. reg_lcd_swp 또는 reg_lcd_swd에 들어 있는 8비트 아스키 값이 들어간다.|
+
 ## 1 - Module declaration
 
 ```v
@@ -94,7 +132,7 @@ begin
 end
 ```
 
-## 4 - Count and state machine
+## 4. Count and state machine
 
 ```v
 // count
@@ -157,7 +195,7 @@ begin
 end
 ```
 
-## 5 - Push switch and dip switch
+## 5. Push switch and dip switch
 
 ```v
 // push switch
@@ -301,92 +339,60 @@ begin
 end
 ```
 
-## 6 - One shot code
+## 6. One shot code
 
 ```v
-// push switch one shot code (poster)
-wire pul_swp;
-wire pul_swp_os;
-reg [1:0] reg_swp;
-assign pul_swp =    (swp == 12'b1000_0000_0000) |
-                    (swp == 12'b0100_0000_0000) |
-                    (swp == 12'b0010_0000_0000) |
-                    (swp == 12'b0001_0000_0000) |
-                    (swp == 12'b0000_1000_0000) |
-                    (swp == 12'b0000_0100_0000) |
-                    (swp == 12'b0000_0010_0000) |
-                    (swp == 12'b0000_0001_0000) |
-                    (swp == 12'b0000_0000_1000) |
-                    (swp == 12'b0000_0000_0010);
+// Push switch preceding one shot code
+wire swp; // pul_swp2
+wire swp_os_pre; // pul_swp_os2
+assign swp = swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swp0;
+assign swp_os_pre = swp & ~reg_swp_pre;
+
+reg reg_swp_pre; // reg_swp2
 always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_swp <= 2'b00;
-    else reg_swp <= {reg_swp[0], pul_swp};
+    if (rst) reg_swp_pre <= 0;
+    else reg_swp_pre <= swp;
 end
-assign pul_swp_os = reg_swp[0] & ~reg_swp[1];
 
-// push switch one shot code 2 (prior)
-wire pul_swp2;
-wire pul_swp_os2;
-assign pul_swp2 =   (swp == 12'b1000_0000_0000) |
-                    (swp == 12'b0100_0000_0000) |
-                    (swp == 12'b0010_0000_0000) |
-                    (swp == 12'b0001_0000_0000) |
-                    (swp == 12'b0000_1000_0000) |
-                    (swp == 12'b0000_0100_0000) |
-                    (swp == 12'b0000_0010_0000) |
-                    (swp == 12'b0000_0001_0000) |
-                    (swp == 12'b0000_0000_1000) |
-                    (swp == 12'b0000_0000_0010);
-reg reg_swp2;
-assign pul_swp_os2 = pul_swp2 & ~reg_swp2;
+// Push switch post one shot code
+wire swp_os_pst; // pul_swp_os
+assign swp_os_pst = reg_swp_pst[0] & ~reg_swp_pst[1];
+
+reg [1:0] reg_swp_pst; // reg_swp
 always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_swp2 <= 0;
-    else reg_swp2 <= pul_swp2;
+    if (rst) reg_swp_pst <= 2'b00;
+    else reg_swp_pst <= {reg_swp_pst[0], swp};
 end
 
-// dip switch one shot code (poster)
-wire pul_swd;
-wire pul_swd_os;
-reg [1:0] reg_swd;
-assign pul_swd =    (swd == 8'b1000_0000) |
-                    (swd == 8'b0100_0000) |
-                    (swd == 8'b0010_0000) |
-                    (swd == 8'b0001_0000) |
-                    (swd == 8'b0000_1000) |
-                    (swd == 8'b0000_0100) |
-                    (swd == 8'b0000_0010) |
-                    (swd == 8'b0000_0001);
+// Dip switch preceding one shot code
+wire swd; // pul_swd2
+wire swd_os_pre; // pul_swd_os2
+assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
+assign swd_os_pre = swd & ~reg_swd_pre;
+
+reg reg_swd_pre; // reg_swd2
 always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_swd <= 2'b00;
-    else reg_swd <= {reg_swd[0], pul_swd};
+    if (rst) reg_swd_pre <= 0;
+    else reg_swd_pre <= swd;
 end
-assign pul_swd_os = reg_swd[0] & ~reg_swd[1];
 
-// dip switch one shot code 2 (prior)
-wire pul_swd2;
-wire pul_swd_os2;
-assign pul_swd2 =   (swd == 8'b1000_0000) |
-                    (swd == 8'b0100_0000) |
-                    (swd == 8'b0010_0000) |
-                    (swd == 8'b0001_0000) |
-                    (swd == 8'b0000_1000) |
-                    (swd == 8'b0000_0100) |
-                    (swd == 8'b0000_0010) |
-                    (swd == 8'b0000_0001);
-reg reg_swd2;
-assign pul_swd_os2 = pul_swd2 & ~reg_swd2;
+// Dip switch preceding one shot code
+wire swd_os_pst; // pul_swd_os
+assign swd_os_pst = reg_swd_pst[0] & ~reg_swd_pst[1];
+
+reg [1:0] reg_swd_pst; // reg_swd
+assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_swd2 <= 0;
-    else reg_swd2 <= pul_swd2;
+    if (rst) reg_swd_pst <= 2'b00;
+    else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
-
 ```
 
-## 7 - Term
+## 7. Term
 
 ```v
 // term
@@ -400,8 +406,8 @@ begin
         reg_trm_mgn <= 0;
    end
    else if (reg_opr == min) reg_trm_sgn <= 1; // vvvvv
-   else if (pul_swp_os) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using poster one shot code
-   else if (pul_swd_os) 
+   else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using poster one shot code
+   else if (swd_os_pst) 
    begin 
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
@@ -413,7 +419,7 @@ reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_trm <= 0;
-    else if (pul_swd_os && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
+    else if (swd_os_pst && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
     else reg_trm <= reg_trm_mgn;
 end
 ```
@@ -426,7 +432,7 @@ reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
    if (rst) reg_rlt <= 0;
-   else if (pul_swd_os2) // using prior one shot code
+   else if (swd_os_pre) // using prior one shot code
        begin
            case (reg_opr)
                sum : reg_rlt <= reg_rlt + reg_trm;
@@ -446,8 +452,8 @@ reg [7:0] reg_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_lcd <= ascii_blk;
-    else if (pul_swp_os) reg_lcd <= reg_lcd_swp;
-    else if (pul_swd_os) reg_lcd <= reg_lcd_swd;
+    else if (swp_os_pst) reg_lcd <= reg_lcd_swp;
+    else if (swd_os_pst) reg_lcd <= reg_lcd_swd;
 end
 ```
 
@@ -459,7 +465,7 @@ integer cnt_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) cnt_lcd <= 0;
-    else if (pul_swp_os | pul_swd_os) cnt_lcd <= cnt_lcd + 1;
+    else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
 end
 ```
 
