@@ -362,25 +362,27 @@ reg reg_trm_sgn;
 reg [31:0] reg_trm_mag;
 always @(posedge rst or posedge clk_100hz)
 begin
-   if (rst)
-   begin 
-        reg_trm_sgn <= 0;
-        reg_trm_mag <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-   end
-   else if (pul_swp_os)
-        if (reg_opr == main)reg_trm_sgn = 1;
-        else reg_trm_mag <= 10 * reg_trm_mag + reg_trm_mag; // using poster one shot code
-        
-   
-
-
-    if (pul_swp_os)
-    begin
-        reg_trm_sgn <= 0;
-        reg_trm_mag <= 0;
+    if (rst)
+    begin 
+            reg_trm_sgn <= 0;
+            reg_trm_mag <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
     end
-
-    if (pul_swp_os && reg_trm_sgn == 1) reg_trm_mag <= ~reg_trm_mag + 1;
+    else if (pul_swp_os) reg_trm_mag <= 10 * reg_trm_mag + reg_trm_mag; // using poster one shot code
+    else if (pul_swd_os)
+    begin
+            if (reg_opr == min) reg_trm_sgn = 1;
+            else if (reg_trm_sgn)
+            begin
+                reg_trm_mag <= ~reg_trm_mag + 1;
+                reg_trm_sgn <= 0;
+                reg_trm_mag <= 0;
+            end
+            else 
+            begin
+                reg_trm_sgn <= 0;
+                reg_trm_mag <= 0;
+            end
+    end
 end
 
 // summation and subtraction operation
@@ -471,7 +473,7 @@ begin
     end
     else if (swd == 8'b0000_0001) // result
     begin
-        if (reg_sgn == sub) reg_lcd_l2[8*15 +: 8] <= ascii_sub; // sign
+        if (reg_rlt_sgn == 1) reg_lcd_l2[8*15 +: 8] <= ascii_sub; // sign //vvvvvvvvv
 
         for (i = 9; i >= 0; i = i - 1) 
         begin
