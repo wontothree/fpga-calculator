@@ -33,11 +33,11 @@ parameter
         ascii_8 = 8'b0011_1000,
         ascii_9 = 8'b0011_1001,
         
+        ascii_min = 8'b1101_0111,
         ascii_sum = 8'b0010_1011,
         ascii_sub = 8'b0010_1101,
         ascii_mul = 8'b1101_0111,
         ascii_div = 8'b1111_0111,
-        ascii_exp = 8'b0101_1110,
         ascii_lpr = 8'b0010_1000,
         ascii_rpr = 8'b0010_1001,
         ascii_equ = 8'b0011_1101,
@@ -228,31 +228,31 @@ begin
                 8'b1000_0000 : 
                     begin 
                         reg_opr <= min;
-                        reg_lcd_swd <= ascii_sum;   
+                        reg_lcd_swd <= ascii_min;   
                         led <= 8'b1000_0000;  
                     end 
                 8'b0100_0000 : 
                     begin 
                         reg_opr <= sum;
-                        reg_lcd_swd <= ascii_sub;    
+                        reg_lcd_swd <= ascii_sum;    
                         led <= 8'b0100_0000; 
                     end 
                 8'b0010_0000 : 
                     begin 
                         reg_opr <= sub;
-                        reg_lcd_swd <= ascii_mul;    
+                        reg_lcd_swd <= ascii_sub;    
                         led <= 8'b0010_0000; 
                     end 
                 8'b0001_0000 : 
                     begin 
                         reg_opr <= mul;
-                        reg_lcd_swd <= ascii_div;    
+                        reg_lcd_swd <= ascii_mul;    
                         led <= 8'b0001_0000; 
                     end 
                 8'b0000_1000 : 
                     begin 
                         reg_opr <= div;
-                        reg_lcd_swd <= ascii_exp;   
+                        reg_lcd_swd <= ascii_div;   
                         led <= 8'b0000_1000;  
                     end 
                 8'b0000_0100 : 
@@ -402,7 +402,7 @@ end
 // bin2bcd and sign-magnitude form
 reg [39:0] reg_rlt_bcd;
 reg reg_rlt_sgn;
-reg [31:0] reg_rlt_mag;
+reg [31:0] reg_rlt_mgn;
 integer i;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -410,13 +410,13 @@ begin
     begin 
         reg_rlt_bcd = 0;
         reg_rlt_sgn = 0;
-        reg_rlt_mag = reg_rlt;
+        reg_rlt_mgn = reg_rlt;
     end
     else if (swd == 8'b0000_0001)
     begin
         if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000)
         begin 
-            reg_rlt_mag = ~(reg_rlt - 1);
+            reg_rlt_mgn = ~(reg_rlt - 1);
             reg_rlt_sgn = 1;
         end
 
@@ -431,7 +431,7 @@ begin
             if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
             if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
             if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;                
-            reg_rlt_bcd = {reg_rlt_bcd[38:0], reg_rlt[31-i]};
+            reg_rlt_bcd = {reg_rlt_bcd[38:0], reg_rlt_mgn[31-i]};
         end
     end
 end
