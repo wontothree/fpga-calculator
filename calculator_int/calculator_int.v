@@ -325,7 +325,7 @@ begin
     else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
 
-// term
+// Term
 reg reg_trm_sgn;
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
@@ -344,7 +344,7 @@ begin
    end
 end
 
-// term
+// Term
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -353,7 +353,7 @@ begin
     else reg_trm <= reg_trm_mgn;
 end
 
-// summation and subtraction operation
+// Operation
 reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin

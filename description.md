@@ -39,7 +39,7 @@
 |||
 |reg [7:0]|reg_lcd|lcd에 띄울 아스키 값이 들어간다. reg_lcd_swp 또는 reg_lcd_swd에 들어 있는 8비트 아스키 값이 들어간다.|
 
-## 1 - Module declaration
+## 1. Module declaration
 
 ```v
 module calculator (
@@ -62,7 +62,7 @@ assign lcd_e = clk_100hz;
 endmodule
 ```
 
-## 2 - Constant
+## 2. Constant
 
 ```v
 // constant
@@ -109,7 +109,7 @@ parameter
         equ = 3'b111;
 ```
 
-## 3 - Clock divider
+## 3. Clock divider
 
 ```v
 // clock divider
@@ -428,7 +428,7 @@ begin
 end
 ```
 
-## 8 - Operation
+## 8. Operation
 
 ```v
 // summation and subtraction operation
@@ -511,7 +511,7 @@ begin
 end
 ```
 
-## 11, LCD position assignment
+## 11. LCD position assignment
 
 ```v
 // lcd position assignment
