@@ -3,20 +3,26 @@
 
 ## Variable declaration
 
+**Module**
 |Declaration|Variable|Description|
 |---|---|---|
-|**Module**|||
 |input|swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd,|12개의 푸시 스위치는 0~9의 수와 reset 버튼, 그리고 load 버튼으로 구성된다.|
 |input|input swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8,|음의 부호(-), 사칙연산(+, -, x, %), 왼쪽 괄호, 오른쪽 괄호, 등호(=)|
 |input|clk|1Hz ~ 500Mz 진동수를 조절할 수 있다. 여기서는 대략 10kHz를 사용한다.|
 |output reg [7:0]|seg|푸시 스위치로 입력된 수를 7-segment에 출력한다.|
 |output reg [7:0]|led|딥 스위치로 입력된 연산을 LED에 출력한다.|
-|**Switch input**|||
+
+**Switch input**
+|Declaration|Variable|Description|
+|---|---|---|
 |reg [3:0]|reg_num|눌린 push 스위치에 해당하는 값이 저장된다.|
 |reg [7:0]|reg_num_ascii|눌린 push 스위치에 해당하는 아스키 코드가 저장된다.|
 |reg [2:0]|reg_opr|눌린 dip 스위치에 해당하는 값이 저장된다.|
 |reg [7:0]|reg_opr_ascii|눌린 dip 스위치에 해당하는 아스키 코드가 저장된다.|
-|**One shot code**|||
+
+**One shot code**
+|Declaration|Variable|Description|
+|---|---|---|
 |assign wire|swp|0~9에 해당하는 어떤 push switch를 누르면 1이 되고 떼면 0이 된다.|
 |assign wire|swp_os_pre|push 스위치가 눌릴 때부터 가장 가까운 상승 에지까지 1이다.|
 |reg|reg_swp_pre|push 스위치가 눌리는 지점에 가장 가까운 상승 에지부터 스위치가 떼지는 지점에 가장 가까운 상승 에지까지 1만 이다.|
@@ -27,7 +33,10 @@
 |reg|reg_swd_pre||
 |assign wire|swd_os_pst||
 |reg [1:0]|reg_swd_pst||
-|**Term**|||
+
+**Term**
+|Declaration|Variable|Description|
+|---|---|---|
 |reg |reg_trm_sgn|항의 부호|
 |reg [31:0]|reg_trm_mgn|항의 절대값|
 |reg [31:0]|reg_trm|항의 값|
