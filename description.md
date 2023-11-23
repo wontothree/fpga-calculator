@@ -1111,7 +1111,7 @@ begin
     else reg_swd_pre <= swd;
 end
 
-// Dip switch post one shot code
+// Dip switch preceding one shot code
 reg [1:0] reg_swd_pst; // reg_swd
 
 wire swd_os_pst; // pul_swd_os
@@ -1124,7 +1124,7 @@ begin
     else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
 
-<!-- // term
+// term
 reg reg_trm_sgn;
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
@@ -1150,15 +1150,6 @@ begin
     if (rst) reg_trm <= 0;
     else if (swd_os_pst && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
     else reg_trm <= reg_trm_mgn;
-end -->
-
-// term
-reg [31:0] reg_trm;
-always @(posedge rst or posedge clk_100hz)
-begin
-   if (rst) reg_trm <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-   else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num; // using poster one shot code
-   else if (pul_swd_os) reg_trm <= 0;
 end
 
 // summation and subtraction operation
