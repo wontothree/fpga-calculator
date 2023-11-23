@@ -358,45 +358,26 @@ begin
 end
 
 // term
-reg reg_trm_sgn;
-reg [31:0] reg_trm_mag;
+reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst)
-    begin 
-            reg_trm_sgn <= 0;
-            reg_trm_mag <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
-    end
-    else if (pul_swp_os) reg_trm_mag <= 10 * reg_trm_mag + reg_trm_mag; // using poster one shot code
-    else if (pul_swd_os)
-    begin
-            if (reg_opr == min) reg_trm_sgn = 1;
-            else if (reg_trm_sgn)
-            begin
-                reg_trm_mag <= ~reg_trm_mag + 1;
-                reg_trm_sgn <= 0;
-                reg_trm_mag <= 0;
-            end
-            else 
-            begin
-                reg_trm_sgn <= 0;
-                reg_trm_mag <= 0;
-            end
-    end
+   if (rst) reg_trm <= 0;
+   else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num; // using poster one shot code
+   else if (pul_swd_os) reg_trm <= 0;
 end
 
 // summation and subtraction operation
 reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
-   if (rst) reg_rlt <= 32'b0000_0000_0000_0000_0000_0000_0000_0000;
+   if (rst) reg_rlt <= 0;
    else if (pul_swd_os2) // using prior one shot code
        begin
            case (reg_opr)
-               sum : reg_rlt <= reg_rlt + reg_trm_mag;
-               sub : reg_rlt <= reg_rlt - reg_trm_mag;
-               mul : reg_rlt <= reg_rlt * reg_trm_mag;
-               div : reg_rlt <= reg_rlt / reg_trm_mag;
+               sum : reg_rlt <= reg_rlt + reg_trm;
+               sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
            endcase
        end
 end

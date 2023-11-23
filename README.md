@@ -39,7 +39,8 @@ HBE-Combo II DLD (Xilinx), Verilog HDL
 |Declaration|Variable|Description|
 |---|---|---|
 |reg |reg_trm_sgn|항의 부호|
-|reg [31:0]|reg_trm_mag|항의 절대값|
+|reg [31:0]|reg_trm_mgn|항의 절대값|
+||||
 |reg [31:0]|reg_rlt|연산 결과를 저장한다.(입력) / -21_4748_3648 ~ 21_4748_3647|
 |reg |reg_rlt_sgn|reg_rlt의 부호를 저장한다.|
 |reg [31:0]|reg_rlt_mag|reg_rlt의 값을 저장한다. reg_rlt와 같은 32비트로 선언된다.|
