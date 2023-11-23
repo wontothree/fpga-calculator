@@ -357,51 +357,36 @@ begin
     else reg_swd2 <= pul_swd2;
 end
 
-// term
-// reg reg_trm_sgn;
-// reg [31:0] reg_trm_mgn;
-// reg [31:0] reg_trm;
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst)
-//     begin 
-//         reg_trm <= 0;
-//         reg_trm_sgn <= 0;
-//         reg_trm_mgn <= 0;
-//     end
-//     else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num; // using poster one shot code
-//     // else if (pul_swd_os2 && reg_trm_sgn == 1) reg_trm_mgn <= ~reg_trm_mgn + 1; // using prior one shot code
-//     else if (pul_swd_os)
-//     begin
-//         // if (reg_opr == min) reg_trm_sgn <= 1;
-//         // else
-//         begin
-//             reg_trm_sgn <= 0;
-//             reg_trm_mgn <= 0;
-//         end
-//     end
-// end
 
 // term
-reg [31:0] reg_trm;
 reg reg_trm_sgn;
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
 begin
    if (rst) 
    begin 
-        reg_trm <= 0;
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
    end
-   else if (pul_swp_os) reg_trm <= 10 * reg_trm + reg_num; // using poster one shot code
+//    else if (reg_opr == min) reg_trm_sgn <= 1;
+   else if (pul_swp_os) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using poster one shot code
    else if (pul_swd_os) 
    begin 
-        reg_trm <= 0;
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
    end
 end
+
+// term
+reg [31:0] reg_trm;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) reg_trm <= 0;
+    else if (pul_swd_os && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
+    else reg_trm <= reg_trm_mgn;
+end
+
+
 
 
 // summation and subtraction operation
