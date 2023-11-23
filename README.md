@@ -94,6 +94,6 @@ Hundreds Tens Ones   Original
 
 ## Pin setting
 
-<img src="img/pin1.png">
+<img src="img/pin_set1.png">
 
-<img src="img/pin2.png">
+<img src="img/pin_set2.png">
