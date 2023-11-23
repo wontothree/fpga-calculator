@@ -4,15 +4,15 @@
 module testbench ();
 reg swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd;
 reg swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8;
+reg clk;
 
-reg rst, clk;
 wire [7:0] seg, led;
-
 wire lcd_e, lcd_rs, lcd_rw;
 wire [7:0] lcd_data;
 calculator calculator(
     swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd, 
-    swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8, clk, seg, led, lcd_e, lcd_rs, lcd_rw, lcd_data
+    swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8, 
+    clk, seg, led, lcd_e, lcd_rs, lcd_rw, lcd_data
 );
 
 initial begin
@@ -26,8 +26,11 @@ initial begin
     #130 swp3 = 1; // 3
     #10 swp3 = 0;
 
-    #130 swd2 = 1;
+    #130 swd2 = 1; // sum
     #10 swd2 = 0;
+
+    #130 swd1 = 1; // minus
+    #10 swd1 = 0;
 
     #130 swp4 = 1; // 4
     #10 swp4 = 0;
@@ -36,7 +39,7 @@ initial begin
     #130 swp6 = 1; // 6
     #10 swp6 = 0;
 
-    #130 swd2 = 1;
+    #130 swd2 = 1; // sum
     #10 swd2 = 0;
 
     #130 swp2 = 1; // 2
@@ -46,7 +49,7 @@ initial begin
     #130 swp4 = 1; // 4
     #10 swp4 = 0;
 
-    #10 swd8 = 8'b0000_0001;
+    #10 swd8 = 1; // equ // -199
     
 end
 

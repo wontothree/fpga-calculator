@@ -13,9 +13,9 @@
 |output reg [7:0]|led|딥 스위치로 입력된 연산을 LED에 출력한다.|
 |**Switch input**|||
 |reg [3:0]|reg_num|눌린 push 스위치에 해당하는 값이 저장된다.|
-|reg [7:0]|reg_lcd_swp|눌린 push 스위치에 해당하는 아스키 코드가 저장된다.|
+|reg [7:0]|reg_num_ascii|눌린 push 스위치에 해당하는 아스키 코드가 저장된다.|
 |reg [2:0]|reg_opr|눌린 dip 스위치에 해당하는 값이 저장된다.|
-|reg [7:0]|reg_lcd_swd|눌린 dip 스위치에 해당하는 아스키 코드가 저장된다.|
+|reg [7:0]|reg_opr_ascii|눌린 dip 스위치에 해당하는 아스키 코드가 저장된다.|
 |**One shot code**|||
 |assign wire|swp|0~9에 해당하는 어떤 push switch를 누르면 1이 되고 떼면 0이 된다.|
 |assign wire|swp_os_pre|push 스위치가 눌릴 때부터 가장 가까운 상승 에지까지 1이다.|
@@ -38,6 +38,17 @@
 |reg [127:0]|reg_rlt_bcd|연산 결과를 bcd로 저장한다.(출력) / LCD line2의 16칸에 들어갈 10진수 값을 위한 코드이다. 1칸 당 상위 4비트에는 0000을 할당하고 하위 4비트에는 bcd를 할당하여, 총 8비트를 할당한다. bcd가 십진수 한 자리 당 4비트인데 반해, 1칸 당 8비트씩 할당하는 이유는 각 자릿수 값에 8'b0011_0000를 더함으로써 바로 ascii 코드로 바꿀 수 있기 때문이다.|
 |||
 |reg [7:0]|reg_lcd|lcd에 띄울 아스키 값이 들어간다. reg_lcd_swp 또는 reg_lcd_swd에 들어 있는 8비트 아스키 값이 들어간다.|
+
+시뮬레이션 할 때 중요한 변수
+
+|Variable|Description|
+|---|---|
+|lcd_data|최종적으로 뜨는 데이터다.|
+|reg_lcd|LCD 1번째 줄에 뜰 문자를 저장하고 있다.|
+|reg_num|입력된 피연산자의 값을 저장하고 있다.|
+|reg_opr_ascii|입력된 연산자에 해당하는 아스키 코드를 저장하고 있다.|
+|reg_trm|항에 대한 정보이다.|
+|reg_rlt|누적 연산된 결과이다.|
 
 ## 1. Module declaration
 
@@ -933,13 +944,13 @@ end
 
 // push switch
 reg [3:0] reg_num;
-reg [7:0] reg_lcd_swp;
+reg [7:0] reg_num_ascii; // reg_lcd_swp
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin 
         reg_num <= 4'b0000;
-        reg_lcd_swp <= ascii_blk; 
+        reg_num_ascii <= ascii_blk; 
         seg <= 8'b0000_0000;
     end
     else
@@ -947,61 +958,61 @@ begin
         if (swp1)
         begin
             reg_num <= 4'b0001;
-            reg_lcd_swp <= ascii_1;
+            reg_num_ascii <= ascii_1;
             seg <= 8'b0110_0000;
         end
         else if (swp2)
         begin
             reg_num <= 4'b0010;
-            reg_lcd_swp <= ascii_2;
+            reg_num_ascii <= ascii_2;
             seg <= 8'b1101_1010;
         end
         else if (swp3)
         begin
             reg_num <= 4'b0011;
-            reg_lcd_swp <= ascii_3;
+            reg_num_ascii <= ascii_3;
             seg <= 8'b1111_0010;
         end
         else if (swp4)
         begin
             reg_num <= 4'b0100;
-            reg_lcd_swp <= ascii_4;
+            reg_num_ascii <= ascii_4;
             seg <= 8'b0110_0110;
          end
         else if (swp5)
         begin
             reg_num <= 4'b0101;
-            reg_lcd_swp <= ascii_5;
+            reg_num_ascii <= ascii_5;
             seg <= 8'b1011_0110;
         end
         else if (swp6)
         begin
             reg_num <= 4'b0110;
-            reg_lcd_swp <= ascii_6;
+            reg_num_ascii <= ascii_6;
             seg <= 8'b1011_1110;
         end
         else if (swp7)
         begin
             reg_num <= 4'b111;
-            reg_lcd_swp <= ascii_7;
+            reg_num_ascii <= ascii_7;
             seg <= 8'b1110_0000;
         end
         else if (swp8)
         begin
             reg_num <= 4'b1000;
-            reg_lcd_swp <= ascii_8;
+            reg_num_ascii <= ascii_8;
             seg <= 8'b1111_1110;
         end
         else if (swp9)
         begin
             reg_num <= 4'b1001;
-            reg_lcd_swp <= ascii_9;
+            reg_num_ascii <= ascii_9;
             seg <= 8'b1111_0110;
         end
         else if (swp0)
         begin
             reg_num <= 4'b0000;
-            reg_lcd_swp <= ascii_0;
+            reg_num_ascii <= ascii_0;
             seg <= 8'b1111_1100;
         end
     end
@@ -1009,13 +1020,13 @@ end
 
 // dip switch
 reg [7:0] reg_opr;
-reg [7:0] reg_lcd_swd;
+reg [7:0] reg_opr_ascii; // reg_lcd_swd
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin 
         reg_opr <= sum; // sum
-        reg_lcd_swd <= ascii_blk; 
+        reg_opr_ascii <= ascii_blk; 
         led <= 0; 
     end
     else
@@ -1023,59 +1034,59 @@ begin
         if (swd1)
         begin 
             reg_opr <= min;
-            reg_lcd_swd <= ascii_min;   
+            reg_opr_ascii <= ascii_min;   
             led <= 8'b1000_0000;  
         end 
         else if (swd2)
         begin 
             reg_opr <= sum;
-            reg_lcd_swd <= ascii_sum;    
+            reg_opr_ascii <= ascii_sum;    
             led <= 8'b0100_0000; 
         end 
         else if (swd3)
         begin 
             reg_opr <= sub;
-            reg_lcd_swd <= ascii_sub;    
+            reg_opr_ascii <= ascii_sub;    
             led <= 8'b0010_0000; 
         end 
         else if (swd4)
         begin 
             reg_opr <= mul;
-            reg_lcd_swd <= ascii_mul;    
+            reg_opr_ascii <= ascii_mul;    
             led <= 8'b0001_0000; 
         end 
         else if (swd5)
         begin 
             reg_opr <= div;
-            reg_lcd_swd <= ascii_div;   
+            reg_opr_ascii <= ascii_div;   
             led <= 8'b0000_1000;  
         end 
         else if (swd6)
         begin 
             reg_opr <= lpr;
-            reg_lcd_swd <= ascii_lpr;    
+            reg_opr_ascii <= ascii_lpr;    
             led <= 8'b0000_0100; 
         end 
         else if (swd7)
         begin 
             reg_opr <= rpr;
-            reg_lcd_swd <= ascii_rpr;    
+            reg_opr_ascii <= ascii_rpr;    
             led <= 8'b0000_0010; 
         end 
         else if (swd8)
         begin 
             reg_opr <= equ;
-            reg_lcd_swd <= ascii_equ;    
+            reg_opr_ascii <= ascii_equ;    
             led <= 8'b0000_0001; 
         end 
     end
 end
 
 // Push switch preceding one shot code
-reg reg_swp_pre; // reg_swp2
+reg reg_swp_pre;
 
-wire swp; // pul_swp2
-wire swp_os_pre; // pul_swp_os2
+wire swp;
+wire swp_os_pre;
 assign swp = swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swp0;
 assign swp_os_pre = swp & ~reg_swp_pre;
 
@@ -1086,9 +1097,9 @@ begin
 end
 
 // Push switch post one shot code
-reg [1:0] reg_swp_pst; // reg_swp
+reg [1:0] reg_swp_pst;
 
-wire swp_os_pst; // pul_swp_os
+wire swp_os_pst;
 assign swp_os_pst = reg_swp_pst[0] & ~reg_swp_pst[1];
 
 always@ (posedge rst or posedge clk_100hz)
@@ -1098,10 +1109,10 @@ begin
 end
 
 // Dip switch preceding one shot code
-reg reg_swd_pre; // reg_swd2
+reg reg_swd_pre;
 
-wire swd; // pul_swd2
-wire swd_os_pre; // pul_swd_os2
+wire swd;
+wire swd_os_pre;
 assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 assign swd_os_pre = swd & ~reg_swd_pre;
 
@@ -1112,9 +1123,9 @@ begin
 end
 
 // Dip switch preceding one shot code
-reg [1:0] reg_swd_pst; // reg_swd
+reg [1:0] reg_swd_pst;
 
-wire swd_os_pst; // pul_swd_os
+wire swd_os_pst;
 assign swd_os_pst = reg_swd_pst[0] & ~reg_swd_pst[1];
 
 assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
@@ -1124,7 +1135,7 @@ begin
     else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
 
-// term
+// Term
 reg reg_trm_sgn;
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
@@ -1143,7 +1154,7 @@ begin
    end
 end
 
-// term
+// Term
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -1152,7 +1163,7 @@ begin
     else reg_trm <= reg_trm_mgn;
 end
 
-// summation and subtraction operation
+// Operation
 reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -1173,8 +1184,8 @@ reg [7:0] reg_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_lcd <= ascii_blk;
-    else if (swp_os_pst) reg_lcd <= reg_lcd_swp;
-    else if (swd_os_pst) reg_lcd <= reg_lcd_swd;
+    else if (swp_os_pst) reg_lcd <= reg_num_ascii;
+    else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
 end
 
 // lcd position count
