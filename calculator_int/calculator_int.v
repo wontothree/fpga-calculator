@@ -410,7 +410,7 @@ end
 // Binary 2 BCD
 reg [39:0] reg_rlt_bcd;
 integer j;
-always @(posedge clk or posedge clk_100hz)
+always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) 
     begin 
