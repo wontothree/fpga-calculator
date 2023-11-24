@@ -1,7 +1,7 @@
 
 # Description
 
-## Variable declaration
+## Variable declaration - 가장 직관적인 변수명은 무엇일까?
 
 **Module**
 |Declaration|Variable|Description|
@@ -142,6 +142,10 @@ parameter
 
 ## 3. Clock divider
 
+clk_100hz의 주기는 clk의 주기의 10배이다. clk_100hz와 lcd_e는 동기화되어 있다.
+
+<img src="img/clk.png">
+
 ```v
 // clock divider
 integer cnt_100hz;
@@ -164,6 +168,8 @@ end
 ```
 
 ## 4. Count and state machine
+
+lcd의 주기는 clk_100hz의 주기의 800배이다.
 
 ```v
 // count
@@ -227,6 +233,8 @@ end
 ```
 
 ## 5. Push switch and dip switch
+
+실제로 버튼을 누르고 있는 시간은 약 0.25s이다.
 
 ```v
 // push switch
@@ -372,8 +380,14 @@ end
 
 ## 6. One shot code
 
+One shot code는 동기화된 신호들을 제어하는 용도로 사용된다.
+
+두 개의 One shot code를 설계하여 사용한다.
+
+<img src="img/swp_os.png">
+<img src="img/swd_os.png">
+
 ```v
-// Push switch preceding one shot code
 // Push switch preceding one shot code
 reg reg_swp_pre;
 
@@ -429,6 +443,12 @@ end
 
 ## 7. Term
 
+숫자가 입력될 때마다 십진법으로 항에 대한 정보(reg_trm)를 갱신한다.
+
+연산자를 기준으로 피연산자 항을 인식한다.
+
+음의 부호가 붙은 경우에는 2의 보수를 취한다.
+
 ```v
 // Term
 reg [31:0] reg_trm_mgn;
@@ -439,7 +459,7 @@ begin
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
     end
-    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using post one shot code
+    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
     else if (swd_os_pst) 
     begin 
         reg_trm_sgn <= 0;
@@ -458,6 +478,8 @@ end
 ```
 
 ## 8. Operation
+
+연산자가 나올 때마다 계산 결과를 갱신한다.
 
 ```v
 // Operation
@@ -543,7 +565,7 @@ begin
 end
 ```
 
-### 10. LCD reg and LCD position count
+## 10. LCD reg, LCD position count, and LCD position assignment
 
 ```v
 // lcd reg
@@ -561,6 +583,7 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) cnt_lcd <= 0;
     else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
+
 end// LCD position assignment
 reg [8*16-1 : 0] reg_lcd_l1;
 reg [8*16-1 : 0] reg_lcd_l2;
@@ -629,6 +652,12 @@ end
 ```
 
 ## 12. LCD output
+
+Interface
+
+첫 번째 줄의 LCD는 인덱스가 왼쪽에서 오른쪽 방향으로 증가한다.
+
+두 번째 줄의 LCD는 인덱스가 오른쪽에서 왼쪽으로 증가한다.
 
 ```v
 // lcd output
@@ -841,3 +870,17 @@ begin
         end
 end
 ```
+
+## 느낀 점
+
+- 하드웨어의 동작을 이해해야 한다.
+- 간결하게 짜는 것이 좋은 코드가 아닐 수 있다.
+- 어디까지 최적화할 것인가? 지나친 최적화는 가독성을 떨어뜨린다.
+- 객체지향적. 각 블록의 역할을 정확하게 구분하자.
+- 인퍼페이스가 잘 정의되어야 한다.(부호 비트, LCD Index)
+
+## 전략
+
+- Time diagram을 설계하자.
+- 타이밍적으로 안정적인 회로를 설계하자.
+- 타이밍 다이어그램만 보지 말고 합성된 회로를 고려해서 코딩하자.
