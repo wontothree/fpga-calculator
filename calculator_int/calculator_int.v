@@ -452,23 +452,35 @@ begin
     end
 end
 
-// lcd position assignment
+// lcd position assignment - input
 reg [8*16-1 : 0] reg_lcd_l1;
+integer i;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) 
+    begin
+        for (i = 0; i < 16; i = i + 1) 
+            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
+    end
+    else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
+    else if (swp_os_pre | swd_os_pre) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
+end
+
+// lcd position assignment - result
 reg [8*16-1 : 0] reg_lcd_l2;
-integer i, is_msd, cnt_blk;
+integer is_msd, cnt_blk;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
         for (i = 0; i < 16; i = i + 1) 
         begin 
-            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
             reg_lcd_l2[8*i +: 8] <= ascii_blk;
             is_msd <= 0;
             cnt_blk <= 0;
         end
     end
-    else if (cnt_ord) // result
+    else if (cnt_ord)
     begin
         if (cnt_ord >= 50 && cnt_ord < 60)
         begin
@@ -486,16 +498,6 @@ begin
         else if (cnt_ord == 60)
         begin
             if (reg_rlt_sgn) reg_lcd_l2[8*(10-cnt_blk) +: 8] <= ascii_sub;
-        end
-    end
-    else // input
-    begin
-        if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
-        else 
-        begin
-            reg_lcd_l1 <= reg_lcd_l1 << 8;
-            reg_lcd_l1[8*0 +: 8] <= ascii_lar;
-            reg_lcd_l1[8*15 +: 8] <= reg_lcd;
         end
     end
 end
