@@ -431,13 +431,26 @@ begin
     end
 end
 
-// lcd reg - input
+// LCD reg(input) and lcd position count(input)
 reg [7:0] reg_lcd;
+integer cnt_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_lcd <= ascii_blk;
-    else if (swp_os_pst) reg_lcd <= reg_num_ascii;
-    else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
+    if (rst) 
+    begin 
+        reg_lcd <= ascii_blk;
+        cnt_lcd <= 0;
+    end
+    else if (swp_os_pst) 
+    begin 
+        reg_lcd <= reg_num_ascii;
+        cnt_lcd <= cnt_lcd + 1;
+    end
+    else if (swd_os_pst) 
+    begin 
+        reg_lcd <= reg_opr_ascii;
+         cnt_lcd <= cnt_lcd + 1;
+    end
 end
 
 // lcd position assignment - input
@@ -452,14 +465,6 @@ begin
     end
     else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
     else if (swp_os_pre | swd_os_pre) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
-end
-
-// lcd position count - output
-integer cnt_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) cnt_lcd <= 0;
-    else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
 end
 
 // lcd position assignment - result
