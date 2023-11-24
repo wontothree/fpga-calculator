@@ -319,7 +319,6 @@ reg [1:0] reg_swd_pst;
 wire swd_os_pst;
 assign swd_os_pst = reg_swd_pst[0] & ~reg_swd_pst[1];
 
-assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 always@ (posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_swd_pst <= 2'b00;
@@ -335,11 +334,7 @@ begin
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
     end
-    else if (swp_os_pst) 
-    begin
-        // if (reg_opr == min) reg_trm_sgn <= 1;
-        reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using post one shot code
-    end
+    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using post one shot code
     else if (swd_os_pst) 
     begin 
         reg_trm_sgn <= 0;
@@ -451,6 +446,7 @@ begin
     else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
 end
 
+// LCD position assignment
 reg [8*16-1 : 0] reg_lcd_l1;
 reg [8*16-1 : 0] reg_lcd_l2;
 integer i;
