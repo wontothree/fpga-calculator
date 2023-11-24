@@ -1,7 +1,7 @@
 
 # Description
 
-## Variable declaration - 가장 직관적인 변수명은 무엇일까?
+## Variable declaration
 
 **Module**
 |Declaration|Variable|Description|
@@ -479,7 +479,7 @@ end
 
 ## 8. Operation
 
-연산자가 나올 때마다 계산 결과를 갱신한다.
+연산자가 나올 때마다 계산 결과를 갱신한다.(덧셈, 뺄셈)
 
 ```v
 // Operation
