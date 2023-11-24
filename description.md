@@ -3,7 +3,6 @@
 
 ## Variable declaration
 
-**Module**
 |Declaration|Variable|Description|
 |---|---|---|
 |input|swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd,|12개의 푸시 스위치는 0~9의 수와 reset 버튼, 그리고 load 버튼으로 구성된다.|
@@ -11,18 +10,12 @@
 |input|clk|1Hz ~ 500Mz 진동수를 조절할 수 있다. 여기서는 대략 10kHz를 사용한다.|
 |output reg [7:0]|seg|푸시 스위치로 입력된 수를 7-segment에 출력한다.|
 |output reg [7:0]|led|딥 스위치로 입력된 연산을 LED에 출력한다.|
-
-**Switch input**
-|Declaration|Variable|Description|
-|---|---|---|
+|Switch|---|---|
 |reg [3:0]|reg_num|눌린 push 스위치에 해당하는 값이 저장된다.|
 |reg [7:0]|reg_num_ascii|눌린 push 스위치에 해당하는 아스키 코드가 저장된다.|
 |reg [2:0]|reg_opr|눌린 dip 스위치에 해당하는 값이 저장된다.|
 |reg [7:0]|reg_opr_ascii|눌린 dip 스위치에 해당하는 아스키 코드가 저장된다.|
-
-**One shot code**
-|Declaration|Variable|Description|
-|---|---|---|
+|One shot code|---|---|
 |assign wire|swp_os_pre|push 스위치가 눌릴 때부터 가장 가까운 상승 에지까지 1이다.|
 |assign wire|swp_os_pst|push 스위치가 눌리는 시점에 가장 가까운 상승 에지부터 다음 상승 에지까지 1이다.|
 |assign wire|swd_os_pre|dip 스위치가 눌릴 때부터 가장 가까운 상승 에지까지 1이다.|
@@ -34,20 +27,12 @@
 |reg |reg_trm_sgn|항의 부호|
 |reg [31:0]|reg_trm_mgn|항의 절대값|
 |reg [31:0]|reg_trm|항의 값|
-
-**Sign-magnitude form**
-|Declaration|Variable|Description|
-|---|---|---|
+|Sign-magnitude form|---|---|
 |reg [31:0]|reg_rlt|연산 결과를 저장한다.(입력) / -21_4748_3648 ~ 21_4748_3647의 숫자를 표현할 수 있다.|
 |reg |reg_rlt_sgn|reg_rlt의 부호를 저장한다.|
 |reg [31:0]|reg_rlt_mag|reg_rlt의 값을 저장한다. reg_rlt와 같은 32비트로 선언된다.|
-
-**BCD transformation**
-|Declaration|Variable|Description|
-|---|---|---|
+|BCD transformation|---|---|
 |reg [39:0]|reg_rlt_bcd|연산 결과를 bcd로 저장한다.(출력) / LCD line2의 16칸에 들어갈 10진수 값을 위한 코드이다. 1칸 당 상위 4비트에는 0000을 할당하고 하위 4비트에는 bcd를 할당하여, 총 8비트를 할당한다. bcd가 십진수 한 자리 당 4비트인데 반해, 1칸 당 8비트씩 할당하는 이유는 각 자릿수 값에 8'b0011_0000를 더함으로써 바로 ascii 코드로 바꿀 수 있기 때문이다.|
-
-|Declaration|Variable|Description|
 |---|---|---|
 |reg [7:0]|reg_lcd|lcd에 띄울 아스키 값이 들어간다. reg_num_ascii 또는 reg_opr_ascii에 들어 있는 8비트 아스키 값이 들어간다.|
 
