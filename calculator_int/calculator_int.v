@@ -335,11 +335,7 @@ begin
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
     end
-    else if (swp_os_pst) 
-    begin
-        // if (reg_opr == min) reg_trm_sgn <= 1;
-        reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using post one shot code
-    end
+    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
     else if (swd_os_pst) 
     begin 
         reg_trm_sgn <= 0;
@@ -385,23 +381,6 @@ begin
            endcase
         end
     end
-end
-
-// lcd reg
-reg [7:0] reg_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) reg_lcd <= ascii_blk;
-    else if (swp_os_pst) reg_lcd <= reg_num_ascii;
-    else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
-end
-
-// lcd position count
-integer cnt_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) cnt_lcd <= 0;
-    else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
 end
 
 // Sign-magnitude form
@@ -452,6 +431,15 @@ begin
     end
 end
 
+// lcd reg - input
+reg [7:0] reg_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) reg_lcd <= ascii_blk;
+    else if (swp_os_pst) reg_lcd <= reg_num_ascii;
+    else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
+end
+
 // lcd position assignment - input
 reg [8*16-1 : 0] reg_lcd_l1;
 integer i;
@@ -464,6 +452,14 @@ begin
     end
     else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
     else if (swp_os_pre | swd_os_pre) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
+end
+
+// lcd position count - output
+integer cnt_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) cnt_lcd <= 0;
+    else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
 end
 
 // lcd position assignment - result
