@@ -504,13 +504,7 @@ begin
         end
     end
 end
-```
 
-## 9. Binary to BCD
-
-BCD 변환은 equal(=)이 눌린 후에 진행된다.
-
-```v
 // Sign-magnitude form
 reg reg_rlt_sgn;
 reg [31:0] reg_rlt_mgn;
@@ -531,7 +525,16 @@ begin
         else reg_rlt_mgn <= reg_rlt; // positive
     end
 end
+```
 
+## 9. Binary to BCD
+
+- equal 연산자가 눌리기 전에는 one shot code가 프로그램을 제어하는 용도로 사용된다.
+- equal 연산자가 눌린 이후부터는 실행 순서를 분명하게 구분하는 것이 중요해진다.(order count)
+
+equal 연산자 -> 결과 계산 -> BCD -> LCD assignment
+
+```v
 // Binary 2 BCD
 reg [39:0] reg_rlt_bcd;
 integer j;
