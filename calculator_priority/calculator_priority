@@ -36,8 +36,8 @@ parameter
         ascii_min = 8'b0010_1101,
         ascii_sum = 8'b0010_1011,
         ascii_sub = 8'b0010_1101,
-        ascii_mul = 8'b0111_1000,
-        ascii_div = 8'b1111_1101,
+        ascii_mul = 8'b1101_0111, // 01111000
+        ascii_div = 8'b1111_0111, // 0010_0101
         ascii_lpr = 8'b0010_1000,
         ascii_rpr = 8'b0010_1001,
         ascii_equ = 8'b0011_1101, 
@@ -326,7 +326,7 @@ begin
     else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
 
-// Term - magnitude
+// Term
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -347,7 +347,7 @@ begin
     end
 end
 
-// Term - sign
+// Term
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
