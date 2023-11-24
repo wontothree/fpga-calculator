@@ -334,7 +334,7 @@ begin
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
     end
-    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using post one shot code
+    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
     else if (swd_os_pst) 
     begin 
         reg_trm_sgn <= 0;
@@ -422,7 +422,7 @@ begin
         if (reg_rlt_bcd[19:16] >= 4'b0101) reg_rlt_bcd[19:16] = reg_rlt_bcd[19:16] + 3;
         if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
-        if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3; // 32 ~ 40 번째 비트 없는 이유 생각해 보기             
+        if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;         
         reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+30-j]};
         j <= j + 1;
     end

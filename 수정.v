@@ -435,7 +435,7 @@ begin
         j <= 0;
         reg_rlt_bcd <= 0;
     end
-    else if (swd8 && j >= 30 && j < 62)
+    else if (swd8 && j >= 10 && j < 42)
     begin
         if (reg_rlt_bcd[3:0] >= 4'b0101) reg_rlt_bcd[3:0] = reg_rlt_bcd[3:0] + 3;
         if (reg_rlt_bcd[7:4] >= 4'b0101) reg_rlt_bcd[7:4] = reg_rlt_bcd[7:4] + 3;
@@ -445,16 +445,62 @@ begin
         if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
         if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3; // 32 ~ 40 번째 비트 없는 이유 생각해 보기             
-        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+30-j]};
+        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+10-j]};
         j <= j + 1;
     end
     else if (swd8) j <= j + 1;
 end
 
 // lcd position assignment
+reg [8*16-1 : 0] reg_lcd_l1;
+reg [8*16-1 : 0] reg_lcd_l2;
+integer i, k, l;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        for (i = 0; i < 16; i = i + 1) 
+        begin 
+            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
+            reg_lcd_l2[8*i +: 8] <= ascii_blk;
+            k <= 0;
+            l <= 0;
+        end
+    end
+    else if (swd8) // result
+    begin
+        if (reg_rlt_sgn) reg_lcd_l2[8*10 +: 8] <= ascii_sub;
+
+        if (j >= 50 && j < 60)
+        begin
+            if (reg_rlt_bcd[4*(59-j) +: 4] == 0 && k == 0) 
+            begin 
+                reg_lcd_l2[8*(59-j) +: 8] <= ascii_blk;
+                l <= l + 1;
+            end
+            else
+            begin
+                reg_lcd_l2[8*(59-j) +: 8] <= ascii_0 + reg_rlt_bcd[4*(59-j) +: 4];
+                k <= 1;
+            end
+        end
+    end
+    else // input
+    begin
+        if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
+        else 
+        begin
+            reg_lcd_l1 <= reg_lcd_l1 << 8;
+            reg_lcd_l1[8*0 +: 8] <= ascii_lar;
+            reg_lcd_l1[8*15 +: 8] <= reg_lcd;
+        end
+    end
+end
+
+// lcd position assignment
 // reg [8*16-1 : 0] reg_lcd_l1;
 // reg [8*16-1 : 0] reg_lcd_l2;
-// integer i, k;
+// integer i;
 // always @(posedge rst or posedge clk_100hz)
 // begin
 //     if (rst)
@@ -463,26 +509,11 @@ end
 //         begin 
 //             reg_lcd_l1[8*i +: 8] <= ascii_blk; 
 //             reg_lcd_l2[8*i +: 8] <= ascii_blk;
-//             k <= 0;
 //         end
 //     end
-//     else if (swd8) // result
-//     // begin
-//     //     if (reg_rlt_sgn) reg_lcd_l2[8*11 +: 8] <= ascii_sub;
-
-//     //     for (i = 9; i >= 0; i = i - 1) 
-//     //     begin
-//     //         if (reg_rlt_bcd[4*i +: 4] == 0 && k == 0) reg_lcd_l2[8*i +: 8] <= ascii_blk;
-//     //         else 
-//     //         begin 
-//     //             reg_lcd_l2[8*i +: 8] <= ascii_0 + reg_rlt_bcd[4*i +: 4];
-//     //             k <= 1;
-//     //         end
-//     //     end
-//     // end
-
+//     else if (swd == 8'b0000_0001) // result
 //     begin
-//         if (reg_rlt_sgn) reg_lcd_l2[8*15 +: 8] <= ascii_sub;
+//         if (reg_rlt_sgn == 1) reg_lcd_l2[8*15 +: 8] <= ascii_sub;
 
 //         for (i = 9; i >= 0; i = i - 1) 
 //         begin
@@ -502,8 +533,28 @@ end
 //     end
 //     else // input
 //     begin
-//         if (cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
-//         else 
+//         if (cnt_lcd <= 16)
+//         begin
+//             case (cnt_lcd)
+//                 1 :     reg_lcd_l1[8*0 +: 8] <= reg_lcd;
+//                 2 :     reg_lcd_l1[8*1 +: 8] <= reg_lcd;
+//                 3 :     reg_lcd_l1[8*2 +: 8] <= reg_lcd;
+//                 4 :     reg_lcd_l1[8*3 +: 8] <= reg_lcd;
+//                 5 :     reg_lcd_l1[8*4 +: 8] <= reg_lcd;
+//                 6 :     reg_lcd_l1[8*5 +: 8] <= reg_lcd;
+//                 7 :     reg_lcd_l1[8*6 +: 8] <= reg_lcd;
+//                 8 :     reg_lcd_l1[8*7 +: 8] <= reg_lcd;
+//                 9 :     reg_lcd_l1[8*8 +: 8] <= reg_lcd;
+//                 10 :    reg_lcd_l1[8*9 +: 8] <= reg_lcd;
+//                 11 :    reg_lcd_l1[8*10 +: 8] <= reg_lcd;
+//                 12 :    reg_lcd_l1[8*11 +: 8] <= reg_lcd;
+//                 13 :    reg_lcd_l1[8*12 +: 8] <= reg_lcd;
+//                 14 :    reg_lcd_l1[8*13 +: 8] <= reg_lcd;
+//                 15 :    reg_lcd_l1[8*14 +: 8] <= reg_lcd;
+//                 16 :    reg_lcd_l1[8*15 +: 8] <= reg_lcd;
+//             endcase
+//         end
+//         else
 //         begin
 //             reg_lcd_l1 <= reg_lcd_l1 << 8;
 //             reg_lcd_l1[8*0 +: 8] <= ascii_lar;
@@ -511,72 +562,6 @@ end
 //         end
 //     end
 // end
-
-// lcd position assignment
-reg [8*16-1 : 0] reg_lcd_l1;
-reg [8*16-1 : 0] reg_lcd_l2;
-integer i;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-    begin
-        for (i = 0; i < 16; i = i + 1) 
-        begin 
-            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
-            reg_lcd_l2[8*i +: 8] <= ascii_blk;
-        end
-    end
-    else if (swd == 8'b0000_0001) // result
-    begin
-        if (reg_rlt_sgn == 1) reg_lcd_l2[8*15 +: 8] <= ascii_sub;
-
-        for (i = 9; i >= 0; i = i - 1) 
-        begin
-            case (reg_rlt_bcd[4*i +: 4])
-                0 : reg_lcd_l2[8*i +: 8] <= ascii_0;
-                1 : reg_lcd_l2[8*i +: 8] <= ascii_1;
-                2 : reg_lcd_l2[8*i +: 8] <= ascii_2;
-                3 : reg_lcd_l2[8*i +: 8] <= ascii_3;
-                4 : reg_lcd_l2[8*i +: 8] <= ascii_4;
-                5 : reg_lcd_l2[8*i +: 8] <= ascii_5;
-                6 : reg_lcd_l2[8*i +: 8] <= ascii_6;
-                7 : reg_lcd_l2[8*i +: 8] <= ascii_7;
-                8 : reg_lcd_l2[8*i +: 8] <= ascii_8;
-                9 : reg_lcd_l2[8*i +: 8] <= ascii_9;
-            endcase
-        end
-    end
-    else // input
-    begin
-        if (cnt_lcd <= 16)
-        begin
-            case (cnt_lcd)
-                1 :     reg_lcd_l1[8*0 +: 8] <= reg_lcd;
-                2 :     reg_lcd_l1[8*1 +: 8] <= reg_lcd;
-                3 :     reg_lcd_l1[8*2 +: 8] <= reg_lcd;
-                4 :     reg_lcd_l1[8*3 +: 8] <= reg_lcd;
-                5 :     reg_lcd_l1[8*4 +: 8] <= reg_lcd;
-                6 :     reg_lcd_l1[8*5 +: 8] <= reg_lcd;
-                7 :     reg_lcd_l1[8*6 +: 8] <= reg_lcd;
-                8 :     reg_lcd_l1[8*7 +: 8] <= reg_lcd;
-                9 :     reg_lcd_l1[8*8 +: 8] <= reg_lcd;
-                10 :    reg_lcd_l1[8*9 +: 8] <= reg_lcd;
-                11 :    reg_lcd_l1[8*10 +: 8] <= reg_lcd;
-                12 :    reg_lcd_l1[8*11 +: 8] <= reg_lcd;
-                13 :    reg_lcd_l1[8*12 +: 8] <= reg_lcd;
-                14 :    reg_lcd_l1[8*13 +: 8] <= reg_lcd;
-                15 :    reg_lcd_l1[8*14 +: 8] <= reg_lcd;
-                16 :    reg_lcd_l1[8*15 +: 8] <= reg_lcd;
-            endcase
-        end
-        else
-        begin
-            reg_lcd_l1 <= reg_lcd_l1 << 8;
-            reg_lcd_l1[8*0 +: 8] <= ascii_lar;
-            reg_lcd_l1[8*15 +: 8] <= reg_lcd;
-        end
-    end
-end
 
 // lcd output
 always@(posedge rst or posedge clk_100hz)

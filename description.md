@@ -561,8 +561,10 @@ end
 
 ## 10. LCD reg, LCD position count, and LCD position assignment
 
+연산자 = 이 눌린 후에 bcd 변환이 이루어져야 하는 것처럼, BCD코드가 완성된 후에 LCD에 배정되어야 한다.
+
 ```v
-// lcd reg
+// lcd reg - input
 reg [7:0] reg_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -571,14 +573,14 @@ begin
     else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
 end
 
-// lcd position count
+// lcd position count - input
 integer cnt_lcd;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) cnt_lcd <= 0;
     else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
 
-end// LCD position assignment
+end// LCD position assignment - input, output
 reg [8*16-1 : 0] reg_lcd_l1;
 reg [8*16-1 : 0] reg_lcd_l2;
 integer i;
@@ -872,6 +874,7 @@ end
 - 어디까지 최적화할 것인가? 지나친 최적화는 가독성을 떨어뜨린다.
 - 객체지향적. 각 블록의 역할을 정확하게 구분하자.
 - 인퍼페이스가 잘 정의되어야 한다.(부호 비트, LCD Index)
+- 동일한 클럭에 맞춰 움직이면서 이벤트 간의 시간 순서를 부여하는 것이 어렵다. -> 선행 원샷 코드, 후행 원샷 코드 / 2의 보수 타이밍, bcd 변환, lcd 배정
 
 ## 전략
 
