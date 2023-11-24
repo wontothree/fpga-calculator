@@ -21,7 +21,6 @@
 |assign wire|swd_os_pre|dip 스위치가 눌릴 때부터 가장 가까운 상승 에지까지 1이다.|
 |assign wire|swd_os_pst|dip 스위치가 눌리는 시점에 가장 가까운 상승 에지부터 다음 상승 에지까지 1이다.|
 
-**Term**
 |Declaration|Variable|Description|
 |---|---|---|
 |reg |reg_trm_sgn|항의 부호|
