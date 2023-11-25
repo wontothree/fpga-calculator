@@ -44,7 +44,7 @@
 |reg_trm|항에 대한 정보이다.|
 |reg_rlt|누적 연산된 결과이다.|
 
-## 1. Module declaration and constant
+## 1. Module and constant
 
 ```v
 module calculator (
@@ -65,11 +65,7 @@ module calculator (
 assign lcd_e = clk_100hz;
 
 endmodule
-```
 
-## 2. Constant
-
-```v
 // constant
 parameter 
         delay           = 3'b000,
@@ -114,7 +110,7 @@ parameter
         equ = 3'b111;
 ```
 
-## 3. Clock divider
+## 2. Clock divider
 
 clk_100hz의 주기는 clk의 주기의 10배이다. clk_100hz와 lcd_e는 동기화되어 있다.
 
@@ -141,7 +137,7 @@ begin
 end
 ```
 
-## 4. Count and state machine
+## 3. Count and state machine
 
 lcd의 주기는 clk_100hz의 주기의 800배이다.
 
@@ -206,7 +202,7 @@ begin
 end
 ```
 
-## 5. Push switch and dip switch
+## 4. Push switch and dip switch
 
 실제로 버튼을 누르고 있는 시간은 약 0.25s이다.
 
@@ -352,7 +348,7 @@ begin
 end
 ```
 
-## 6. One shot code
+## 5. One shot code
 
 One shot code는 동기화된 신호들을 제어하는 용도로 사용된다.
 
@@ -415,7 +411,7 @@ begin
 end
 ```
 
-## 7. Term
+## 6. Term
 
 숫자가 입력될 때마다 십진법으로 항에 대한 정보(reg_trm)를 갱신한다.
 
@@ -451,7 +447,7 @@ begin
 end
 ```
 
-## 8. Operation
+## 7. Operation
 
 연산자가 나올 때마다 계산 결과를 갱신한다.(덧셈, 뺄셈)
 
@@ -509,7 +505,7 @@ begin
 end
 ```
 
-## 9. Count Order
+## 8. Count Order
 
 ```v
 // Sifnal flow control - count order
@@ -521,7 +517,7 @@ begin
 end
 ```
 
-## 10. Binary to BCD
+## 9. Binary to BCD
 
 - equal 연산자가 눌리기 전에는 one shot code가 프로그램을 제어하는 용도로 사용된다.
 - equal 연산자가 눌린 이후부터는 실행 순서를 분명하게 구분하는 것이 중요해진다.(order count)
@@ -627,7 +623,7 @@ begin
 end
 ```
 
-## 12. LCD output
+## 11. LCD output
 
 Interface
 
