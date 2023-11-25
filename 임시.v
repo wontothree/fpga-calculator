@@ -1,52 +1,3 @@
-
-# Description
-
-## Variable declaration
-
-|Declaration|Variable|Description|
-|---|---|---|
-|input|swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd,|12개의 푸시 스위치는 0~9의 수와 reset 버튼, 그리고 load 버튼으로 구성된다.|
-|input|input swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8,|음의 부호(-), 사칙연산(+, -, x, %), 왼쪽 괄호, 오른쪽 괄호, 등호(=)|
-|input|clk|1Hz ~ 500Mz 진동수를 조절할 수 있다. 여기서는 대략 10kHz를 사용한다.|
-|output reg [7:0]|seg|푸시 스위치로 입력된 수를 7-segment에 출력한다.|
-|output reg [7:0]|led|딥 스위치로 입력된 연산을 LED에 출력한다.|
-|Switch|---|---|
-|reg [3:0]|reg_num|눌린 push 스위치에 해당하는 값이 저장된다.|
-|reg [7:0]|reg_num_ascii|눌린 push 스위치에 해당하는 아스키 코드가 저장된다.|
-|reg [2:0]|reg_opr|눌린 dip 스위치에 해당하는 값이 저장된다.|
-|reg [7:0]|reg_opr_ascii|눌린 dip 스위치에 해당하는 아스키 코드가 저장된다.|
-|One shot code|---|---|
-|assign wire|swp_os_pre|push 스위치가 눌릴 때부터 가장 가까운 상승 에지까지 1이다.|
-|assign wire|swp_os_pst|push 스위치가 눌리는 시점에 가장 가까운 상승 에지부터 다음 상승 에지까지 1이다.|
-|assign wire|swd_os_pre|dip 스위치가 눌릴 때부터 가장 가까운 상승 에지까지 1이다.|
-|assign wire|swd_os_pst|dip 스위치가 눌리는 시점에 가장 가까운 상승 에지부터 다음 상승 에지까지 1이다.|
-
-|Declaration|Variable|Description|
-|---|---|---|
-|reg |reg_trm_sgn|항의 부호|
-|reg [31:0]|reg_trm_mgn|항의 절대값|
-|reg [31:0]|reg_trm|항의 값|
-|Sign-magnitude form|---|---|
-|reg [31:0]|reg_rlt|연산 결과를 저장한다.(입력) / -21_4748_3648 ~ 21_4748_3647의 숫자를 표현할 수 있다.|
-|reg |reg_rlt_sgn|reg_rlt의 부호를 저장한다.|
-|reg [31:0]|reg_rlt_mag|reg_rlt의 값을 저장한다. reg_rlt와 같은 32비트로 선언된다.|
-|BCD transformation|---|---|
-|reg [39:0]|reg_rlt_bcd|연산 결과를 bcd로 저장한다.(출력) / LCD line2의 16칸에 들어갈 10진수 값을 위한 코드이다. 1칸 당 상위 4비트에는 0000을 할당하고 하위 4비트에는 bcd를 할당하여, 총 8비트를 할당한다. bcd가 십진수 한 자리 당 4비트인데 반해, 1칸 당 8비트씩 할당하는 이유는 각 자릿수 값에 8'b0011_0000를 더함으로써 바로 ascii 코드로 바꿀 수 있기 때문이다.|
-|---|---|---|
-|reg [7:0]|reg_lcd|lcd에 띄울 아스키 값이 들어간다. reg_num_ascii 또는 reg_opr_ascii에 들어 있는 8비트 아스키 값이 들어간다.|
-
-시뮬레이션 할 때 중요한 변수
-
-|Variable|Description|
-|---|---|
-|lcd_data|최종적으로 뜨는 데이터다.|
-|reg_lcd|LCD 1번째 줄에 뜰 문자를 저장하고 있다.|
-|reg_trm|항에 대한 정보이다.|
-|reg_rlt|누적 연산된 결과이다.|
-
-## 1. Module declaration and constant
-
-```v
 module calculator (
     input swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd,
     input swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8,
@@ -60,16 +11,6 @@ module calculator (
     output reg [7:0] lcd_data
 );
 
-// ...
-
-assign lcd_e = clk_100hz;
-
-endmodule
-```
-
-## 2. Constant
-
-```v
 // constant
 parameter 
         delay           = 3'b000,
@@ -112,15 +53,7 @@ parameter
         lpr = 3'b101,
         rpr = 3'b110,
         equ = 3'b111;
-```
 
-## 3. Clock divider
-
-clk_100hz의 주기는 clk의 주기의 10배이다. clk_100hz와 lcd_e는 동기화되어 있다.
-
-<img src="img/clk.png">
-
-```v
 // clock divider
 integer cnt_100hz;
 reg clk_100hz;
@@ -139,13 +72,7 @@ begin
     else
         cnt_100hz <= cnt_100hz + 1;
 end
-```
 
-## 4. Count and state machine
-
-lcd의 주기는 clk_100hz의 주기의 800배이다.
-
-```v
 // count
 integer cnt;
 reg [2:0] state;
@@ -204,22 +131,16 @@ begin
         endcase
     end
 end
-```
 
-## 5. Push switch and dip switch
-
-실제로 버튼을 누르고 있는 시간은 약 0.25s이다.
-
-```v
 // push switch
 reg [3:0] reg_num;
-reg [7:0] reg_lcd_swp;
+reg [7:0] reg_num_ascii; // reg_lcd_swp
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin 
         reg_num <= 4'b0000;
-        reg_lcd_swp <= ascii_blk; 
+        reg_num_ascii <= ascii_blk; 
         seg <= 8'b0000_0000;
     end
     else
@@ -227,141 +148,131 @@ begin
         if (swp1)
         begin
             reg_num <= 4'b0001;
-            reg_lcd_swp <= ascii_1;
+            reg_num_ascii <= ascii_1;
             seg <= 8'b0110_0000;
         end
         else if (swp2)
         begin
             reg_num <= 4'b0010;
-            reg_lcd_swp <= ascii_2;
+            reg_num_ascii <= ascii_2;
             seg <= 8'b1101_1010;
         end
         else if (swp3)
         begin
             reg_num <= 4'b0011;
-            reg_lcd_swp <= ascii_3;
+            reg_num_ascii <= ascii_3;
             seg <= 8'b1111_0010;
         end
         else if (swp4)
         begin
             reg_num <= 4'b0100;
-            reg_lcd_swp <= ascii_4;
+            reg_num_ascii <= ascii_4;
             seg <= 8'b0110_0110;
          end
         else if (swp5)
         begin
             reg_num <= 4'b0101;
-            reg_lcd_swp <= ascii_5;
+            reg_num_ascii <= ascii_5;
             seg <= 8'b1011_0110;
         end
         else if (swp6)
         begin
             reg_num <= 4'b0110;
-            reg_lcd_swp <= ascii_6;
+            reg_num_ascii <= ascii_6;
             seg <= 8'b1011_1110;
         end
         else if (swp7)
         begin
             reg_num <= 4'b111;
-            reg_lcd_swp <= ascii_7;
+            reg_num_ascii <= ascii_7;
             seg <= 8'b1110_0000;
         end
         else if (swp8)
         begin
             reg_num <= 4'b1000;
-            reg_lcd_swp <= ascii_8;
+            reg_num_ascii <= ascii_8;
             seg <= 8'b1111_1110;
         end
         else if (swp9)
         begin
             reg_num <= 4'b1001;
-            reg_lcd_swp <= ascii_9;
+            reg_num_ascii <= ascii_9;
             seg <= 8'b1111_0110;
         end
         else if (swp0)
         begin
             reg_num <= 4'b0000;
-            reg_lcd_swp <= ascii_0;
+            reg_num_ascii <= ascii_0;
             seg <= 8'b1111_1100;
         end
     end
 end
 
 // dip switch
+reg reg_trm_sgn;
 reg [7:0] reg_opr;
-reg [7:0] reg_lcd_swd;
+reg [7:0] reg_opr_ascii; // reg_lcd_swd
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin 
         reg_opr <= sum; // sum
-        reg_lcd_swd <= ascii_blk; 
+        reg_opr_ascii <= ascii_blk; 
         led <= 0; 
     end
     else
     begin
         if (swd1)
         begin 
-            reg_opr <= min;
-            reg_lcd_swd <= ascii_min;   
+            reg_trm_sgn <= 1;
+            reg_opr_ascii <= ascii_min;
             led <= 8'b1000_0000;  
         end 
         else if (swd2)
         begin 
             reg_opr <= sum;
-            reg_lcd_swd <= ascii_sum;    
+            reg_opr_ascii <= ascii_sum;    
             led <= 8'b0100_0000; 
         end 
         else if (swd3)
         begin 
             reg_opr <= sub;
-            reg_lcd_swd <= ascii_sub;    
+            reg_opr_ascii <= ascii_sub;    
             led <= 8'b0010_0000; 
         end 
         else if (swd4)
         begin 
             reg_opr <= mul;
-            reg_lcd_swd <= ascii_mul;    
+            reg_opr_ascii <= ascii_mul;    
             led <= 8'b0001_0000; 
         end 
         else if (swd5)
         begin 
             reg_opr <= div;
-            reg_lcd_swd <= ascii_div;   
+            reg_opr_ascii <= ascii_div;   
             led <= 8'b0000_1000;  
         end 
         else if (swd6)
         begin 
             reg_opr <= lpr;
-            reg_lcd_swd <= ascii_lpr;    
+            reg_opr_ascii <= ascii_lpr;    
             led <= 8'b0000_0100; 
         end 
         else if (swd7)
         begin 
             reg_opr <= rpr;
-            reg_lcd_swd <= ascii_rpr;    
+            reg_opr_ascii <= ascii_rpr;    
             led <= 8'b0000_0010; 
         end 
         else if (swd8)
         begin 
             reg_opr <= equ;
-            reg_lcd_swd <= ascii_equ;    
+            reg_opr_ascii <= ascii_equ;    
             led <= 8'b0000_0001; 
         end 
     end
 end
-```
 
-## 6. One shot code
-
-One shot code는 동기화된 신호들을 제어하는 용도로 사용된다.
-
-두 개의 One shot code를 설계하여 사용한다.
-
-<img src="img/swp_os.png">
-<img src="img/swd_os.png">
-
-```v
 // Push switch preceding one shot code
 reg reg_swp_pre;
 
@@ -393,7 +304,7 @@ reg reg_swd_pre;
 
 wire swd;
 wire swd_os_pre;
-assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
+assign swd = swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 assign swd_os_pre = swd & ~reg_swd_pre;
 
 always@ (posedge rst or posedge clk_100hz)
@@ -413,17 +324,7 @@ begin
     if (rst) reg_swd_pst <= 2'b00;
     else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
-```
 
-## 7. Term
-
-숫자가 입력될 때마다 십진법으로 항에 대한 정보(reg_trm)를 갱신한다.
-
-연산자를 기준으로 피연산자 항을 인식한다.
-
-음의 부호가 붙은 경우에는 2의 보수를 취한다.
-
-```v
 // Term - magnitude
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
@@ -441,26 +342,99 @@ begin
     end
 end
 
-// Term - sign
+// Term 
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_trm <= 0;
-    else if (swd_os_pre && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
+    else if (swd_os_pre && reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
     else reg_trm <= reg_trm_mgn;
 end
-```
 
-## 8. Operation
 
-연산자가 나올 때마다 계산 결과를 갱신한다.(덧셈, 뺄셈)
 
-```v
+// // Circular Queue - enqueue
+// parameter MAX_QUEUE_SIZE = 100;
+// reg [31:0] que_inf [0:MAX_QUEUE_SIZE];
+// integer front, rear;
+// always @(posedge rst or posedge clk_100hz)
+// begin
+//     if (rst)
+//     begin
+//         front <= 0;
+//         rear <= 0;
+//     end
+//     else if (swd_os_pst)
+//     begin
+//         if (front == (rear + 1) % MAX_QUEUE_SIZE); // is_full() : overflow
+//         else
+//         begin
+//             rear <= (rear + 1) % MAX_QUEUE_SIZE;
+//             que_inf[rear] <= reg_trm;
+//         end
+//     end
+// end
+
+
+// // Stack - push
+// parameter MAX_STACK_SIZE = 100;
+// reg [31:0] que_inf [0:MAX_STACK_SIZE];
+// integer top;
+// always @(posedge rst or posedge clk_100hz)
+// begin
+//     if (rst) top <= 0;
+//     else if (top >= MAX_STACK_SIZE); // is_full() : overflow
+//     else
+//     begin
+//         top <= top + 1;
+//         que_inf[top] <= reg_trm;
+//     end
+// end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Operation
-reg [31:0] reg_rlt;
+reg signed [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_rlt <= 0;
+    else if (reg_trm_sgn && reg_opr == 4'b0011) // 음수의 곱셈(두 번째 항 음수)
+    begin
+        if (swd_os_pre)
+        begin
+           case (reg_opr)
+               sum : reg_rlt <= reg_rlt + reg_trm;
+               sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
+           endcase
+        end
+    end
+    else if (reg_trm_sgn && reg_opr == 4'b0010) // 음수의 곱셈(두 번째 항 음수)
+    begin
+        if (swd_os_pre)
+        begin
+           case (reg_opr)
+               sum : reg_rlt <= reg_rlt + reg_trm;
+               sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
+           endcase
+        end
+    end
     else if (reg_trm_sgn) // negative
     begin
         if (swd_os_pst)
@@ -507,28 +481,15 @@ begin
         else reg_rlt_mgn <= reg_rlt; // positive
     end
 end
-```
 
-## 9. Count Order
-
-```v
-// Sifnal flow control - count order
+// Signal flow control - count order
 integer cnt_ord;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) cnt_ord <= 0;
     else if (swd8) cnt_ord <= cnt_ord + 1;
 end
-```
 
-## 10. Binary to BCD
-
-- equal 연산자가 눌리기 전에는 one shot code가 프로그램을 제어하는 용도로 사용된다.
-- equal 연산자가 눌린 이후부터는 실행 순서를 분명하게 구분하는 것이 중요해진다.(order count)
-
-equal 연산자 -> 결과 계산 -> BCD -> LCD assignment
-
-```v
 // Binary 2 BCD
 reg [39:0] reg_rlt_bcd;
 always @(posedge rst or posedge clk_100hz)
@@ -547,13 +508,7 @@ begin
         reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+10-cnt_ord]};
     end
 end
-```
 
-## 10. LCD reg, LCD position count, and LCD position assignment
-
-연산자 = 이 눌린 후에 bcd 변환이 이루어져야 하는 것처럼, BCD코드가 완성된 후에 LCD에 배정되어야 한다.
-
-```v
 // LCD reg(input) and lcd position count(input)
 reg [7:0] reg_lcd;
 integer cnt_lcd;
@@ -572,7 +527,7 @@ begin
     else if (swd_os_pst) 
     begin 
         reg_lcd <= reg_opr_ascii;
-         cnt_lcd <= cnt_lcd + 1;
+        cnt_lcd <= cnt_lcd + 1;
     end
 end
 
@@ -625,17 +580,7 @@ begin
         end
     end
 end
-```
 
-## 12. LCD output
-
-Interface
-
-첫 번째 줄의 LCD는 인덱스가 왼쪽에서 오른쪽 방향으로 증가한다.
-
-두 번째 줄의 LCD는 인덱스가 오른쪽에서 왼쪽으로 증가한다.
-
-```v
 // lcd output
 always@(posedge rst or posedge clk_100hz)
 begin
@@ -816,7 +761,7 @@ begin
                                 end
                             16 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*15 +: 8];
+                                    lcd_data <= reg_lcd_l2[8*0 +: 8];
                                 end
                             default : begin
                                     lcd_rs <= 1'b1; 
@@ -845,23 +790,7 @@ begin
             endcase
         end
 end
-```
 
-## 느낀 점
+assign lcd_e = clk_100hz;
 
-- 하드웨어의 동작을 이해해야 한다.
-- 간결하게 짜는 것이 좋은 코드가 아닐 수 있다.
-- 어디까지 최적화할 것인가? 지나친 최적화는 가독성을 떨어뜨린다.
-- 객체지향적. 각 블록의 역할을 정확하게 구분하자.
-- 인퍼페이스가 잘 정의되어야 한다.(부호 비트, LCD Index)
-- 동일한 클럭에 맞춰 움직이면서 이벤트 간의 시간 순서를 부여하는 것이 어렵다. -> 선행 원샷 코드, 후행 원샷 코드 / 2의 보수 타이밍, bcd 변환, lcd 배정
-
-## 전략
-
-- Time diagram을 설계하자.
-- 타이밍적으로 안정적인 회로를 설계하자.
-- 타이밍 다이어그램만 보지 말고 합성된 회로를 고려해서 코딩하자.
-- 프로그래밍 언어를 관찰하자. -> 정수형, 부동소수점형, 동적 타이핑
-- 테스트해야 하는 부분을 정확하게 테스트하자.
-
-## 흐름 정리
+endmodule

@@ -36,8 +36,8 @@ parameter
         ascii_min = 8'b0010_1101,
         ascii_sum = 8'b0010_1011,
         ascii_sub = 8'b0010_1101,
-        ascii_mul = 8'b1101_0111, // 01111000
-        ascii_div = 8'b1111_0111, // 0010_0101
+        ascii_mul = 8'b0111_1000,
+        ascii_div = 8'b1111_1101,
         ascii_lpr = 8'b0010_1000,
         ascii_rpr = 8'b0010_1001,
         ascii_equ = 8'b0011_1101, 
@@ -326,7 +326,7 @@ begin
     else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
 
-// Term
+// Term - magnitude
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -335,11 +335,7 @@ begin
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
     end
-    else if (swp_os_pst) 
-    begin
-        // if (reg_opr == min) reg_trm_sgn <= 1;
-        reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using post one shot code
-    end
+    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
     else if (swd_os_pst) 
     begin 
         reg_trm_sgn <= 0;
@@ -347,7 +343,7 @@ begin
     end
 end
 
-// Term
+// Term - sign
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -387,23 +383,6 @@ begin
     end
 end
 
-// lcd reg
-reg [7:0] reg_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) reg_lcd <= ascii_blk;
-    else if (swp_os_pst) reg_lcd <= reg_num_ascii;
-    else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
-end
-
-// lcd position count
-integer cnt_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) cnt_lcd <= 0;
-    else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
-end
-
 // Sign-magnitude form
 reg reg_rlt_sgn;
 reg [31:0] reg_rlt_mgn;
@@ -425,7 +404,7 @@ begin
     end
 end
 
-// Sifnal flow control - count order
+// Signal flow control - count order
 integer cnt_ord;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -449,6 +428,28 @@ begin
         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
         if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
         reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+10-cnt_ord]};
+    end
+end
+
+// LCD reg(input) and lcd position count(input)
+reg [7:0] reg_lcd;
+integer cnt_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) 
+    begin 
+        reg_lcd <= ascii_blk;
+        cnt_lcd <= 0;
+    end
+    else if (swp_os_pst) 
+    begin 
+        reg_lcd <= reg_num_ascii;
+        cnt_lcd <= cnt_lcd + 1;
+    end
+    else if (swd_os_pst) 
+    begin 
+        reg_lcd <= reg_opr_ascii;
+         cnt_lcd <= cnt_lcd + 1;
     end
 end
 
