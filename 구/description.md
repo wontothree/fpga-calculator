@@ -415,10 +415,6 @@ end
 
 숫자가 입력될 때마다 십진법으로 항에 대한 정보(reg_trm)를 갱신한다.
 
-연산자를 기준으로 피연산자 항을 인식한다.
-
-음의 부호가 붙은 경우에는 2의 보수를 취한다.
-
 ```v
 // Term - magnitude
 reg [31:0] reg_trm_mgn;
@@ -436,13 +432,17 @@ begin
         reg_trm_mgn <= 0;
     end
 end
+```
 
+연산자를 기준으로 피연산자 항을 인식한다. 음의 부호가 붙은 경우에는 2의 보수를 취한다.
+
+```v
 // Term - sign
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_trm <= 0;
-    else if (swd_os_pre && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
+    else if (swd_os_pre && reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
     else reg_trm <= reg_trm_mgn;
 end
 ```
@@ -851,6 +851,7 @@ end
 - 객체지향적. 각 블록의 역할을 정확하게 구분하자.
 - 인퍼페이스가 잘 정의되어야 한다.(부호 비트, LCD Index)
 - 동일한 클럭에 맞춰 움직이면서 이벤트 간의 시간 순서를 부여하는 것이 어렵다. -> 선행 원샷 코드, 후행 원샷 코드 / 2의 보수 타이밍, bcd 변환, lcd 배정
+- 하드웨어 입장에서 변수명이 지어졌기 때문에 swp, swd는 변수명이 구린 것 같다. 연산자와 피연산자를 기준으로 구분하는 것이 나은 것 같다.
 
 ## 전략
 
@@ -861,3 +862,30 @@ end
 - 테스트해야 하는 부분을 정확하게 테스트하자.
 
 ## 흐름 정리
+
+연산자와 등호가 이벤트를 발생시킨다.
+
+1. 피연산자가 입력된다.
+2. **연산자가 입력된다.** -> 하나의 항으로 인식한다.
+3. 피연산자가 입력된다.
+4. **등호가 입력된다.**
+
+흐름 제어
+
+1. 연산자가 입력된다.
+2. 피연산자가 입력된다.
+3. clk_100hz의 상승 에지마다 cnt_ord가 증가하기 시작한다.
+4. cnt_ord 0으로 초기화된다.
+
+상태 기계2(연산자)
+
+1. state1 : reg_trm_mgn를 갱신한다.
+2. state2 : reg_trm_sgn을 고려하여 reg_trm을 결정한다.
+3. state3 : reg_rlt를 갱신한다.
+
+상태 기계3(등호)
+
+1. state1 : reg_trm_mgn를 갱신한다.
+2. state2 : reg_trm_sgn을 고려하여 reg_trm을 결정한다.
+3. state3 : 최종 reg_rlt를 계산한다.
+4. state4 : reg_rlt_mgn과 reg_rlt_sgn을 계산한다.

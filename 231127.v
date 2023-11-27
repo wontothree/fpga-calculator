@@ -13,15 +13,6 @@ module calculator (
 
 // constant
 parameter 
-        delay           = 3'b000,
-        function_set    = 3'b001,
-        entry_mode      = 3'b010,
-        disp_onoff      = 3'b011,
-        line1           = 3'b100,
-        line2           = 3'b101,
-        delay_t         = 3'b110,
-        clear_disp      = 3'b111,
-
         ascii_0 = 8'b0011_0000,
         ascii_1 = 8'b0011_0001,
         ascii_2 = 8'b0011_0010,
@@ -36,8 +27,8 @@ parameter
         ascii_min = 8'b0010_1101,
         ascii_sum = 8'b0010_1011,
         ascii_sub = 8'b0010_1101,
-        ascii_mul = 8'b0111_1000,
-        ascii_div = 8'b1111_1101,
+        ascii_mul = 8'b1101_0111, // 01111000
+        ascii_div = 8'b1111_0111, // 0010_0101
         ascii_lpr = 8'b0010_1000,
         ascii_rpr = 8'b0010_1001,
         ascii_equ = 8'b0011_1101, 
@@ -71,65 +62,6 @@ begin
         end
     else
         cnt_100hz <= cnt_100hz + 1;
-end
-
-// count
-integer cnt;
-reg [2:0] state;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        cnt <= 0;
-    else
-        begin
-            case (state)
-                delay :
-                    if (cnt >= 70) cnt <= 0;
-                    else cnt <= cnt + 1;
-                function_set :
-                    if (cnt >= 30) cnt <= 0;
-                    else cnt <= cnt + 1;
-                disp_onoff :
-                    if (cnt >= 30) cnt <= 0;
-                    else cnt <= cnt + 1;
-                entry_mode :
-                    if (cnt >= 30) cnt <= 0;
-                    else cnt <= cnt + 1;
-                line1 :
-                    if (cnt >= 20) cnt <= 0;
-                    else cnt <= cnt + 1;
-                line2 :
-                    if (cnt >= 20) cnt <= 0;
-                    else cnt <= cnt + 1;
-                delay_t :
-                    if (cnt >= 400) cnt <= 0;
-                    else cnt <= cnt + 1;
-                clear_disp :
-                    if (cnt >= 200) cnt <= 0;
-                    else cnt <= cnt + 1;
-                default : cnt <= 0;
-            endcase
-        end
-end
-
-// state machine
-always@(posedge rst or posedge clk_100hz)
-begin
-    if (rst) state = delay;
-    else
-    begin
-        case (state)
-            delay :             if (cnt == 70)  state <= function_set;
-            function_set :      if (cnt == 30)  state <= disp_onoff;
-            disp_onoff :        if (cnt == 30)  state <= entry_mode;
-            entry_mode :        if (cnt == 30)  state <= line1;
-            line1 :             if (cnt == 20)  state <= line2;
-            line2 :             if (cnt == 20)  state <= delay_t;
-            delay_t :           if (cnt == 400) state <= clear_disp;
-            clear_disp :        if (cnt == 200) state <= line1;
-            default :                           state <= delay;
-        endcase
-    end
 end
 
 // push switch
@@ -326,7 +258,7 @@ begin
     else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
 
-// Term - magnitude
+// Term
 reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -335,7 +267,11 @@ begin
         reg_trm_sgn <= 0;
         reg_trm_mgn <= 0;
     end
-    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
+    else if (swp_os_pst) 
+    begin
+        // if (reg_opr == min) reg_trm_sgn <= 1;
+        reg_trm_mgn <= 10 * reg_trm_mgn + reg_num; // using post one shot code
+    end
     else if (swd_os_pst) 
     begin 
         reg_trm_sgn <= 0;
@@ -343,7 +279,7 @@ begin
     end
 end
 
-// Term - sign
+// Term
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -371,7 +307,7 @@ begin
     end
     else // positvie
     begin
-        if (swd_os_pre)
+        if (swd_os_pre) // swd_os_pre
         begin
            case (reg_opr)
                sum : reg_rlt <= reg_rlt + reg_trm;
@@ -381,6 +317,23 @@ begin
            endcase
         end
     end
+end
+
+// lcd reg
+reg [7:0] reg_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) reg_lcd <= ascii_blk;
+    else if (swp_os_pst) reg_lcd <= reg_num_ascii;
+    else if (swd_os_pst) reg_lcd <= reg_opr_ascii;
+end
+
+// lcd position count
+integer cnt_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) cnt_lcd <= 0;
+    else if (swp_os_pst | swd_os_pst) cnt_lcd <= cnt_lcd + 1;
 end
 
 // Sign-magnitude form
@@ -404,7 +357,7 @@ begin
     end
 end
 
-// Signal flow control - count order
+// Sifnal flow control - count order
 integer cnt_ord;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -428,28 +381,6 @@ begin
         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
         if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
         reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+10-cnt_ord]};
-    end
-end
-
-// LCD reg(input) and lcd position count(input)
-reg [7:0] reg_lcd;
-integer cnt_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) 
-    begin 
-        reg_lcd <= ascii_blk;
-        cnt_lcd <= 0;
-    end
-    else if (swp_os_pst) 
-    begin 
-        reg_lcd <= reg_num_ascii;
-        cnt_lcd <= cnt_lcd + 1;
-    end
-    else if (swd_os_pst) 
-    begin 
-        reg_lcd <= reg_opr_ascii;
-         cnt_lcd <= cnt_lcd + 1;
     end
 end
 
@@ -500,6 +431,77 @@ begin
         begin
             if (reg_rlt_sgn) reg_lcd_l2[8*(10-cnt_blk) +: 8] <= ascii_sub;
         end
+    end
+end
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+parameter
+        delay           = 3'b000,
+        function_set    = 3'b001,
+        entry_mode      = 3'b010,
+        disp_onoff      = 3'b011,
+        line1           = 3'b100,
+        line2           = 3'b101,
+        delay_t         = 3'b110,
+        clear_disp      = 3'b111;
+
+// count
+integer cnt;
+reg [2:0] state;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+        cnt <= 0;
+    else
+        begin
+            case (state)
+                delay :
+                    if (cnt >= 70) cnt <= 0;
+                    else cnt <= cnt + 1;
+                function_set :
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
+                disp_onoff :
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
+                entry_mode :
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
+                line1 :
+                    if (cnt >= 20) cnt <= 0;
+                    else cnt <= cnt + 1;
+                line2 :
+                    if (cnt >= 20) cnt <= 0;
+                    else cnt <= cnt + 1;
+                delay_t :
+                    if (cnt >= 400) cnt <= 0;
+                    else cnt <= cnt + 1;
+                clear_disp :
+                    if (cnt >= 200) cnt <= 0;
+                    else cnt <= cnt + 1;
+                default : cnt <= 0;
+            endcase
+        end
+end
+
+// state machine
+always@(posedge rst or posedge clk_100hz)
+begin
+    if (rst) state = delay;
+    else
+    begin
+        case (state)
+            delay :             if (cnt == 70)  state <= function_set;
+            function_set :      if (cnt == 30)  state <= disp_onoff;
+            disp_onoff :        if (cnt == 30)  state <= entry_mode;
+            entry_mode :        if (cnt == 30)  state <= line1;
+            line1 :             if (cnt == 20)  state <= line2;
+            line2 :             if (cnt == 20)  state <= delay_t;
+            delay_t :           if (cnt == 400) state <= clear_disp;
+            clear_disp :        if (cnt == 200) state <= line1;
+            default :                           state <= delay;
+        endcase
     end
 end
 

@@ -5,7 +5,7 @@ module testbench ();
 reg swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd;
 reg swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8;
 
-reg rst, clk;
+reg clk;
 wire [7:0] seg, led;
 
 wire lcd_e, lcd_rs, lcd_rw;

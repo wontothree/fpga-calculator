@@ -208,6 +208,86 @@ begin
     end
 end
 
+reg enable;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    else enable <= 1
+end
+
+always@(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin 
+        reg_num <= 4'b0000;
+        reg_num_ascii <= ascii_blk; 
+        seg <= 8'b0000_0000;
+    end
+    else
+    begin
+        if (swp1)
+        begin
+            reg_num <= 4'b0001;
+            reg_num_ascii <= ascii_1;
+            seg <= 8'b0110_0000;
+        end
+        else if (swp2)
+        begin
+            reg_num <= 4'b0010;
+            reg_num_ascii <= ascii_2;
+            seg <= 8'b1101_1010;
+        end
+        else if (swp3)
+        begin
+            reg_num <= 4'b0011;
+            reg_num_ascii <= ascii_3;
+            seg <= 8'b1111_0010;
+        end
+        else if (swp4)
+        begin
+            reg_num <= 4'b0100;
+            reg_num_ascii <= ascii_4;
+            seg <= 8'b0110_0110;
+         end
+        else if (swp5)
+        begin
+            reg_num <= 4'b0101;
+            reg_num_ascii <= ascii_5;
+            seg <= 8'b1011_0110;
+        end
+        else if (swp6)
+        begin
+            reg_num <= 4'b0110;
+            reg_num_ascii <= ascii_6;
+            seg <= 8'b1011_1110;
+        end
+        else if (swp7)
+        begin
+            reg_num <= 4'b111;
+            reg_num_ascii <= ascii_7;
+            seg <= 8'b1110_0000;
+        end
+        else if (swp8)
+        begin
+            reg_num <= 4'b1000;
+            reg_num_ascii <= ascii_8;
+            seg <= 8'b1111_1110;
+        end
+        else if (swp9)
+        begin
+            reg_num <= 4'b1001;
+            reg_num_ascii <= ascii_9;
+            seg <= 8'b1111_0110;
+        end
+        else if (swp0)
+        begin
+            reg_num <= 4'b0000;
+            reg_num_ascii <= ascii_0;
+            seg <= 8'b1111_1100;
+        end
+    end
+end
+
 // dip switch
 reg reg_trm_sgn;
 reg [7:0] reg_opr;
@@ -304,7 +384,7 @@ reg reg_swd_pre;
 
 wire swd;
 wire swd_os_pre;
-assign swd = swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
+assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 assign swd_os_pre = swd & ~reg_swd_pre;
 
 always@ (posedge rst or posedge clk_100hz)
@@ -319,6 +399,7 @@ reg [1:0] reg_swd_pst;
 wire swd_os_pst;
 assign swd_os_pst = reg_swd_pst[0] & ~reg_swd_pst[1];
 
+assign swd = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 always@ (posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_swd_pst <= 2'b00;
@@ -342,99 +423,20 @@ begin
     end
 end
 
-// Term 
+// Term - sign
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_trm <= 0;
-    else if (swd_os_pre && reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
+    else if (swd_os_pre && reg_trm_sgn == 1) reg_trm <= ~reg_trm_mgn + 1;
     else reg_trm <= reg_trm_mgn;
 end
 
-
-
-// // Circular Queue - enqueue
-// parameter MAX_QUEUE_SIZE = 100;
-// reg [31:0] que_inf [0:MAX_QUEUE_SIZE];
-// integer front, rear;
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst)
-//     begin
-//         front <= 0;
-//         rear <= 0;
-//     end
-//     else if (swd_os_pst)
-//     begin
-//         if (front == (rear + 1) % MAX_QUEUE_SIZE); // is_full() : overflow
-//         else
-//         begin
-//             rear <= (rear + 1) % MAX_QUEUE_SIZE;
-//             que_inf[rear] <= reg_trm;
-//         end
-//     end
-// end
-
-
-// // Stack - push
-// parameter MAX_STACK_SIZE = 100;
-// reg [31:0] que_inf [0:MAX_STACK_SIZE];
-// integer top;
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst) top <= 0;
-//     else if (top >= MAX_STACK_SIZE); // is_full() : overflow
-//     else
-//     begin
-//         top <= top + 1;
-//         que_inf[top] <= reg_trm;
-//     end
-// end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Operation
-reg signed [31:0] reg_rlt;
+reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_rlt <= 0;
-    else if (reg_trm_sgn && reg_opr == 4'b0011) // 음수의 곱셈(두 번째 항 음수)
-    begin
-        if (swd_os_pre)
-        begin
-           case (reg_opr)
-               sum : reg_rlt <= reg_rlt + reg_trm;
-               sub : reg_rlt <= reg_rlt - reg_trm;
-               mul : reg_rlt <= reg_rlt * reg_trm;
-               div : reg_rlt <= reg_rlt / reg_trm;
-           endcase
-        end
-    end
-    else if (reg_trm_sgn && reg_opr == 4'b0010) // 음수의 곱셈(두 번째 항 음수)
-    begin
-        if (swd_os_pre)
-        begin
-           case (reg_opr)
-               sum : reg_rlt <= reg_rlt + reg_trm;
-               sub : reg_rlt <= reg_rlt - reg_trm;
-               mul : reg_rlt <= reg_rlt * reg_trm;
-               div : reg_rlt <= reg_rlt / reg_trm;
-           endcase
-        end
-    end
     else if (reg_trm_sgn) // negative
     begin
         if (swd_os_pst)
@@ -482,7 +484,7 @@ begin
     end
 end
 
-// Signal flow control - count order
+// Sifnal flow control - count order
 integer cnt_ord;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -527,7 +529,7 @@ begin
     else if (swd_os_pst) 
     begin 
         reg_lcd <= reg_opr_ascii;
-        cnt_lcd <= cnt_lcd + 1;
+         cnt_lcd <= cnt_lcd + 1;
     end
 end
 
