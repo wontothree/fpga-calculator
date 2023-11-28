@@ -37,12 +37,12 @@ parameter
         ascii_lar = 8'b0001_0001,
 
         min = 3'b000,
-        sum = 3'b001,
-        sub = 3'b010,
-        mul = 3'b011,
-        div = 3'b100,
-        lpr = 3'b101,
-        rpr = 3'b110,
+        lpr = 3'b001,
+        rpr = 3'b010,
+        sum = 3'b011,
+        sub = 3'b100,
+        mul = 3'b101,
+        div = 3'b110,
         equ = 3'b111;
 
 // clock divider
@@ -331,16 +331,17 @@ end
 // operator
 reg [31:0] reg_trm;
 reg [31:0] reg_rlt;
-integer i, top;
-reg [31:0] que_inf [0:99];
+integer i, front1, rear1;
+reg [31:0] que_inf [0:99]; // 중위식을 저장하는 큐
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
         reg_trm <= 0;
-        top <= 0;
-        for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
         reg_rlt <= 0;
+        front1 <= 0;
+        rear1 <= 0;
+        for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
     end
     else
     begin
@@ -350,12 +351,12 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[top] <= reg_trm; 
-                    top <= top + 1;
+                    que_inf[rear1] <= reg_trm; 
+                    rear1 <= rear1 + 1;
                 end
             6 : begin // Insert reg_opr in queue
-                    que_inf[top] <= reg_opr;
-                    top <= top + 1;
+                    que_inf[rear1] <= reg_opr;
+                    rear1 <= rear1 + 1;
                 end
             8 : begin // Accumulate the result
                     case (reg_opr)
@@ -377,10 +378,10 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[top] <= reg_trm; 
-                    top <= top + 1;
+                    que_inf[rear1] <= reg_trm; 
+                    rear1 <= rear1 + 1;
                 end
-            8 : begin // Accumulate the result
+            6 : begin // Accumulate the result
                     case (reg_opr)
                         sum : reg_rlt <= reg_rlt + reg_trm;
                         sub : reg_rlt <= reg_rlt - reg_trm;
@@ -388,7 +389,7 @@ begin
                         div : reg_rlt <= reg_rlt / reg_trm;
                     endcase
                 end
-            10 : begin // Initialize the reg_trm
+            8 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
                 end
@@ -397,6 +398,58 @@ begin
 end
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+reg [31:0] stk_inf2prf [0:99]; // 중위식을 후위식으로 변환하기 위한 스택
+reg [31:0] que_prf [0:99]; // 후위식을 저장하는 큐
+reg [31:0] stk_prf2rlt [0:99]; // 후위식을 계산하기 위한 스택
+
+// 중위식 -> 후위식
+integer top1, front2, rear2, cnt_stk;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        top1 <= -1;
+        front2 <= 0;
+        rear2 <= 0;
+        for (i = 0; i < 100; i = i + 1) stk_inf2prf[i] <= 0;
+        for (i = 0; i < 100; i = i + 1) que_prf[i] <= 0;
+    end
+    else if (cnt_result >= 10 && cnt_result < 16)
+    begin
+        for (i = 0; i < 100; i = i + 1)
+        begin
+            if (que_inf[i] > 3'b111) // operand
+            begin
+                que_prf[rear2] <= que_irf[i];
+                i <= i + 1;
+                top1 <= top1 + 1;
+            end
+            // else if (
+            // else if )
+            else if (que_inf[i] <= 3'b111) // operator
+            begin
+                while (top != -1)
+                begin
+                    if (stk_inf2prf[top1] > que_irf[i]) // operator - 스택의 맨 위의 연산자가 들어오는 연산자보다 우선순위가 높거은 경우
+                    begin
+                        que_prf[front2] <= stk_inf2prf[top1];
+                        top1 <= top1 - 1;
+                    end
+                    else break;
+                end
+
+                stk_inf2prf[top1] <= que_inf[i]; // issue*********************
+            end
+        end
+    end
+end
+
+
+
+
+
+
 
 reg reg_rlt_sgn;
 reg [31:0] reg_rlt_mgn;
@@ -410,7 +463,7 @@ begin
     else
     begin
         case (cnt_result)
-            12: begin // Sign-magnitude form for bcd code
+            18: begin // Sign-magnitude form for bcd code
                     if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                     begin 
                         reg_rlt_mgn <= ~(reg_rlt - 1);
