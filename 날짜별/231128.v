@@ -221,7 +221,7 @@ assign os_operand = reg_os_operand[0] & ~reg_os_operand[1];
 // one shot code of operator
 wire os_operator;
 reg [1:0] reg_os_operator;
-assign sw_operator = swd2 | swd3 | swd4 | swd5 | swd6 | swd7;
+assign sw_operator = swd2 | swd3 | swd4 | swd5 | swd6;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_os_operator <= 2'b00;
