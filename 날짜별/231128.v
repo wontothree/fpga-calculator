@@ -341,8 +341,8 @@ reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으
 reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1]; // 후위식을 저장하는 큐
 reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // 후위식을 계산하기 위한 스택
 
-integer i, j;
 // operator
+integer i, j;
 reg [31:0] reg_trm;
 reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
@@ -352,7 +352,7 @@ begin
         reg_trm <= 0;
         reg_rlt <= 0;
         front_inf <= 4'b1111;
-        rear_inf <= 4'b1111;
+        rear_inf <= 0;
         for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_inf[i] <= 0;
     end
     else
@@ -363,11 +363,11 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf+1] <= reg_trm; 
+                    que_inf[rear_inf] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
             6 : begin // Insert reg_opr in queue
-                    que_inf[rear_inf+1] <= reg_opr;
+                    que_inf[rear_inf] <= reg_opr;
                     rear_inf <= rear_inf + 1;
                 end
             8 : begin // Accumulate the result
@@ -390,7 +390,7 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf+1] <= reg_trm; 
+                    que_inf[rear_inf] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
             6 : begin // Accumulate the result
