@@ -353,8 +353,8 @@ begin
     begin
         reg_trm <= 0;
         reg_rlt <= 0;
-        front_inf <= -1;
-        rear_inf <= -1;
+        front_inf <= 0;
+        rear_inf <= 0;
         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_inf[i] <= 0;
     end
     else
@@ -365,8 +365,7 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    if (rear_inf == -1) que_inf[0] <= reg_trm; // index 0
-                    else que_inf[rear_inf+1] <= reg_trm; 
+                    que_inf[rear_inf+1] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
             6 : begin // Insert reg_opr in queue
