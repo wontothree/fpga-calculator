@@ -365,7 +365,8 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf+1] <= reg_trm; 
+                    if (rear_inf == - 1) que_inf[0] <= reg_trm; // index 0
+                    else if que_inf[rear_inf+1] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
             6 : begin // Insert reg_opr in queue
