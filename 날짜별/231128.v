@@ -148,6 +148,7 @@ always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin 
+        reg_trm_sgn <= 0;
         reg_opr <= sum; // sum
         reg_opr_ascii <= ascii_blk; 
         led <= 0; 
@@ -314,7 +315,7 @@ begin
     else if (en_result) 
     begin
         cnt_operand <= 0;
-        cnt_operator <= cnt_operator + 1;
+        cnt_operator <= 0;
         cnt_result <= cnt_result + 1;
     end
 end
@@ -336,7 +337,6 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
-        reg_trm_sgn <= 0;
         reg_trm <= 0;
         top <= 0;
         for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
@@ -355,6 +355,29 @@ begin
                 end
             6 : begin // Insert reg_opr in queue
                     que_inf[top] <= reg_opr;
+                    top <= top + 1;
+                end
+            8 : begin // Accumulate the result
+                    case (reg_opr)
+                        sum : reg_rlt <= reg_rlt + reg_trm;
+                        sub : reg_rlt <= reg_rlt - reg_trm;
+                        mul : reg_rlt <= reg_rlt * reg_trm;
+                        div : reg_rlt <= reg_rlt / reg_trm;
+                    endcase
+                end
+            10 : begin // Initialize the reg_trm
+                    reg_trm_sgn <= 0;
+                    reg_trm_mgn <= 0;
+                end
+        endcase
+
+        case (cnt_result)
+            2 : begin // Calculate the reg_trm
+                    if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
+                    else reg_trm <= reg_trm_mgn;
+                end
+            4 : begin // Insert reg_trm in queue
+                    que_inf[top] <= reg_trm; 
                     top <= top + 1;
                 end
             8 : begin // Accumulate the result
