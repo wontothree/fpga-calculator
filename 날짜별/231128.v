@@ -205,8 +205,6 @@ begin
     end
 end
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // one shot code of operand
 wire os_perand;
 reg [1:0] reg_os_operand;
@@ -232,7 +230,6 @@ end
 
 assign os_operator = reg_os_operator[0] & ~reg_os_operator[1];
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // State transition
 parameter 
@@ -317,7 +314,7 @@ begin
     else if (en_result) 
     begin
         cnt_operand <= 0;
-        cnt_operator <= 0;
+        cnt_operator <= 1;
         cnt_result <= cnt_result + 1;
     end
 end
@@ -342,6 +339,7 @@ begin
         reg_trm_sgn <= 0;
         reg_trm <= 0;
         top <= 0;
+        for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
     end
     else
     begin
@@ -375,30 +373,12 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
-        reg_trm_sgn <= 0;
-        reg_trm <= 0;
-        top <= 0;
+        reg_rlt_sgn <= 0;
+        reg_rlt_mgn <= 0;
     end
     else
     begin
         case (cnt_result)
-            2:  begin // Calculate the reg_trm
-                    if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-                    else reg_trm <= reg_trm_mgn;
-                end
-            4:  que_inf[top] <= reg_trm; // Insert reg_trm in queue
-            6:  begin // Accumulate the result
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                        div : reg_rlt <= reg_rlt / reg_trm;
-                    endcase
-                end
-            8:  begin // Initialize the reg_trm
-                    reg_trm_sgn <= 0;
-                    reg_trm_mgn <= 0;
-                end
             10: begin // Sign-magnitude form for bcd code
                     if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                     begin 
@@ -408,8 +388,6 @@ begin
                     else reg_rlt_mgn <= reg_rlt; // positive
                 end
         endcase
-        
-
     end 
 end
 
