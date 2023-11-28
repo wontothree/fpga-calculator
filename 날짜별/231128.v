@@ -329,8 +329,6 @@ begin
 end
 
 
-
-
 parameter
         MAX_QUEUE_SIZE = 16,
         MAX_STACK_SIZE = 8;
@@ -411,124 +409,57 @@ begin
     end 
 end
 
-// // operator
-// reg [31:0] reg_trm;
-// reg [31:0] reg_rlt;
-// integer i, top;
-// reg [31:0] que_inf [0:99];
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst)
-//     begin
-//         reg_trm <= 0;
-//         top <= 0;
-//         for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
-//         reg_rlt <= 0;
-//     end
-//     else
-//     begin
-//         case (cnt_operator)
-//             2 : begin // Calculate the reg_trm
-//                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-//                     else reg_trm <= reg_trm_mgn;
-//                 end
-//             4 : begin // Insert reg_trm in queue
-//                     que_inf[top] <= reg_trm; 
-//                     top <= top + 1;
-//                 end
-//             6 : begin // Insert reg_opr in queue
-//                     que_inf[top] <= reg_opr;
-//                     top <= top + 1;
-//                 end
-//             8 : begin // Accumulate the result
-//                     case (reg_opr)
-//                         sum : reg_rlt <= reg_rlt + reg_trm;
-//                         sub : reg_rlt <= reg_rlt - reg_trm;
-//                         mul : reg_rlt <= reg_rlt * reg_trm;
-//                         div : reg_rlt <= reg_rlt / reg_trm;
-//                     endcase
-//                 end
-//             10 : begin // Initialize the reg_trm
-//                     reg_trm_sgn <= 0;
-//                     reg_trm_mgn <= 0;
-//                 end
-//         endcase
-
-//         case (cnt_result)
-//             2 : begin // Calculate the reg_trm
-//                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-//                     else reg_trm <= reg_trm_mgn;
-//                 end
-//             4 : begin // Insert reg_trm in queue
-//                     que_inf[top] <= reg_trm; 
-//                     top <= top + 1;
-//                 end
-//             8 : begin // Accumulate the result
-//                     case (reg_opr)
-//                         sum : reg_rlt <= reg_rlt + reg_trm;
-//                         sub : reg_rlt <= reg_rlt - reg_trm;
-//                         mul : reg_rlt <= reg_rlt * reg_trm;
-//                         div : reg_rlt <= reg_rlt / reg_trm;
-//                     endcase
-//                 end
-//             10 : begin // Initialize the reg_trm
-//                     reg_trm_sgn <= 0;
-//                     reg_trm_mgn <= 0;
-//                 end
-//         endcase
-//     end 
-// end
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// // 중위식 -> 후위식
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst)
-//     begin
-//         top_inf2pof <= 4'b1111;
-//         front_pof <= 4'b1111;
-//         rear_pof <= 4'b1111;
-//         for (i = 0; i < MAX_STACK_SIZE-1; i = i + 1) stk_inf2pof[i] <= 0;
-//         for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_pof[i] <= 0;
-//     end
-//     else if (cnt_result >= 10 && cnt_result < 50)
-//     begin
-//         if (que_inf[front_inf+1] > 3'b111) // operand
-//         begin
-//             que_pof[rear_pof+1] <= que_inf[front_inf+1]; // Infix que -> post que
-//             front_inf <= front_inf + 1; // Infix queue pop
-//             rear_pof <= rear_pof + 1; // Post queue push
-//         end
-//         // else if (
-//         // else if )
-//         else if (que_inf[front_inf+1] <= 4'b1010) // operator
-//         begin
-//             if (top_inf2pof == 4'b1111) // Stack for transforming infix to postfix is empty
-//             begin 
-//                 stk_inf2pof[top_inf2pof+1] <= que_inf[front_inf+1]; // Infix que -> infix to postfix stack
-//                 front_inf <= front_inf + 1;
-//                 top_inf2pof <= top_inf2pof + 1; 
-//             end
-//             else
-//             begin
-//                 if (stk_inf2pof[top_inf2pof] - que_inf[front_inf+1] >= -1) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높은 경우
-//                 begin
-//                     que_pof[rear_pof+1] <= stk_inf2pof[top_inf2pof];
-//                     top_inf2pof <= top_inf2pof - 1;
+// 중위식 -> 후위식
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        top_inf2pof <= 4'b1111;
+        front_pof <= 4'b1111;
+        rear_pof <= 4'b1111;
+        for (i = 0; i < MAX_STACK_SIZE-1; i = i + 1) stk_inf2pof[i] <= 0;
+        for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_pof[i] <= 0;
+    end
+    else if (cnt_result >= 10 && cnt_result < 50)
+    begin
+        if (que_inf[front_inf+1] > 3'b111) // operand
+        begin
+            que_pof[rear_pof+1] <= que_inf[front_inf+1]; // Infix que -> post que
+            front_inf <= front_inf + 1; // Infix queue pop
+            rear_pof <= rear_pof + 1; // Post queue push
+        end
+        // else if (
+        // else if )
+        else if (que_inf[front_inf+1] <= 4'b1010) // operator
+        begin
+            if (top_inf2pof == 4'b1111) // Stack for transforming infix to postfix is empty
+            begin 
+                stk_inf2pof[top_inf2pof+1] <= que_inf[front_inf+1]; // Infix que -> infix to postfix stack
+                front_inf <= front_inf + 1;
+                top_inf2pof <= top_inf2pof + 1; 
+            end
+            else
+            begin
+                if (stk_inf2pof[top_inf2pof] - que_inf[front_inf+1] >= -1) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높은 경우
+                begin
+                    que_pof[rear_pof+1] <= stk_inf2pof[top_inf2pof];
+                    top_inf2pof <= top_inf2pof - 1;
                     
-//                 end
-//                 else
-//                 begin
-//                     stk_inf2pof[top_inf2pof] <= que_inf[front_inf+1];
-//                     front_inf <= front_inf + 1;
-//                     top_inf2pof <= top_inf2pof + 1;
-//                 end
-//             end
-//         end
-//     end
-// end
+                end
+                else
+                begin
+                    stk_inf2pof[top_inf2pof] <= que_inf[front_inf+1];
+                    front_inf <= front_inf + 1;
+                    top_inf2pof <= top_inf2pof + 1;
+                end
+            end
+        end
+    end
+end
 
 
 reg reg_rlt_sgn;
