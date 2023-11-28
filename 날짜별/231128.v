@@ -343,87 +343,19 @@ reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으
 reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1]; // 후위식을 저장하는 큐
 reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // 후위식을 계산하기 위한 스택
 
-// // operator
-// integer i, j;
-// reg [31:0] reg_trm;
-// reg [31:0] reg_rlt;
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst)
-//     begin
-//         reg_trm <= 0;
-//         reg_rlt <= 0;
-//         front_inf <= -1;
-//         rear_inf <= -1;
-//         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_inf[i] <= 0;
-//     end
-//     else
-//     begin
-//         case (cnt_operator)
-//             2 : begin // Calculate the reg_trm
-//                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-//                     else reg_trm <= reg_trm_mgn;
-//                 end
-//             4 : begin // Insert reg_trm in queue
-//                     que_inf[rear_inf+1] <= reg_trm; 
-//                     rear_inf <= rear_inf + 1;
-//                 end
-//             6 : begin // Insert reg_opr in queue
-//                     que_inf[rear_inf+1] <= reg_opr;
-//                     rear_inf <= rear_inf + 1;
-//                 end
-//             8 : begin // Accumulate the result
-//                     case (reg_opr)
-//                         sum : reg_rlt <= reg_rlt + reg_trm;
-//                         sub : reg_rlt <= reg_rlt - reg_trm;
-//                         mul : reg_rlt <= reg_rlt * reg_trm;
-//                         div : reg_rlt <= reg_rlt / reg_trm;
-//                     endcase
-//                 end
-//             10 : begin // Initialize the reg_trm
-//                     reg_trm_sgn <= 0;
-//                     reg_trm_mgn <= 0;
-//                 end
-//         endcase
-
-//         case (cnt_result)
-//             2 : begin // Calculate the reg_trm
-//                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-//                     else reg_trm <= reg_trm_mgn;
-//                 end
-//             4 : begin // Insert reg_trm in queue
-//                     que_inf[rear_inf+1] <= reg_trm; 
-//                     rear_inf <= rear_inf + 1;
-//                 end
-//             6 : begin // Accumulate the result
-//                     case (reg_opr)
-//                         sum : reg_rlt <= reg_rlt + reg_trm;
-//                         sub : reg_rlt <= reg_rlt - reg_trm;
-//                         mul : reg_rlt <= reg_rlt * reg_trm;
-//                         div : reg_rlt <= reg_rlt / reg_trm;
-//                     endcase
-//                 end
-//             8 : begin // Initialize the reg_trm
-//                     reg_trm_sgn <= 0;
-//                     reg_trm_mgn <= 0;
-//                 end
-//         endcase
-//     end 
-// end
-
 // operator
+integer i;
 reg [31:0] reg_trm;
 reg [31:0] reg_rlt;
-integer i, top;
-reg [31:0] que_inf [0:99];
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
         reg_trm <= 0;
-        top <= 0;
-        for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
         reg_rlt <= 0;
+        front_inf <= -1;
+        rear_inf <= -1;
+        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_inf[i] <= 0;
     end
     else
     begin
@@ -433,12 +365,12 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[top] <= reg_trm; 
-                    top <= top + 1;
+                    que_inf[rear_inf+1] <= reg_trm; 
+                    rear_inf <= rear_inf + 1;
                 end
             6 : begin // Insert reg_opr in queue
-                    que_inf[top] <= reg_opr;
-                    top <= top + 1;
+                    que_inf[rear_inf+1] <= reg_opr;
+                    rear_inf <= rear_inf + 1;
                 end
             8 : begin // Accumulate the result
                     case (reg_opr)
@@ -460,10 +392,10 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[top] <= reg_trm; 
-                    top <= top + 1;
+                    que_inf[rear_inf+1] <= reg_trm; 
+                    rear_inf <= rear_inf + 1;
                 end
-            8 : begin // Accumulate the result
+            6 : begin // Accumulate the result
                     case (reg_opr)
                         sum : reg_rlt <= reg_rlt + reg_trm;
                         sub : reg_rlt <= reg_rlt - reg_trm;
@@ -471,13 +403,81 @@ begin
                         div : reg_rlt <= reg_rlt / reg_trm;
                     endcase
                 end
-            10 : begin // Initialize the reg_trm
+            8 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
                 end
         endcase
     end 
 end
+
+// // operator
+// reg [31:0] reg_trm;
+// reg [31:0] reg_rlt;
+// integer i, top;
+// reg [31:0] que_inf [0:99];
+// always @(posedge rst or posedge clk_100hz)
+// begin
+//     if (rst)
+//     begin
+//         reg_trm <= 0;
+//         top <= 0;
+//         for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
+//         reg_rlt <= 0;
+//     end
+//     else
+//     begin
+//         case (cnt_operator)
+//             2 : begin // Calculate the reg_trm
+//                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
+//                     else reg_trm <= reg_trm_mgn;
+//                 end
+//             4 : begin // Insert reg_trm in queue
+//                     que_inf[top] <= reg_trm; 
+//                     top <= top + 1;
+//                 end
+//             6 : begin // Insert reg_opr in queue
+//                     que_inf[top] <= reg_opr;
+//                     top <= top + 1;
+//                 end
+//             8 : begin // Accumulate the result
+//                     case (reg_opr)
+//                         sum : reg_rlt <= reg_rlt + reg_trm;
+//                         sub : reg_rlt <= reg_rlt - reg_trm;
+//                         mul : reg_rlt <= reg_rlt * reg_trm;
+//                         div : reg_rlt <= reg_rlt / reg_trm;
+//                     endcase
+//                 end
+//             10 : begin // Initialize the reg_trm
+//                     reg_trm_sgn <= 0;
+//                     reg_trm_mgn <= 0;
+//                 end
+//         endcase
+
+//         case (cnt_result)
+//             2 : begin // Calculate the reg_trm
+//                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
+//                     else reg_trm <= reg_trm_mgn;
+//                 end
+//             4 : begin // Insert reg_trm in queue
+//                     que_inf[top] <= reg_trm; 
+//                     top <= top + 1;
+//                 end
+//             8 : begin // Accumulate the result
+//                     case (reg_opr)
+//                         sum : reg_rlt <= reg_rlt + reg_trm;
+//                         sub : reg_rlt <= reg_rlt - reg_trm;
+//                         mul : reg_rlt <= reg_rlt * reg_trm;
+//                         div : reg_rlt <= reg_rlt / reg_trm;
+//                     endcase
+//                 end
+//             10 : begin // Initialize the reg_trm
+//                     reg_trm_sgn <= 0;
+//                     reg_trm_mgn <= 0;
+//                 end
+//         endcase
+//     end 
+// end
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
