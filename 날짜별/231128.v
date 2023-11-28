@@ -330,7 +330,7 @@ end
 // operator
 reg [31:0] reg_trm;
 reg [31:0] reg_rlt;
-integer top;
+integer i, top;
 reg [31:0] que_inf [0:99];
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -348,8 +348,15 @@ begin
                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
                     else reg_trm <= reg_trm_mgn;
                 end
-            4 : que_inf[top] <= reg_trm; // Insert reg_trm in queue
-            6 : begin // Accumulate the result
+            4 : begin // Insert reg_trm in queue
+                    que_inf[top] <= reg_trm; 
+                    top <= top + 1;
+                end
+            6 : begin // Insert reg_opr in queue
+                    que_inf[top] <= reg_opr;
+                    top <= top + 1;
+                end
+            8 : begin // Accumulate the result
                     case (reg_opr)
                         sum : reg_rlt <= reg_rlt + reg_trm;
                         sub : reg_rlt <= reg_rlt - reg_trm;
@@ -357,7 +364,7 @@ begin
                         div : reg_rlt <= reg_rlt / reg_trm;
                     endcase
                 end
-            8 : begin // Initialize the reg_trm
+            10 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
                 end
@@ -379,7 +386,7 @@ begin
     else
     begin
         case (cnt_result)
-            10: begin // Sign-magnitude form for bcd code
+            12: begin // Sign-magnitude form for bcd code
                     if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                     begin 
                         reg_rlt_mgn <= ~(reg_rlt - 1);
@@ -411,7 +418,7 @@ begin
 end
 
 reg [8*16-1 : 0] reg_lcd_l2;
-integer i, is_msd, cnt_blk;
+integer is_msd, cnt_blk;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
