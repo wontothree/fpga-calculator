@@ -421,12 +421,12 @@ begin
         top_inf2pof <= 0;
         front_pof <= 0;
         rear_pof <= 0;
-        for (i = 0; i < MAX_STACK_SIZE-1; i = i + 1) stk_inf2pof[i] <= 0;
+        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
     end
     else if (cnt_result >= 10 && cnt_result < 50)
     begin
-        if (que_inf[front_inf+1] > 3'b111) // operand
+        if (que_inf[front_inf+1] > 4'b1010) // operand
         begin
             que_pof[rear_pof+1] <= que_inf[front_inf+1]; // Infix que -> post que
             front_inf <= front_inf + 1; // Infix queue pop
@@ -436,7 +436,7 @@ begin
         // else if )
         else if (que_inf[front_inf+1] <= 4'b1010) // operator
         begin
-            if (top_inf2pof == 4'b1111) // Stack for transforming infix to postfix is empty
+            if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
             begin 
                 stk_inf2pof[top_inf2pof+1] <= que_inf[front_inf+1]; // Infix que -> infix to postfix stack
                 front_inf <= front_inf + 1;
