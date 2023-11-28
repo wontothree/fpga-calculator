@@ -418,9 +418,9 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
-        top_inf2pof <= 4'b1111;
-        front_pof <= 4'b1111;
-        rear_pof <= 4'b1111;
+        top_inf2pof <= 0;
+        front_pof <= 0;
+        rear_pof <= 0;
         for (i = 0; i < MAX_STACK_SIZE-1; i = i + 1) stk_inf2pof[i] <= 0;
         for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_pof[i] <= 0;
     end
