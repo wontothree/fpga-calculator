@@ -420,7 +420,7 @@ begin
         front_pof <= 4'b1111;
         rear_pof <= 4'b1111;
         for (i = 0; i < MAX_STACK_SIZE-1; i = i + 1) stk_inf2pof[i] <= 0;
-        for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_prf[i] <= 0;
+        for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_pof[i] <= 0;
     end
     else if (cnt_result >= 10 && cnt_result < 50)
     begin
@@ -437,7 +437,7 @@ begin
             if (top_inf2pof == 4'b1111) // Stack for transforming infix to postfix is empty
             begin 
                 stk_inf2pof[top_inf2pof+1] <= que_inf[front_inf+1]; // Infix que -> infix to postfix stack
-                front_inf <= front + 1;
+                front_inf <= front_inf + 1;
                 top_inf2pof <= top_inf2pof + 1; 
             end
             else
@@ -450,7 +450,7 @@ begin
                 end
                 else
                 begin
-                    stk_inf2pof[top_inf2pof] <= que_inf[front_inf+1]
+                    stk_inf2pof[top_inf2pof] <= que_inf[front_inf+1];
                     front_inf <= front_inf + 1;
                     top_inf2pof <= top_inf2pof + 1;
                 end
