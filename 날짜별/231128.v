@@ -446,7 +446,7 @@ begin
             begin
                 if (stk_inf2pof[top_inf2pof] - que_inf[front_inf+1] >= -1) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높은 경우
                 begin
-                    que_pof[rear_pof+1] <= stk_inf2pof[top_inf2pof];
+                    que_pof[rear_pof+1] <= stk_inf2pof[top_inf2pof+1];
                     top_inf2pof <= top_inf2pof - 1;
                     
                 end
