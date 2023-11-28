@@ -428,7 +428,7 @@ begin
         if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
         if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
-        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+20-cnt_ord]};
+        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+20-cnt_result]};
     end
 end
 
@@ -437,6 +437,14 @@ integer i, is_msd, cnt_blk;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
+    begin
+        for (i = 0; i < 16; i = i + 1) 
+        begin 
+            reg_lcd_l2[8*i +: 8] <= ascii_blk;
+            is_msd <= 0;
+            cnt_blk <= 0;
+        end
+    end
     else if (cnt_result >= 50 && cnt_result < 60)
     begin
         if (reg_rlt_bcd[4*(59-cnt_result) +: 4] == 0 && is_msd == 0) 
