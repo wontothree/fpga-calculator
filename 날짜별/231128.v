@@ -408,7 +408,7 @@ parameter
 reg [4:0] front_inf, rear_inf, front_pof, rear_pof;
 reg [2:0] top_inf2pof, top_pof2rlt;
 
-reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1]; // 중위식을 저장하는 큐
+reg signed [31:0] que_inf [0:16-1]; // 중위식을 저장하는 큐
 reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으로 변환하기 위한 스택
 reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1]; // 후위식을 저장하는 큐
 reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // 후위식을 계산하기 위한 스택
@@ -434,14 +434,14 @@ begin
                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
                     else reg_trm <= reg_trm_mgn;
                 end
-            4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf+1] <= reg_trm; 
-                    rear_inf <= rear_inf + 1;
-                end
-            6 : begin // Insert reg_opr in queue
-                    que_inf[rear_inf+1] <= reg_opr;
-                    rear_inf <= rear_inf + 1;
-                end
+            // 4 : begin // Insert reg_trm in queue
+            //         que_inf[rear_inf+1] <= reg_trm; 
+            //         rear_inf <= rear_inf + 1;
+            //     end
+            // 6 : begin // Insert reg_opr in queue
+            //         que_inf[rear_inf+1] <= reg_opr;
+            //         rear_inf <= rear_inf + 1;
+            //     end
             8 : begin // Accumulate the result
                     case (reg_opr)
                         sum : reg_rlt <= reg_rlt + reg_trm;
