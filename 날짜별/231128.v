@@ -505,7 +505,7 @@ begin
 end
 
 // Result LCD
-localparam start_lcd = start_bcd + 32
+localparam start_lcd = start_bcd + 32;
 reg [8*16-1 : 0] reg_lcd_l2;
 integer is_msd, cnt_blk;
 always @(posedge rst or posedge clk_100hz)
