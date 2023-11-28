@@ -422,7 +422,7 @@ begin
         front_pof <= 0;
         rear_pof <= 0;
         for (i = 0; i < MAX_STACK_SIZE-1; i = i + 1) stk_inf2pof[i] <= 0;
-        for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_pof[i] <= 0;
+        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
     end
     else if (cnt_result >= 10 && cnt_result < 50)
     begin
