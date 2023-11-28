@@ -198,8 +198,8 @@ begin
         end 
         else if (swd8)
         begin 
-            reg_opr <= equ;
-            reg_opr_ascii <= ascii_equ;    
+            // reg_opr <= equ;
+            reg_opr_ascii <= ascii_equ; 
             led <= 8'b0000_0001; 
         end 
     end
@@ -340,6 +340,7 @@ begin
         reg_trm <= 0;
         top <= 0;
         for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
+        reg_rlt <= 0;
     end
     else
     begin
