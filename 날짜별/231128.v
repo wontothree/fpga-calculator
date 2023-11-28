@@ -353,8 +353,8 @@ begin
     begin
         reg_trm <= 0;
         reg_rlt <= 0;
-        front_inf <= 4'b1111;
-        rear_inf <= 4'b1111;
+        front_inf <= -1;
+        rear_inf <= -1;
         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_inf[i] <= 0;
     end
     else
