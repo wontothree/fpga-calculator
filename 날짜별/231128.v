@@ -36,14 +36,14 @@ parameter
         ascii_blk = 8'b0010_0000,
         ascii_lar = 8'b0001_0001,
 
-        min = 3'b000,
-        lpr = 3'b001,
-        rpr = 3'b010,
-        sum = 3'b011,
-        sub = 3'b100,
-        mul = 3'b101,
-        div = 3'b110,
-        equ = 3'b111;
+        min = 4'b0000, // 0
+        lpr = 4'b0001, // 1
+        rpr = 4'b0010, // 2
+        sum = 4'b0101, // 5
+        sub = 4'b0110, // 6
+        mul = 4'b1001, // 9
+        div = 4'b1010, // 10
+        equ = 4'b1011; // 11
 
 // clock divider
 integer cnt_100hz;
@@ -328,20 +328,32 @@ begin
     else if (os_operand) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
 end
 
+
+parameter
+        MAX_QUEUE_SIZE = 16,
+        MAX_STACK_SIZE = 8;
+
+reg [4:0] front_inf, rear_inf, front_pof, rear_pof;
+reg [2:0] top_inf2pof, top_pof2rlt;
+
+reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1]; // 중위식을 저장하는 큐
+reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으로 변환하기 위한 스택
+reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1]; // 후위식을 저장하는 큐
+reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // 후위식을 계산하기 위한 스택
+
+integer i, j;
 // operator
 reg [31:0] reg_trm;
 reg [31:0] reg_rlt;
-integer i, front1, rear1;
-reg [31:0] que_inf [0:99]; // 중위식을 저장하는 큐
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
         reg_trm <= 0;
         reg_rlt <= 0;
-        front1 <= 0;
-        rear1 <= 0;
-        for (i = 0; i < 100; i = i + 1) que_inf[i] <= 0;
+        front_inf <= 4'b1111;
+        rear_inf <= 4'b1111;
+        for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_inf[i] <= 0;
     end
     else
     begin
@@ -351,12 +363,12 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[rear1] <= reg_trm; 
-                    rear1 <= rear1 + 1;
+                    que_inf[rear_inf+1] <= reg_trm; 
+                    rear_inf <= rear_inf + 1;
                 end
             6 : begin // Insert reg_opr in queue
-                    que_inf[rear1] <= reg_opr;
-                    rear1 <= rear1 + 1;
+                    que_inf[rear_inf+1] <= reg_opr;
+                    rear_inf <= rear_inf + 1;
                 end
             8 : begin // Accumulate the result
                     case (reg_opr)
@@ -378,8 +390,8 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[rear1] <= reg_trm; 
-                    rear1 <= rear1 + 1;
+                    que_inf[rear_inf+1] <= reg_trm; 
+                    rear_inf <= rear_inf + 1;
                 end
             6 : begin // Accumulate the result
                     case (reg_opr)
@@ -399,56 +411,53 @@ end
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-reg [31:0] stk_inf2prf [0:99]; // 중위식을 후위식으로 변환하기 위한 스택
-reg [31:0] que_prf [0:99]; // 후위식을 저장하는 큐
-reg [31:0] stk_prf2rlt [0:99]; // 후위식을 계산하기 위한 스택
-
 // 중위식 -> 후위식
-integer top1, front2, rear2, cnt_stk;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
-        top1 <= -1;
-        front2 <= 0;
-        rear2 <= 0;
-        for (i = 0; i < 100; i = i + 1) stk_inf2prf[i] <= 0;
-        for (i = 0; i < 100; i = i + 1) que_prf[i] <= 0;
+        top_inf2pof <= 4'b1111;
+        front_pof <= 4'b1111;
+        rear_pof <= 4'b1111;
+        for (i = 0; i < MAX_STACK_SIZE-1; i = i + 1) stk_inf2pof[i] <= 0;
+        for (i = 0; i < MAX_QUEUE_SIZE-1; i = i + 1) que_prf[i] <= 0;
     end
-    else if (cnt_result >= 10 && cnt_result < 16)
+    else if (cnt_result >= 10 && cnt_result < 50)
     begin
-        for (i = 0; i < 100; i = i + 1)
+        if (que_inf[front_inf+1] > 3'b111) // operand
         begin
-            if (que_inf[i] > 3'b111) // operand
-            begin
-                que_prf[rear2] <= que_irf[i];
-                i <= i + 1;
-                top1 <= top1 + 1;
+            que_pof[rear_pof+1] <= que_inf[front_inf+1]; // Infix que -> post que
+            front_inf <= front_inf + 1; // Infix queue pop
+            rear_pof <= rear_pof + 1; // Post queue push
+        end
+        // else if (
+        // else if )
+        else if (que_inf[front_inf+1] <= 4'b1010) // operator
+        begin
+            if (top_inf2pof == 4'b1111) // Stack for transforming infix to postfix is empty
+            begin 
+                stk_inf2pof[top_inf2pof+1] <= que_inf[front_inf+1]; // Infix que -> infix to postfix stack
+                front_inf <= front + 1;
+                top_inf2pof <= top_inf2pof + 1; 
             end
-            // else if (
-            // else if )
-            else if (que_inf[i] <= 3'b111) // operator
+            else
             begin
-                while (top != -1)
+                if (stk_inf2pof[top_inf2pof] - que_inf[front_inf+1] >= -1) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높은 경우
                 begin
-                    if (stk_inf2prf[top1] > que_irf[i]) // operator - 스택의 맨 위의 연산자가 들어오는 연산자보다 우선순위가 높거은 경우
-                    begin
-                        que_prf[front2] <= stk_inf2prf[top1];
-                        top1 <= top1 - 1;
-                    end
-                    else break;
+                    que_pof[rear_pof+1] <= stk_inf2pof[top_inf2pof];
+                    top_inf2pof <= top_inf2pof - 1;
+                    
                 end
-
-                stk_inf2prf[top1] <= que_inf[i]; // issue*********************
+                else
+                begin
+                    stk_inf2pof[top_inf2pof] <= que_inf[front_inf+1]
+                    front_inf <= front_inf + 1;
+                    top_inf2pof <= top_inf2pof + 1;
+                end
             end
         end
     end
 end
-
-
-
-
-
 
 
 reg reg_rlt_sgn;
@@ -463,7 +472,7 @@ begin
     else
     begin
         case (cnt_result)
-            18: begin // Sign-magnitude form for bcd code
+            50: begin // Sign-magnitude form for bcd code
                     if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                     begin 
                         reg_rlt_mgn <= ~(reg_rlt - 1);
@@ -476,11 +485,12 @@ begin
 end
 
 // Binary 2 BCD
+parameter start_bcd = 100;
 reg [39:0] reg_rlt_bcd;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_rlt_bcd <= 0;
-    else if (cnt_result >= 20 && cnt_result < 52)
+    else if (cnt_result >= start_bcd && cnt_result < start_bcd + 32)
     begin
         if (reg_rlt_bcd[3:0] >= 4'b0101) reg_rlt_bcd[3:0] = reg_rlt_bcd[3:0] + 3;
         if (reg_rlt_bcd[7:4] >= 4'b0101) reg_rlt_bcd[7:4] = reg_rlt_bcd[7:4] + 3;
@@ -490,10 +500,12 @@ begin
         if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
         if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
-        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+20-cnt_result]};
+        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
     end
 end
 
+// Result LCD
+localparam start_lcd = start_bcd + 32
 reg [8*16-1 : 0] reg_lcd_l2;
 integer is_msd, cnt_blk;
 always @(posedge rst or posedge clk_100hz)
@@ -507,25 +519,21 @@ begin
             cnt_blk <= 0;
         end
     end
-    else if (cnt_result >= 50 && cnt_result < 60)
+    else if (cnt_result >= start_lcd && cnt_result < start_lcd+10)
     begin
-        if (reg_rlt_bcd[4*(59-cnt_result) +: 4] == 0 && is_msd == 0) 
+        if (reg_rlt_bcd[4*(start_lcd+9-cnt_result) +: 4] == 0 && is_msd == 0) 
         begin 
-            reg_lcd_l2[8*(59-cnt_result) +: 8] <= ascii_blk;
+            reg_lcd_l2[8*(start_lcd+9-cnt_result) +: 8] <= ascii_blk;
             cnt_blk <= cnt_blk + 1;
         end
         else
         begin
-            reg_lcd_l2[8*(59-cnt_result) +: 8] <= ascii_0 + reg_rlt_bcd[4*(59-cnt_result) +: 4];
+            reg_lcd_l2[8*(start_lcd+9-cnt_result) +: 8] <= ascii_0 + reg_rlt_bcd[4*(start_lcd+9-cnt_result) +: 4];
             is_msd <= 1;
         end
     end
-    else if (cnt_result == 62) if (reg_rlt_sgn) reg_lcd_l2[8*(10-cnt_blk) +: 8] <= ascii_sub;
+    else if (cnt_result == start_lcd+11) if (reg_rlt_sgn) reg_lcd_l2[8*(10-cnt_blk) +: 8] <= ascii_sub;
 end
-
-
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
