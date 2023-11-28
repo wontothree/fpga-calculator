@@ -314,7 +314,7 @@ begin
     else if (en_result) 
     begin
         cnt_operand <= 0;
-        cnt_operator <= 1;
+        cnt_operator <= cnt_operator + 1;
         cnt_result <= cnt_result + 1;
     end
 end
