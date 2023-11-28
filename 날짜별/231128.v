@@ -463,19 +463,19 @@ begin
         reg_lcd <= ascii_blk;
         cnt_lcd <= 0;
     end
-    else if (os_operand) 
+    if (os_operand) 
     begin 
         reg_lcd <= reg_num_ascii;
         cnt_lcd <= cnt_lcd + 1;
     end
-    else if (os_operator) 
+    if (os_operator) 
     begin 
         reg_lcd <= reg_opr_ascii;
         cnt_lcd <= cnt_lcd + 1;
     end
-    else if (swd8)
+    if (swd8)
     begin
-        reg_lcd <= reg_opr_ascii; // *************
+        // reg_lcd <= reg_opr_ascii; // *************
         cnt_lcd <= cnt_lcd + 1;
     end
 end
