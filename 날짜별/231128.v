@@ -333,7 +333,7 @@ parameter
         MAX_QUEUE_SIZE = 16,
         MAX_STACK_SIZE = 8;
 
-reg [4:0] front_inf, rear_inf, front_pof, rear_pof;
+reg [3:0] front_inf, rear_inf, front_pof, rear_pof;
 reg [2:0] top_inf2pof, top_pof2rlt;
 
 reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1]; // 중위식을 저장하는 큐
@@ -363,11 +363,11 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf+1] <= reg_trm; 
+                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
             6 : begin // Insert reg_opr in queue
-                    que_inf[rear_inf+1] <= reg_opr;
+                    que_inf[rear_inf[3:0]+1] <= reg_opr;
                     rear_inf <= rear_inf + 1;
                 end
             8 : begin // Accumulate the result
@@ -390,7 +390,7 @@ begin
                     else reg_trm <= reg_trm_mgn;
                 end
             4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf+1] <= reg_trm; 
+                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
             6 : begin // Accumulate the result
@@ -426,32 +426,32 @@ begin
     end
     else if (cnt_result >= 10 && cnt_result < 50)
     begin
-        if (que_inf[front_inf+1] > 4'b1010) // operand
+        if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
         begin
-            que_pof[rear_pof+1] <= que_inf[front_inf+1]; // Infix que -> post que
+            que_pof[rear_pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> post que
             front_inf <= front_inf + 1; // Infix queue pop
             rear_pof <= rear_pof + 1; // Post queue push
         end
         // else if (
         // else if )
-        else if (que_inf[front_inf+1] <= 4'b1010) // operator
+        else if (que_inf[front_inf[3:0]+1] <= 4'b1010) // operator
         begin
             if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
             begin 
-                stk_inf2pof[top_inf2pof+1] <= que_inf[front_inf+1]; // Infix que -> infix to postfix stack
+                stk_inf2pof[top_inf2pof[2:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> infix to postfix stack
                 front_inf <= front_inf + 1;
                 top_inf2pof <= top_inf2pof + 1; 
             end
             else
             begin
-                if (stk_inf2pof[top_inf2pof] - que_inf[front_inf+1] >= -1) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높거나 같은 경우
+                if (stk_inf2pof[top_inf2pof[2:0]] + 1 >= que_inf[front_inf[3:0]+1]) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높거나 같은 경우
                 begin
                     que_pof[rear_pof+1] <= stk_inf2pof[top_inf2pof+1];
                     top_inf2pof <= top_inf2pof - 1;        
                 end
                 else
                 begin
-                    stk_inf2pof[top_inf2pof] <= que_inf[front_inf+1];
+                    stk_inf2pof[top_inf2pof[2:0]] <= que_inf[front_inf[3:0]+1];
                     front_inf <= front_inf + 1;
                     top_inf2pof <= top_inf2pof + 1;
                 end
