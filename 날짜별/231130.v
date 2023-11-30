@@ -434,7 +434,7 @@ begin
             end
             // else if (
             // else if )
-            else // operator // if (que_inf[front_inf[3:0]+1] <= 4'b1010) 
+            else if (que_inf[front_inf[3:0]+1] <= 4'b1010) 
             begin
                 if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
                 begin 
