@@ -79,8 +79,8 @@ assign os = ~reg_os[0] & reg_os[1];
 
 // one shot code of shift button
 wire os_sht;
-reg [1:0] reg_os_sht; // reg_os_operand
-assign sw_sht = sht; // sw_operand
+reg [1:0] reg_os_sht;
+assign sw_sht = sht; 
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_os_sht <= 2'b00;
@@ -656,11 +656,11 @@ end
 reg [8*16-1 : 0] reg_lcd_l1;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_lcd_l1 <= ascii_blk; 
-    // begin
-    //     for (i = 0; i < 16; i = i + 1) 
-    //         reg_lcd_l1[8*i +: 8] <= ascii_blk; 
-    // end
+    if (rst)
+    begin
+        for (i = 0; i < 16; i = i + 1) 
+            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
+    end
     else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
     else if (os_operand | os_operator) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
 end
