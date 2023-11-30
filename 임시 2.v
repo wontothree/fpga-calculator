@@ -13,6 +13,15 @@ module calculator (
 
 // constant
 parameter 
+        delay           = 3'b000,
+        function_set    = 3'b001,
+        entry_mode      = 3'b010,
+        disp_onoff      = 3'b011,
+        line1           = 3'b100,
+        line2           = 3'b101,
+        delay_t         = 3'b110,
+        clear_disp      = 3'b111,
+
         ascii_0 = 8'b0011_0000,
         ascii_1 = 8'b0011_0001,
         ascii_2 = 8'b0011_0010,
@@ -36,14 +45,14 @@ parameter
         ascii_blk = 8'b0010_0000,
         ascii_lar = 8'b0001_0001,
 
-        min = 4'b0000, // 0
-        lpr = 4'b0001, // 1
-        rpr = 4'b0010, // 2
-        sum = 4'b0101, // 5
-        sub = 4'b0110, // 6
-        mul = 4'b1001, // 9
-        div = 4'b1010, // 10
-        equ = 4'b1011; // 11
+        min = 3'b000,
+        sum = 3'b001,
+        sub = 3'b010,
+        mul = 3'b011,
+        div = 3'b100,
+        lpr = 3'b101,
+        rpr = 3'b110,
+        equ = 3'b111;
 
 // clock divider
 integer cnt_100hz;
@@ -62,6 +71,65 @@ begin
         end
     else
         cnt_100hz <= cnt_100hz + 1;
+end
+
+// count
+integer cnt;
+reg [2:0] state;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+        cnt <= 0;
+    else
+        begin
+            case (state)
+                delay :
+                    if (cnt >= 70) cnt <= 0;
+                    else cnt <= cnt + 1;
+                function_set :
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
+                disp_onoff :
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
+                entry_mode :
+                    if (cnt >= 30) cnt <= 0;
+                    else cnt <= cnt + 1;
+                line1 :
+                    if (cnt >= 20) cnt <= 0;
+                    else cnt <= cnt + 1;
+                line2 :
+                    if (cnt >= 20) cnt <= 0;
+                    else cnt <= cnt + 1;
+                delay_t :
+                    if (cnt >= 400) cnt <= 0;
+                    else cnt <= cnt + 1;
+                clear_disp :
+                    if (cnt >= 200) cnt <= 0;
+                    else cnt <= cnt + 1;
+                default : cnt <= 0;
+            endcase
+        end
+end
+
+// state machine
+always@(posedge rst or posedge clk_100hz)
+begin
+    if (rst) state = delay;
+    else
+    begin
+        case (state)
+            delay :             if (cnt == 70)  state <= function_set;
+            function_set :      if (cnt == 30)  state <= disp_onoff;
+            disp_onoff :        if (cnt == 30)  state <= entry_mode;
+            entry_mode :        if (cnt == 30)  state <= line1;
+            line1 :             if (cnt == 20)  state <= line2;
+            line2 :             if (cnt == 20)  state <= delay_t;
+            delay_t :           if (cnt == 400) state <= clear_disp;
+            clear_disp :        if (cnt == 200) state <= line1;
+            default :                           state <= delay;
+        endcase
+    end
 end
 
 // push switch
@@ -148,7 +216,6 @@ always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin 
-        reg_trm_sgn <= 0;
         reg_opr <= sum; // sum
         reg_opr_ascii <= ascii_blk; 
         led <= 0; 
@@ -199,299 +266,237 @@ begin
         end 
         else if (swd8)
         begin 
-            // reg_opr <= equ;
-            reg_opr_ascii <= ascii_equ; 
+            reg_opr <= equ;
+            reg_opr_ascii <= ascii_equ;    
             led <= 8'b0000_0001; 
         end 
     end
 end
 
-// one shot code of operand
-wire os_perand;
-reg [1:0] reg_os_operand;
-assign sw_operand = swp0 | swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swd1;
-always @(posedge rst or posedge clk_100hz)
+// Push switch preceding one shot code
+reg reg_swp_pre;
+
+wire swp;
+wire swp_os_pre;
+assign swp = swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swp0;
+assign swp_os_pre = swp & ~reg_swp_pre;
+
+always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_os_operand <= 2'b00;
-    else reg_os_operand <= {reg_os_operand[0], sw_operand};
+    if (rst) reg_swp_pre <= 0;
+    else reg_swp_pre <= swp;
 end
 
-assign os_operand = reg_os_operand[0] & ~reg_os_operand[1];
+// Push switch post one shot code
+reg [1:0] reg_swp_pst;
 
+wire swp_os_pst;
+assign swp_os_pst = reg_swp_pst[0] & ~reg_swp_pst[1];
 
-// one shot code of operator
-wire os_operator;
-reg [1:0] reg_os_operator;
-assign sw_operator = swd2 | swd3 | swd4 | swd5 | swd6 | swd7;
-always @(posedge rst or posedge clk_100hz)
+always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_os_operator <= 2'b00;
-    else reg_os_operator <= {reg_os_operator[0], sw_operator};
+    if (rst) reg_swp_pst <= 2'b00;
+    else reg_swp_pst <= {reg_swp_pst[0], swp};
 end
 
-assign os_operator = reg_os_operator[0] & ~reg_os_operator[1];
+// Dip switch preceding one shot code
+reg reg_swd_pre;
 
+wire swd;
+wire swd_os_pre;
+assign swd = swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
+assign swd_os_pre = swd & ~reg_swd_pre;
 
-// State transition
-parameter 
-        init        = 4'b00,
-        operand     = 4'b01,
-        operator    = 4'b10,
-        result      = 4'b11;
-
-reg [2:0] state_calc;
-always@(posedge rst or posedge clk_100hz)
+always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst) state_calc <= init;
-    else
-    begin
-        case (state_calc)
-            init :  if (os_operand) state_calc <= operand;
-            operand : 
-            begin 
-                if (swd8) state_calc <= result;
-                else if (os_operator) state_calc <= operator;
-            end
-            operator : if (os_operand) state_calc <= operand;
-        endcase
-    end
+    if (rst) reg_swd_pre <= 0;
+    else reg_swd_pre <= swd;
 end
 
-reg en_operand, en_operator, en_result;
-always @(posedge rst or posedge clk_100hz)
+// Dip switch preceding one shot code
+reg [1:0] reg_swd_pst;
+
+wire swd_os_pst;
+assign swd_os_pst = reg_swd_pst[0] & ~reg_swd_pst[1];
+
+always@ (posedge rst or posedge clk_100hz)
 begin
-    if (rst)
-    begin
-        en_operand <= 0;
-        en_operator <= 0;
-        en_result <= 0;
-    end
-    else
-    begin
-        case (state_calc)
-            operand : 
-            begin 
-                en_operand <= 1;
-                en_operator <= 0;
-                en_result <= 0;
-            end
-            operator : 
-            begin 
-                en_operand <= 0;
-                en_operator <= 1;
-                en_result <= 0;
-            end
-            result : 
-            begin 
-                en_operand <= 0;
-                en_operator <= 0;
-                en_result <= 1;
-            end
-        endcase
-    end
+    if (rst) reg_swd_pst <= 2'b00;
+    else reg_swd_pst <= {reg_swd_pst[0], swd};
 end
 
-integer cnt_operand, cnt_operator, cnt_result;
+
+// Term - magnitude
+reg [31:0] reg_trm_mgn;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst)
-    begin
-        cnt_operand <= 0;
-        cnt_operator <= 0;
-        cnt_result <= 0;
-    end
-    else if (en_operand) 
+    if (rst) 
     begin 
-        cnt_operand <= cnt_operand + 1;
-        cnt_operator <= 0;
-        cnt_result <= 0;
+        reg_trm_sgn <= 0;
+        reg_trm_mgn <= 0;
     end
-    else if (en_operator) 
+    else if (swp_os_pst) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
+    else if (swd_os_pst) 
     begin 
-        cnt_operand <= 0;
-        cnt_operator <= cnt_operator + 1;
-        cnt_result <= 0;
-    end
-    else if (en_result) 
-    begin
-        cnt_operand <= 0;
-        cnt_operator <= 0;
-        cnt_result <= cnt_result + 1;
+        reg_trm_sgn <= 0;
+        reg_trm_mgn <= 0;
     end
 end
 
-// operand
-reg [31:0] reg_trm_mgn; // 32 bit
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) reg_trm_mgn <= 0;
-    else if (os_operand) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
-end
-
-
-parameter
-        MAX_QUEUE_SIZE = 16,
-        MAX_STACK_SIZE = 8;
-
-reg [3:0] front_inf, rear_inf, front_pof, rear_pof;
-reg [2:0] top_inf2pof, top_pof2rlt;
-
-reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1]; // 중위식을 저장하는 큐
-reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으로 변환하기 위한 스택
-reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1]; // 후위식을 저장하는 큐
-reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // 후위식을 계산하기 위한 스택
-
-// operator
-integer i;
+// Term 
 reg [31:0] reg_trm;
-reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst)
-    begin
-        reg_trm <= 0;
-        reg_rlt <= 0;
-        front_inf <= 0;
-        rear_inf <= 0;
-        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_inf[i] <= 0;
-    end
-    else
-    begin
-        case (cnt_operator)
-            2 : begin // Calculate the reg_trm
-                    if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-                    else reg_trm <= reg_trm_mgn;
-                end
-            4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
-                    rear_inf <= rear_inf + 1;
-                end
-            6 : begin // Insert reg_opr in queue
-                    que_inf[rear_inf[3:0]+1] <= reg_opr;
-                    rear_inf <= rear_inf + 1;
-                end
-            8 : begin // Accumulate the result
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                        div : reg_rlt <= reg_rlt / reg_trm;
-                    endcase
-                end
-            10 : begin // Initialize the reg_trm
-                    reg_trm_sgn <= 0;
-                    reg_trm_mgn <= 0;
-                end
-        endcase
-
-        case (cnt_result)
-            2 : begin // Calculate the reg_trm
-                    if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-                    else reg_trm <= reg_trm_mgn;
-                end
-            4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
-                    rear_inf <= rear_inf + 1;
-                end
-            6 : begin // Accumulate the result
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                        div : reg_rlt <= reg_rlt / reg_trm;
-                    endcase
-                end
-            8 : begin // Initialize the reg_trm
-                    reg_trm_sgn <= 0;
-                    reg_trm_mgn <= 0;
-                end
-        endcase
-    end 
+    if (rst) reg_trm <= 0;
+    else if (swd_os_pre && reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
+    else reg_trm <= reg_trm_mgn;
 end
 
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// // Circular Queue - enqueue
+// parameter MAX_QUEUE_SIZE = 100;
+// reg [31:0] que_inf [0:MAX_QUEUE_SIZE];
+// integer front, rear;
+// always @(posedge rst or posedge clk_100hz)
+// begin
+//     if (rst)
+//     begin
+//         front <= 0;
+//         rear <= 0;
+//     end
+//     else if (swd_os_pst)
+//     begin
+//         if (front == (rear + 1) % MAX_QUEUE_SIZE); // is_full() : overflow
+//         else
+//         begin
+//             rear <= (rear + 1) % MAX_QUEUE_SIZE;
+//             que_inf[rear] <= reg_trm;
+//         end
+//     end
+// end
 
-// 중위식 -> 후위식
+
+// // Stack - push
+// parameter MAX_STACK_SIZE = 100;
+// reg [31:0] que_inf [0:MAX_STACK_SIZE];
+// integer top;
+// always @(posedge rst or posedge clk_100hz)
+// begin
+//     if (rst) top <= 0;
+//     else if (top >= MAX_STACK_SIZE); // is_full() : overflow
+//     else
+//     begin
+//         top <= top + 1;
+//         que_inf[top] <= reg_trm;
+//     end
+// end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Operation
+reg signed [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst)
+    if (rst) reg_rlt <= 0;
+    else if (reg_trm_sgn && reg_opr == 4'b0011) // 음수의 곱셈(두 번째 항 음수)
     begin
-        top_inf2pof <= 0;
-        front_pof <= 0;
-        rear_pof <= 0;
-        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
-        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
-    end
-    else if (cnt_result >= 10 && cnt_result < 50)
-    begin
-        if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
+        if (swd_os_pre)
         begin
-            que_pof[rear_pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> post que
-            front_inf <= front_inf + 1; // Infix queue pop
-            rear_pof <= rear_pof + 1; // Post queue push
+           case (reg_opr)
+               sum : reg_rlt <= reg_rlt + reg_trm;
+               sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
+           endcase
         end
-        // else if (
-        // else if )
-        else if (que_inf[front_inf[3:0]+1] <= 4'b1010) // operator
+    end
+    else if (reg_trm_sgn && reg_opr == 4'b0010) // 음수의 곱셈(두 번째 항 음수)
+    begin
+        if (swd_os_pre)
         begin
-            if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
-            begin 
-                stk_inf2pof[top_inf2pof[2:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> infix to postfix stack
-                front_inf <= front_inf + 1;
-                top_inf2pof <= top_inf2pof + 1; 
-            end
-            else
-            begin
-                if (stk_inf2pof[top_inf2pof[2:0]] + 1 >= que_inf[front_inf[3:0]+1]) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높거나 같은 경우
-                begin
-                    que_pof[rear_pof+1] <= stk_inf2pof[top_inf2pof+1];
-                    top_inf2pof <= top_inf2pof - 1;        
-                end
-                else
-                begin
-                    stk_inf2pof[top_inf2pof[2:0]] <= que_inf[front_inf[3:0]+1];
-                    front_inf <= front_inf + 1;
-                    top_inf2pof <= top_inf2pof + 1;
-                end
-            end
+           case (reg_opr)
+               sum : reg_rlt <= reg_rlt + reg_trm;
+               sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
+           endcase
+        end
+    end
+    else if (reg_trm_sgn) // negative
+    begin
+        if (swd_os_pst)
+        begin
+           case (reg_opr)
+               sum : reg_rlt <= reg_rlt + reg_trm;
+               sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
+           endcase
+        end
+    end
+    else // positvie
+    begin
+        if (swd_os_pre)
+        begin
+           case (reg_opr)
+               sum : reg_rlt <= reg_rlt + reg_trm;
+               sub : reg_rlt <= reg_rlt - reg_trm;
+               mul : reg_rlt <= reg_rlt * reg_trm;
+               div : reg_rlt <= reg_rlt / reg_trm;
+           endcase
         end
     end
 end
 
-
+// Sign-magnitude form
 reg reg_rlt_sgn;
 reg [31:0] reg_rlt_mgn;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst)
-    begin
+    if (rst) 
+    begin 
         reg_rlt_sgn <= 0;
         reg_rlt_mgn <= 0;
     end
-    else
+    else if (swd8 == 1) //equ
     begin
-        case (cnt_result)
-            50: begin // Sign-magnitude form for bcd code
-                    if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
-                    begin 
-                        reg_rlt_mgn <= ~(reg_rlt - 1);
-                        reg_rlt_sgn <= 1;
-                    end
-                    else reg_rlt_mgn <= reg_rlt; // positive
-                end
-        endcase
-    end 
+        if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
+        begin 
+            reg_rlt_mgn <= ~(reg_rlt - 1);
+            reg_rlt_sgn <= 1;
+        end
+        else reg_rlt_mgn <= reg_rlt; // positive
+    end
+end
+
+// Signal flow control - count order
+integer cnt_ord;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) cnt_ord <= 0;
+    else if (swd8) cnt_ord <= cnt_ord + 1;
 end
 
 // Binary 2 BCD
-parameter start_bcd = 100;
 reg [39:0] reg_rlt_bcd;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_rlt_bcd <= 0;
-    else if (cnt_result >= start_bcd && cnt_result < start_bcd + 32)
+    else if (cnt_ord >= 10 && cnt_ord < 42)
     begin
         if (reg_rlt_bcd[3:0] >= 4'b0101) reg_rlt_bcd[3:0] = reg_rlt_bcd[3:0] + 3;
         if (reg_rlt_bcd[7:4] >= 4'b0101) reg_rlt_bcd[7:4] = reg_rlt_bcd[7:4] + 3;
@@ -501,12 +506,47 @@ begin
         if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
         if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
-        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
+        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+10-cnt_ord]};
     end
 end
 
-// Result LCD
-localparam start_lcd = start_bcd + 32;
+// LCD reg(input) and lcd position count(input)
+reg [7:0] reg_lcd;
+integer cnt_lcd;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) 
+    begin 
+        reg_lcd <= ascii_blk;
+        cnt_lcd <= 0;
+    end
+    else if (swp_os_pst) 
+    begin 
+        reg_lcd <= reg_num_ascii;
+        cnt_lcd <= cnt_lcd + 1;
+    end
+    else if (swd_os_pst) 
+    begin 
+        reg_lcd <= reg_opr_ascii;
+        cnt_lcd <= cnt_lcd + 1;
+    end
+end
+
+// lcd position assignment - input
+reg [8*16-1 : 0] reg_lcd_l1;
+integer i;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) 
+    begin
+        for (i = 0; i < 16; i = i + 1) 
+            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
+    end
+    else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
+    else if (swp_os_pre | swd_os_pre) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
+end
+
+// lcd position assignment - result
 reg [8*16-1 : 0] reg_lcd_l2;
 integer is_msd, cnt_blk;
 always @(posedge rst or posedge clk_100hz)
@@ -520,133 +560,29 @@ begin
             cnt_blk <= 0;
         end
     end
-    else if (cnt_result >= start_lcd && cnt_result < start_lcd+10)
+    else if (cnt_ord)
     begin
-        if (reg_rlt_bcd[4*(start_lcd+9-cnt_result) +: 4] == 0 && is_msd == 0) 
-        begin 
-            reg_lcd_l2[8*(start_lcd+9-cnt_result) +: 8] <= ascii_blk;
-            cnt_blk <= cnt_blk + 1;
-        end
-        else
+        if (cnt_ord >= 50 && cnt_ord < 60)
         begin
-            reg_lcd_l2[8*(start_lcd+9-cnt_result) +: 8] <= ascii_0 + reg_rlt_bcd[4*(start_lcd+9-cnt_result) +: 4];
-            is_msd <= 1;
+            if (reg_rlt_bcd[4*(59-cnt_ord) +: 4] == 0 && is_msd == 0) 
+            begin 
+                reg_lcd_l2[8*(59-cnt_ord) +: 8] <= ascii_blk;
+                cnt_blk <= cnt_blk + 1;
+            end
+            else
+            begin
+                reg_lcd_l2[8*(59-cnt_ord) +: 8] <= ascii_0 + reg_rlt_bcd[4*(59-cnt_ord) +: 4];
+                is_msd <= 1;
+            end
         end
-    end
-    else if (cnt_result == start_lcd+11) if (reg_rlt_sgn) reg_lcd_l2[8*(10-cnt_blk) +: 8] <= ascii_sub;
-end
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// LCD reg(input) and lcd position count(input)
-reg [7:0] reg_lcd;
-integer cnt_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) 
-    begin 
-        reg_lcd <= ascii_blk;
-        cnt_lcd <= 0;
-    end
-    if (os_operand) 
-    begin 
-        reg_lcd <= reg_num_ascii;
-        cnt_lcd <= cnt_lcd + 1;
-    end
-    if (os_operator) 
-    begin 
-        reg_lcd <= reg_opr_ascii;
-        cnt_lcd <= cnt_lcd + 1;
-    end
-    if (swd8)
-    begin
-        // reg_lcd <= reg_opr_ascii; // *************
-        cnt_lcd <= cnt_lcd + 1;
-    end
-end
-
-// lcd position assignment - input
-reg [8*16-1 : 0] reg_lcd_l1;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) 
-    begin
-        for (i = 0; i < 16; i = i + 1) 
-            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
-    end
-    else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
-    else if (os_operand | os_operator) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
-end
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-parameter
-        delay           = 3'b000,
-        function_set    = 3'b001,
-        entry_mode      = 3'b010,
-        disp_onoff      = 3'b011,
-        line1           = 3'b100,
-        line2           = 3'b101,
-        delay_t         = 3'b110,
-        clear_disp      = 3'b111;
-
-integer cnt;
-reg [2:0] state_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-        cnt <= 0;
-    else
+        else if (cnt_ord == 60)
         begin
-            case (state_lcd)
-                delay :
-                    if (cnt >= 70) cnt <= 0;
-                    else cnt <= cnt + 1;
-                function_set :
-                    if (cnt >= 30) cnt <= 0;
-                    else cnt <= cnt + 1;
-                disp_onoff :
-                    if (cnt >= 30) cnt <= 0;
-                    else cnt <= cnt + 1;
-                entry_mode :
-                    if (cnt >= 30) cnt <= 0;
-                    else cnt <= cnt + 1;
-                line1 :
-                    if (cnt >= 20) cnt <= 0;
-                    else cnt <= cnt + 1;
-                line2 :
-                    if (cnt >= 20) cnt <= 0;
-                    else cnt <= cnt + 1;
-                delay_t :
-                    if (cnt >= 400) cnt <= 0;
-                    else cnt <= cnt + 1;
-                clear_disp :
-                    if (cnt >= 200) cnt <= 0;
-                    else cnt <= cnt + 1;
-                default : cnt <= 0;
-            endcase
+            if (reg_rlt_sgn) reg_lcd_l2[8*(10-cnt_blk) +: 8] <= ascii_sub;
         end
-end
-
-always@(posedge rst or posedge clk_100hz)
-begin
-    if (rst) state_lcd = delay;
-    else
-    begin
-        case (state_lcd)
-            delay :             if (cnt == 70)  state_lcd <= function_set;
-            function_set :      if (cnt == 30)  state_lcd <= disp_onoff;
-            disp_onoff :        if (cnt == 30)  state_lcd <= entry_mode;
-            entry_mode :        if (cnt == 30)  state_lcd <= line1;
-            line1 :             if (cnt == 20)  state_lcd <= line2;
-            line2 :             if (cnt == 20)  state_lcd <= delay_t;
-            delay_t :           if (cnt == 400) state_lcd <= clear_disp;
-            clear_disp :        if (cnt == 200) state_lcd <= line1;
-            default :                           state_lcd <= delay;
-        endcase
     end
 end
 
+// lcd output
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -657,7 +593,7 @@ begin
         end
     else
         begin
-            case (state_lcd)
+            case (state)
                 function_set :
                     begin
                         lcd_rs <= 1'b0; 
@@ -856,7 +792,6 @@ begin
         end
 end
 
- assign lcd_e = clk_100hz;
+assign lcd_e = clk_100hz;
 
- endmodule
-
+endmodule
