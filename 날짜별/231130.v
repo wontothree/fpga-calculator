@@ -229,7 +229,6 @@ end
 
 assign os_operator = reg_os_operator[0] & ~reg_os_operator[1];
 
-
 // State transition
 parameter 
         init        = 4'b00,
@@ -326,18 +325,13 @@ begin
     else if (os_operand) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
 end
 
-
-parameter
-        MAX_QUEUE_SIZE = 16,
-        MAX_STACK_SIZE = 8;
-
-reg unsigned [3:0] front_inf, rear_inf, front_pof, rear_pof;
-reg unsigned [3:0] top_inf2pof, top_pof2rlt;
-
-reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1]; // 중위식을 저장하는 큐
-reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으로 변환하기 위한 스택
-reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1]; // 후위식을 저장하는 큐
-reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // 후위식을 계산하기 위한 스택
+parameter MAX_QUEUE_SIZE = 16, MAX_STACK_SIZE = 8;
+reg [3:0] front_inf, rear_inf, front_pof, rear_pof;
+reg [3:0] top_inf2pof, top_pof2rlt;
+reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1];     // Queue storaging infix expression
+reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // Stack for transforming infix expression to postfix expression
+reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1];     // Queue storaging postfix expression
+reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // Stack for calculating infix expression
 
 // operator
 integer i;
@@ -356,52 +350,58 @@ begin
     else
     begin
         case (cnt_operator)
-            2 : begin // Calculate the reg_trm
+            1 : begin // Calculate the reg_trm
                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
                     else reg_trm <= reg_trm_mgn;
                 end
-            4 : begin // Insert reg_trm in queue
+            2 : begin // Insert reg_trm in queue
                     que_inf[rear_inf[3:0]+1] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
-            6 : begin // Insert reg_opr in queue
+            3 : begin // Insert reg_opr in queue
                     que_inf[rear_inf[3:0]+1] <= reg_opr;
                     rear_inf <= rear_inf + 1;
                 end
-            // 8 : begin // Accumulate the result
-            //         case (reg_opr)
-            //             sum : reg_rlt <= reg_rlt + reg_trm;
-            //             sub : reg_rlt <= reg_rlt - reg_trm;
-            //             mul : reg_rlt <= reg_rlt * reg_trm;
-            //             div : reg_rlt <= reg_rlt / reg_trm;
-            //         endcase
-            //     end
-            10 : begin // Initialize the reg_trm
+            4 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
                 end
         endcase
+    end 
+end
 
+// result
+reg reg_rlt_sgn;
+reg [31:0] reg_rlt_mgn;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        reg_rlt_sgn <= 0;
+        reg_rlt_mgn <= 0;
+    end
+    else
+    begin
         case (cnt_result)
-            2 : begin // Calculate the reg_trm
+            1 : begin // Calculate the reg_trm
                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
                     else reg_trm <= reg_trm_mgn;
                 end
-            4 : begin // Insert reg_trm in queue
+            2 : begin // Insert reg_trm in queue
                     que_inf[rear_inf[3:0]+1] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
-            // 6 : begin // Accumulate the result
-            //         case (reg_opr)
-            //             sum : reg_rlt <= reg_rlt + reg_trm;
-            //             sub : reg_rlt <= reg_rlt - reg_trm;
-            //             mul : reg_rlt <= reg_rlt * reg_trm;
-            //             div : reg_rlt <= reg_rlt / reg_trm;
-            //         endcase
-            //     end
-            8 : begin // Initialize the reg_trm
+            3 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
+                end
+            60 : begin // Sign-magnitude form for bcd code
+                    if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
+                    begin 
+                        reg_rlt_mgn <= ~(reg_rlt - 1);
+                        reg_rlt_sgn <= 1;
+                    end
+                    else reg_rlt_mgn <= reg_rlt; // positive
                 end
         endcase
     end 
@@ -418,7 +418,7 @@ begin
         rear_pof <= 0;
         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
     end
-    else if (cnt_result >= 10 && cnt_result < 50)
+    else if (cnt_result >= 4 && cnt_result < 30)
     begin
         if (front_inf != rear_inf) // not empty
         begin
@@ -472,10 +472,11 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
+        reg_rlt <= 0;
         top_pof2rlt <= 0;
         for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_pof2rlt[i] <= 0;
     end
-    else if (cnt_result >= 50 && cnt_result < 100)
+    else if (cnt_result >= 30 && cnt_result < 60)
     begin
         if (front_pof != rear_pof) // not empty
         begin
@@ -515,32 +516,8 @@ begin
     end
 end
 
-reg reg_rlt_sgn;
-reg [31:0] reg_rlt_mgn;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-    begin
-        reg_rlt_sgn <= 0;
-        reg_rlt_mgn <= 0;
-    end
-    else
-    begin
-        case (cnt_result)
-            100: begin // Sign-magnitude form for bcd code
-                    if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
-                    begin 
-                        reg_rlt_mgn <= ~(reg_rlt - 1);
-                        reg_rlt_sgn <= 1;
-                    end
-                    else reg_rlt_mgn <= reg_rlt; // positive
-                end
-        endcase
-    end 
-end
-
 // Binary 2 BCD
-parameter start_bcd = 101;
+parameter start_bcd = 61;
 reg [39:0] reg_rlt_bcd;
 always @(posedge rst or posedge clk_100hz)
 begin
