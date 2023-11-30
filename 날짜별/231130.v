@@ -334,7 +334,7 @@ parameter
         MAX_STACK_SIZE = 8;
 
 reg [3:0] front_inf, rear_inf, front_pof, rear_pof;
-reg [2:0] top_inf2pof, top_pof2rlt;
+reg [3:0] top_inf2pof, top_pof2rlt;
 
 reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1]; // 중위식을 저장하는 큐
 reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으로 변환하기 위한 스택
@@ -438,21 +438,21 @@ begin
             begin
                 if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
                 begin 
-                    stk_inf2pof[top_inf2pof[2:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> infix to postfix stack
+                    stk_inf2pof[top_inf2pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> infix to postfix stack
                     front_inf <= front_inf + 1;
                     top_inf2pof <= top_inf2pof + 1; 
                 end
                 else
                 begin
-                    if (stk_inf2pof[top_inf2pof[2:0]] + 1 >= que_inf[front_inf[3:0]+1]) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높거나 같은 경우
+                    if (stk_inf2pof[top_inf2pof[3:0]] + 1 >= que_inf[front_inf[3:0]+1]) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높거나 같은 경우
                     begin
-                        que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[2:0]];
+                        que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[3:0]];
                         top_inf2pof <= top_inf2pof + 1;
                         rear_pof <= rear_pof + 1;
                     end
                     else
                     begin
-                        stk_inf2pof[top_inf2pof[2:0]+1] <= que_inf[front_inf[3:0]+1];
+                        stk_inf2pof[top_inf2pof[3:0]+1] <= que_inf[front_inf[3:0]+1];
                         front_inf <= front_inf + 1;
                         top_inf2pof <= top_inf2pof + 1;
                     end
