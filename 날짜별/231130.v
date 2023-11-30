@@ -417,9 +417,9 @@ begin
     if (rst)
     begin
         top_inf2pof <= 0;
+        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
         front_pof <= 0;
         rear_pof <= 0;
-        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
     end
     else if (cnt_result >= 10 && cnt_result < 50)
@@ -475,13 +475,17 @@ end
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
+    begin
+        top_pof2rlt <= 0;
+        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_pof2rlt[i] <= 0;
+    end
     else if (cnt_result >= 50 && cnt_result < 100)
     begin
         if (front_pof != rear_pof) // not empty
         begin
             if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
             begin
-                stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front[3:0]+1];
+                stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front_inf[3:0]+1];
                 front_pof <= front_pof + 1;
                 top_pof2rlt <= top_pof2rlt + 1; 
             end
@@ -503,6 +507,9 @@ begin
                     top_pof2rlt <= top_pof2rlt - 1;
                 end
                 else if (que_inf[front_inf[3:0]+1] == 4'b1010) // div
+                begin
+                    //
+                end
             end
         end
         else reg_rlt <= stk_pof2rlt[1]; // empty
