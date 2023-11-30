@@ -411,7 +411,7 @@ end
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// 중위식 -> 후위식
+// infix -> postfix
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -434,7 +434,7 @@ begin
             end
             // else if (
             // else if )
-            else if (que_inf[front_inf[3:0]+1] <= 4'b1010) // operator
+            else // operator // if (que_inf[front_inf[3:0]+1] <= 4'b1010) 
             begin
                 if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
                 begin 
@@ -471,6 +471,43 @@ begin
     end
 end
 
+// postfix -> result
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    else if (cnt_result >= 50 && cnt_result < 100)
+    begin
+        if (front_pof != rear_pof) // not empty
+        begin
+            if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
+            begin
+                stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front[3:0]+1];
+                front_pof <= front_pof + 1;
+                top_pof2rlt <= top_pof2rlt + 1; 
+            end
+            else // operator
+            begin
+                if (que_inf[front_inf[3:0]+1] == 4'b0101) // sum
+                begin
+                    stk_pof2rlt[1] <= stk_pof2rlt[1] + stk_pof2rlt[2];
+                    top_pof2rlt <= top_pof2rlt - 1;
+                end
+                else if (que_inf[front_inf[3:0]+1] == 4'b0110) // sub
+                begin
+                    stk_pof2rlt[1] <= stk_pof2rlt[1] - stk_pof2rlt[2];
+                    top_pof2rlt <= top_pof2rlt - 1;
+                end
+                else if (que_inf[front_inf[3:0]+1] == 4'b1001) // mul
+                begin
+                    stk_pof2rlt[1] <= stk_pof2rlt[1] * stk_pof2rlt[2];
+                    top_pof2rlt <= top_pof2rlt - 1;
+                end
+                else if (que_inf[front_inf[3:0]+1] == 4'b1010) // div
+            end
+        end
+        else reg_rlt <= stk_pof2rlt[1]; // empty
+    end
+end
 
 reg reg_rlt_sgn;
 reg [31:0] reg_rlt_mgn;
