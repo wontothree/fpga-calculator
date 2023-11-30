@@ -656,11 +656,11 @@ end
 reg [8*16-1 : 0] reg_lcd_l1;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst) 
-    begin
-        for (i = 0; i < 16; i = i + 1) 
-            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
-    end
+    if (rst) reg_lcd_l1 <= ascii_blk; 
+    // begin
+    //     for (i = 0; i < 16; i = i + 1) 
+    //         reg_lcd_l1[8*i +: 8] <= ascii_blk; 
+    // end
     else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
     else if (os_operand | os_operator) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
 end
