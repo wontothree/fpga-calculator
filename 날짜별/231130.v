@@ -333,8 +333,8 @@ parameter
         MAX_QUEUE_SIZE = 16,
         MAX_STACK_SIZE = 8;
 
-reg [3:0] front_inf, rear_inf, front_pof, rear_pof;
-reg [3:0] top_inf2pof, top_pof2rlt;
+reg unsigned [3:0] front_inf, rear_inf, front_pof, rear_pof;
+reg unsigned [3:0] top_inf2pof, top_pof2rlt;
 
 reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1]; // 중위식을 저장하는 큐
 reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으로 변환하기 위한 스택
