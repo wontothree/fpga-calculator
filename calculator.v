@@ -1,6 +1,5 @@
 module calculator (
-    input swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd,
-    input swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8,
+    input swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, sht,
     input clk, 
 
     output reg [7:0] seg,
@@ -60,13 +59,55 @@ begin
             cnt_100hz <= 0; 
             clk_100hz <= ~clk_100hz;
         end
+    else cnt_100hz <= cnt_100hz + 1;
+end
+
+wire os;
+reg [1:0] reg_os;
+assign sw = (swp0 | swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9);
+
+always @(posedge rst or negedge clk_100hz)
+begin
+    if (rst) reg_os <= 2'b00;
+    else reg_os <= {reg_os[0], sw};
+end
+
+assign os = ~reg_os[0] & reg_os[1];
+
+
+
+
+// one shot code of shift button
+wire os_sht;
+reg [1:0] reg_os_sht; // reg_os_operand
+assign sw_sht = sht; // sw_operand
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst) reg_os_sht <= 2'b00;
+    else reg_os_sht <= {reg_os_sht[0], sw_sht};
+end
+
+assign os_sht = reg_os_sht[0] & ~reg_os_sht[1];
+
+reg en_sht;
+always@(posedge rst or posedge clk_100hz)
+begin
+    if (rst) en_sht <= 0;
     else
-        cnt_100hz <= cnt_100hz + 1;
+    begin
+        case (en_sht)
+            0 : if (os_sht) en_sht <= 1;
+            1 : if (os) en_sht <= 0;
+        endcase
+    end
 end
 
 // push switch
 reg [3:0] reg_num;
-reg [7:0] reg_num_ascii; // reg_lcd_swp
+reg [7:0] reg_num_ascii;
+reg reg_trm_sgn;
+reg reg_opr;
+reg [7:0] reg_opr_ascii;
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -74,142 +115,161 @@ begin
         reg_num <= 4'b0000;
         reg_num_ascii <= ascii_blk; 
         seg <= 8'b0000_0000;
+
+        reg_opr <= 0;
+        reg_opr_ascii <= ascii_blk; 
+        led <= 0; 
+        reg_trm_sgn <= 0;
+
+        en_sht <= 0;
     end
     else
     begin
         if (swp1)
         begin
-            reg_num <= 4'b0001;
-            reg_num_ascii <= ascii_1;
-            seg <= 8'b0110_0000;
+            if (en_sht == 0) // 1
+            begin
+                reg_num <= 4'b0001;
+                reg_num_ascii <= ascii_1;
+                seg <= 8'b0110_0000;
+            end
+            else if (en_sht == 1) // +
+            begin 
+                reg_opr <= sum;
+                reg_opr_ascii <= ascii_sum;    
+                led <= 8'b0100_0000; 
+            end 
         end
         else if (swp2)
         begin
-            reg_num <= 4'b0010;
-            reg_num_ascii <= ascii_2;
-            seg <= 8'b1101_1010;
+            if (en_sht == 0) // 2
+            begin
+                reg_num <= 4'b0010;
+                reg_num_ascii <= ascii_2;
+            end
+            else if (en_sht == 1) // -
+            begin 
+                reg_opr <= sub;
+                reg_opr_ascii <= ascii_sub;    
+                led <= 8'b0100_0000; 
+            end 
         end
         else if (swp3)
         begin
-            reg_num <= 4'b0011;
-            reg_num_ascii <= ascii_3;
-            seg <= 8'b1111_0010;
+            if (en_sht == 0) // 3
+            begin
+                reg_num <= 4'b0011;
+                reg_num_ascii <= ascii_3;
+                seg <= 8'b1111_0010;
+            end
+            else if (en_sht == 1) // x
+            begin 
+                reg_opr <= mul;
+                reg_opr_ascii <= ascii_mul;    
+                led <= 8'b0001_0000; 
+            end 
         end
         else if (swp4)
         begin
-            reg_num <= 4'b0100;
-            reg_num_ascii <= ascii_4;
-            seg <= 8'b0110_0110;
+            if (en_sht == 0) // 4
+            begin
+                reg_num <= 4'b0100;
+                reg_num_ascii <= ascii_4;
+                seg <= 8'b0110_0110;
+            end
+            else if (en_sht == 1) // %
+            begin 
+                reg_opr <= div;
+                reg_opr_ascii <= ascii_div;   
+                led <= 8'b0000_1000;  
+            end 
          end
         else if (swp5)
         begin
-            reg_num <= 4'b0101;
-            reg_num_ascii <= ascii_5;
-            seg <= 8'b1011_0110;
+            if (en_sht == 0) // 5
+            begin
+                reg_num <= 4'b0101;
+                reg_num_ascii <= ascii_5;
+                seg <= 8'b1011_0110;
+            end
+            else if (en_sht == 1) // (
+            begin 
+                reg_opr <= lpr;
+                reg_opr_ascii <= ascii_lpr;    
+                led <= 8'b0000_0100; 
+            end 
         end
         else if (swp6)
         begin
-            reg_num <= 4'b0110;
-            reg_num_ascii <= ascii_6;
-            seg <= 8'b1011_1110;
+            if (en_sht == 0) // 6
+            begin
+                reg_num <= 4'b0110;
+                reg_num_ascii <= ascii_6;
+                seg <= 8'b1011_1110;
+            end
+            else if (en_sht == 1) // )
+            begin 
+                reg_opr <= rpr;
+                reg_opr_ascii <= ascii_rpr;    
+                led <= 8'b0000_0010; 
+            end 
         end
         else if (swp7)
         begin
-            reg_num <= 4'b111;
-            reg_num_ascii <= ascii_7;
-            seg <= 8'b1110_0000;
+            if (en_sht == 0)
+            begin
+                reg_num <= 4'b111;
+                reg_num_ascii <= ascii_7;
+                seg <= 8'b1110_0000;
+            end
+            //
         end
         else if (swp8)
         begin
-            reg_num <= 4'b1000;
-            reg_num_ascii <= ascii_8;
-            seg <= 8'b1111_1110;
+            if (en_sht == 0)
+            begin
+                reg_num <= 4'b1000;
+                reg_num_ascii <= ascii_8;
+                seg <= 8'b1111_1110;
+            end
+            //
         end
         else if (swp9)
         begin
-            reg_num <= 4'b1001;
-            reg_num_ascii <= ascii_9;
-            seg <= 8'b1111_0110;
+            if (en_sht == 0) // 9
+            begin
+                reg_num <= 4'b1001;
+                reg_num_ascii <= ascii_9;
+                seg <= 8'b1111_0110;
+            end
+            else if (en_sht == 1) // =
+            begin 
+                reg_opr_ascii <= ascii_equ;
+                led <= 8'b0000_0001; 
+            end 
         end
         else if (swp0)
         begin
-            reg_num <= 4'b0000;
-            reg_num_ascii <= ascii_0;
-            seg <= 8'b1111_1100;
+            if (en_sht == 0)
+            begin
+                reg_num <= 4'b0000;
+                reg_num_ascii <= ascii_0;
+                seg <= 8'b1111_1100;
+            end
+            else if (en_sht == 1)
+            begin 
+                reg_trm_sgn <= 1;
+                reg_opr_ascii <= ascii_min;
+                led <= 8'b1000_0000;  
+            end 
         end
-    end
-end
-
-// dip switch
-reg reg_trm_sgn;
-reg [7:0] reg_opr;
-reg [7:0] reg_opr_ascii; // reg_lcd_swd
-always@(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-    begin 
-        reg_trm_sgn <= 0;
-        reg_opr <= sum; // sum
-        reg_opr_ascii <= ascii_blk; 
-        led <= 0; 
-    end
-    else
-    begin
-        if (swd1)
-        begin 
-            reg_trm_sgn <= 1;
-            reg_opr_ascii <= ascii_min;
-            led <= 8'b1000_0000;  
-        end 
-        else if (swd2)
-        begin 
-            reg_opr <= sum;
-            reg_opr_ascii <= ascii_sum;    
-            led <= 8'b0100_0000; 
-        end 
-        else if (swd3)
-        begin 
-            reg_opr <= sub;
-            reg_opr_ascii <= ascii_sub;    
-            led <= 8'b0010_0000; 
-        end 
-        else if (swd4)
-        begin 
-            reg_opr <= mul;
-            reg_opr_ascii <= ascii_mul;    
-            led <= 8'b0001_0000; 
-        end 
-        else if (swd5)
-        begin 
-            reg_opr <= div;
-            reg_opr_ascii <= ascii_div;   
-            led <= 8'b0000_1000;  
-        end 
-        else if (swd6)
-        begin 
-            reg_opr <= lpr;
-            reg_opr_ascii <= ascii_lpr;    
-            led <= 8'b0000_0100; 
-        end 
-        else if (swd7)
-        begin 
-            reg_opr <= rpr;
-            reg_opr_ascii <= ascii_rpr;    
-            led <= 8'b0000_0010; 
-        end 
-        else if (swd8)
-        begin 
-            // reg_opr <= equ;
-            reg_opr_ascii <= ascii_equ; 
-            led <= 8'b0000_0001; 
-        end 
     end
 end
 
 // one shot code of operand
 wire os_perand;
 reg [1:0] reg_os_operand;
-assign sw_operand = swp0 | swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swd1;
+assign sw_operand = ((en_sht == 0) & (swp0 | swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9)) | (en_sht == 1 && swp0);
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_os_operand <= 2'b00;
@@ -219,10 +279,10 @@ end
 assign os_operand = reg_os_operand[0] & ~reg_os_operand[1];
 
 
-// one shot code of operator
+// one shot code of operator, minus, equal, (, )
 wire os_operator;
 reg [1:0] reg_os_operator;
-assign sw_operator = swd2 | swd3 | swd4 | swd5 | swd6 | swd7;
+assign sw_operator = (en_sht == 1) & (swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9);
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_os_operator <= 2'b00;
@@ -230,7 +290,6 @@ begin
 end
 
 assign os_operator = reg_os_operator[0] & ~reg_os_operator[1];
-
 
 // State transition
 parameter 
@@ -249,7 +308,7 @@ begin
             init :  if (os_operand) state_calc <= operand;
             operand : 
             begin 
-                if (swd8) state_calc <= result;
+                if (os_operator & en_sht & swp9) state_calc <= result;
                 else if (os_operator) state_calc <= operator;
             end
             operator : if (os_operand) state_calc <= operand;
@@ -328,18 +387,13 @@ begin
     else if (os_operand) reg_trm_mgn <= 10 * reg_trm_mgn + reg_num;
 end
 
-
-parameter
-        MAX_QUEUE_SIZE = 16,
-        MAX_STACK_SIZE = 8;
-
+parameter MAX_QUEUE_SIZE = 16, MAX_STACK_SIZE = 8;
 reg [3:0] front_inf, rear_inf, front_pof, rear_pof;
-reg [2:0] top_inf2pof, top_pof2rlt;
-
-reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1]; // 중위식을 저장하는 큐
-reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // 중위식을 후위식으로 변환하기 위한 스택
-reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1]; // 후위식을 저장하는 큐
-reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // 후위식을 계산하기 위한 스택
+reg [3:0] top_inf2pof, top_pof2rlt;
+reg signed [31:0] que_inf [0:MAX_QUEUE_SIZE-1];     // Queue storaging infix expression
+reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // Stack for transforming infix expression to postfix expression
+reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1];     // Queue storaging postfix expression
+reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // Stack for calculating infix expression
 
 // operator
 integer i;
@@ -358,50 +412,19 @@ begin
     else
     begin
         case (cnt_operator)
-            2 : begin // Calculate the reg_trm
+            1 : begin // Calculate the reg_trm
                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
                     else reg_trm <= reg_trm_mgn;
                 end
-            4 : begin // Insert reg_trm in queue
+            2 : begin // Insert reg_trm in queue
                     que_inf[rear_inf[3:0]+1] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
-            6 : begin // Insert reg_opr in queue
+            3 : begin // Insert reg_opr in queue
                     que_inf[rear_inf[3:0]+1] <= reg_opr;
                     rear_inf <= rear_inf + 1;
                 end
-            8 : begin // Accumulate the result
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                        div : reg_rlt <= reg_rlt / reg_trm;
-                    endcase
-                end
-            10 : begin // Initialize the reg_trm
-                    reg_trm_sgn <= 0;
-                    reg_trm_mgn <= 0;
-                end
-        endcase
-
-        case (cnt_result)
-            2 : begin // Calculate the reg_trm
-                    if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-                    else reg_trm <= reg_trm_mgn;
-                end
-            4 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
-                    rear_inf <= rear_inf + 1;
-                end
-            6 : begin // Accumulate the result
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                        div : reg_rlt <= reg_rlt / reg_trm;
-                    endcase
-                end
-            8 : begin // Initialize the reg_trm
+            4 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
                 end
@@ -409,58 +432,7 @@ begin
     end 
 end
 
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// 중위식 -> 후위식
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-    begin
-        top_inf2pof <= 0;
-        front_pof <= 0;
-        rear_pof <= 0;
-        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
-        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
-    end
-    else if (cnt_result >= 10 && cnt_result < 50)
-    begin
-        if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
-        begin
-            que_pof[rear_pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> post que
-            front_inf <= front_inf + 1; // Infix queue pop
-            rear_pof <= rear_pof + 1; // Post queue push
-        end
-        // else if (
-        // else if )
-        else if (que_inf[front_inf[3:0]+1] <= 4'b1010) // operator
-        begin
-            if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
-            begin 
-                stk_inf2pof[top_inf2pof[2:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> infix to postfix stack
-                front_inf <= front_inf + 1;
-                top_inf2pof <= top_inf2pof + 1; 
-            end
-            else
-            begin
-                if (stk_inf2pof[top_inf2pof[2:0]] + 1 >= que_inf[front_inf[3:0]+1]) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높거나 같은 경우
-                begin
-                    que_pof[rear_pof+1] <= stk_inf2pof[top_inf2pof+1];
-                    top_inf2pof <= top_inf2pof - 1;        
-                end
-                else
-                begin
-                    stk_inf2pof[top_inf2pof[2:0]] <= que_inf[front_inf[3:0]+1];
-                    front_inf <= front_inf + 1;
-                    top_inf2pof <= top_inf2pof + 1;
-                end
-            end
-        end
-    end
-end
-
-
+// result
 reg reg_rlt_sgn;
 reg [31:0] reg_rlt_mgn;
 always @(posedge rst or posedge clk_100hz)
@@ -473,7 +445,19 @@ begin
     else
     begin
         case (cnt_result)
-            50: begin // Sign-magnitude form for bcd code
+            1 : begin // Calculate the reg_trm
+                    if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
+                    else reg_trm <= reg_trm_mgn;
+                end
+            2 : begin // Insert reg_trm in queue
+                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
+                    rear_inf <= rear_inf + 1;
+                end
+            3 : begin // Initialize the reg_trm
+                    reg_trm_sgn <= 0;
+                    reg_trm_mgn <= 0;
+                end
+            60 : begin // Sign-magnitude form for bcd code
                     if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                     begin 
                         reg_rlt_mgn <= ~(reg_rlt - 1);
@@ -485,8 +469,117 @@ begin
     end 
 end
 
+// infix -> postfix
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        top_inf2pof <= 0;
+        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
+        front_pof <= 0;
+        rear_pof <= 0;
+        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
+    end
+    else if (cnt_result >= 4 && cnt_result < 30)
+    begin
+        if (front_inf != rear_inf) // not empty
+        begin
+            if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
+            begin
+                que_pof[rear_pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> post que
+                front_inf <= front_inf + 1; // Infix queue pop
+                rear_pof <= rear_pof + 1; // Post queue push
+            end
+            // else if (
+            // else if )
+            else
+            begin
+                if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
+                begin 
+                    stk_inf2pof[top_inf2pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> infix to postfix stack
+                    front_inf <= front_inf + 1;
+                    top_inf2pof <= top_inf2pof + 1; 
+                end
+                else
+                begin
+                    if (stk_inf2pof[top_inf2pof[3:0]] + 1 >= que_inf[front_inf[3:0]+1]) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높거나 같은 경우
+                    begin
+                        que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[3:0]];
+                        top_inf2pof <= top_inf2pof - 1;
+                        rear_pof <= rear_pof + 1;
+                    end
+                    else
+                    begin
+                        stk_inf2pof[top_inf2pof[3:0]+1] <= que_inf[front_inf[3:0]+1];
+                        front_inf <= front_inf + 1;
+                        top_inf2pof <= top_inf2pof + 1;
+                    end
+                end
+            end
+        end
+        else // empty
+        begin
+            if (top_inf2pof != 0)
+            begin
+                que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[2:0]];
+                top_inf2pof <= top_inf2pof - 1;
+                rear_pof <= rear_pof + 1;
+            end
+        end
+    end
+end
+
+// postfix -> result
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        reg_rlt <= 0;
+        top_pof2rlt <= 0;
+        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_pof2rlt[i] <= 0;
+    end
+    else if (cnt_result >= 30 && cnt_result < 60)
+    begin
+        if (front_pof != rear_pof) // not empty
+        begin
+            if (que_pof[front_pof[3:0]+1] > 4'b1010) // operand
+            begin
+                stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front_pof[3:0]+1];
+                front_pof <= front_pof + 1;
+                top_pof2rlt <= top_pof2rlt + 1;
+            end
+            else // operator
+            begin
+                if (que_pof[front_pof[3:0]+1] == 4'b0101) // sum
+                begin
+                    front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] + stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt - 1;
+                end
+                else if (que_pof[front_pof[3:0]+1] == 4'b0110) // sub
+                begin
+                    front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] - stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt - 1;
+                end
+                else if (que_pof[front_pof[3:0]+1] == 4'b1001) // mul
+                begin
+                    front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] * stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt-1;
+                end
+                // else if (que_pof[front_pof[3:0]+1] == 4'b1010) // div
+                // begin
+                //     //
+                // end
+            end
+        end
+        else reg_rlt <= stk_pof2rlt[1]; // empty
+    end
+end
+
 // Binary 2 BCD
-parameter start_bcd = 100;
+parameter start_bcd = 61;
 reg [39:0] reg_rlt_bcd;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -536,8 +629,6 @@ begin
     else if (cnt_result == start_lcd+11) if (reg_rlt_sgn) reg_lcd_l2[8*(10-cnt_blk) +: 8] <= ascii_sub;
 end
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // LCD reg(input) and lcd position count(input)
 reg [7:0] reg_lcd;
 integer cnt_lcd;
@@ -558,11 +649,6 @@ begin
         reg_lcd <= reg_opr_ascii;
         cnt_lcd <= cnt_lcd + 1;
     end
-    if (swd8)
-    begin
-        // reg_lcd <= reg_opr_ascii; // *************
-        cnt_lcd <= cnt_lcd + 1;
-    end
 end
 
 // lcd position assignment - input
@@ -577,8 +663,6 @@ begin
     else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
     else if (os_operand | os_operator) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
 end
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 parameter
         delay           = 3'b000,
@@ -858,5 +942,4 @@ end
 
  assign lcd_e = clk_100hz;
 
- endmodule
-
+endmodule
