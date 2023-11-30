@@ -558,7 +558,7 @@ begin
             reg_lcd_l2_15 = ascii_blk;
             reg_lcd_l2_16 = ascii_blk;
         end
-    else if (swd8) // result
+    else if (cnt_result == 32) // result
         begin
             if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                 begin
@@ -1072,8 +1072,7 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) 
     begin
-        for (i = 0; i < 16; i = i + 1) 
-            reg_lcd_l1[8*i +: 8] <= ascii_blk; 
+        for (i = 0; i < 16; i = i + 1) reg_lcd_l1[8*i +: 8] <= ascii_blk; 
     end
     else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
     else if (os_operand | os_operator) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
