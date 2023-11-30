@@ -1,5 +1,6 @@
 module calculator (
-    input swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, sht,
+    input swp1, swp2, swp3, swp4, swp5, swp6, swp7, swp8, swp9, rst, swp0, lrd,
+    input swd1, swd2, swd3, swd4, swd5, swd6, swd7, swd8,
     input clk, 
 
     output reg [7:0] seg,
@@ -62,52 +63,9 @@ begin
     else cnt_100hz <= cnt_100hz + 1;
 end
 
-wire os;
-reg [1:0] reg_os;
-assign sw = (swp0 | swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9);
-
-always @(posedge rst or negedge clk_100hz)
-begin
-    if (rst) reg_os <= 2'b00;
-    else reg_os <= {reg_os[0], sw};
-end
-
-assign os = ~reg_os[0] & reg_os[1];
-
-
-
-
-// one shot code of shift button
-wire os_sht;
-reg [1:0] reg_os_sht;
-assign sw_sht = sht; 
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) reg_os_sht <= 2'b00;
-    else reg_os_sht <= {reg_os_sht[0], sw_sht};
-end
-
-assign os_sht = reg_os_sht[0] & ~reg_os_sht[1];
-
-reg en_sht;
-always@(posedge rst or posedge clk_100hz)
-begin
-    if (rst) en_sht <= 0;
-    else
-    begin
-        case (en_sht)
-            0 : if (os_sht) en_sht <= 1;
-            1 : if (os) en_sht <= 0;
-        endcase
-    end
-end
-
 // push switch
 reg [3:0] reg_num;
 reg [7:0] reg_num_ascii;
-reg reg_trm_sgn;
-reg [3:0] reg_opr;
-reg [7:0] reg_opr_ascii;
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -115,161 +73,141 @@ begin
         reg_num <= 4'b0000;
         reg_num_ascii <= ascii_blk; 
         seg <= 8'b0000_0000;
-
-        reg_opr <= 0;
-        reg_opr_ascii <= ascii_blk; 
-        led <= 0; 
-        reg_trm_sgn <= 0;
-
-        en_sht <= 0;
     end
     else
     begin
         if (swp1)
         begin
-            if (en_sht == 0) // 1
-            begin
-                reg_num <= 4'b0001;
-                reg_num_ascii <= ascii_1;
-                seg <= 8'b0110_0000;
-            end
-            else if (en_sht == 1) // +
-            begin 
-                reg_opr <= sum;
-                reg_opr_ascii <= ascii_sum;    
-                led <= 8'b0100_0000; 
-            end 
+            reg_num <= 4'b0001;
+            reg_num_ascii <= ascii_1;
+            seg <= 8'b0110_0000;
         end
         else if (swp2)
         begin
-            if (en_sht == 0) // 2
-            begin
-                reg_num <= 4'b0010;
-                reg_num_ascii <= ascii_2;
-            end
-            else if (en_sht == 1) // -
-            begin 
-                reg_opr <= sub;
-                reg_opr_ascii <= ascii_sub;    
-                led <= 8'b0100_0000; 
-            end 
+            reg_num <= 4'b0010;
+            reg_num_ascii <= ascii_2;
+            seg <= 8'b1101_1010;
         end
         else if (swp3)
         begin
-            if (en_sht == 0) // 3
-            begin
-                reg_num <= 4'b0011;
-                reg_num_ascii <= ascii_3;
-                seg <= 8'b1111_0010;
-            end
-            else if (en_sht == 1) // x
-            begin 
-                reg_opr <= mul;
-                reg_opr_ascii <= ascii_mul;    
-                led <= 8'b0001_0000; 
-            end 
+            reg_num <= 4'b0011;
+            reg_num_ascii <= ascii_3;
+            seg <= 8'b1111_0010;
         end
         else if (swp4)
         begin
-            if (en_sht == 0) // 4
-            begin
-                reg_num <= 4'b0100;
-                reg_num_ascii <= ascii_4;
-                seg <= 8'b0110_0110;
-            end
-            else if (en_sht == 1) // %
-            begin 
-                reg_opr <= div;
-                reg_opr_ascii <= ascii_div;   
-                led <= 8'b0000_1000;  
-            end 
+            reg_num <= 4'b0100;
+            reg_num_ascii <= ascii_4;
+            seg <= 8'b0110_0110;
          end
         else if (swp5)
         begin
-            if (en_sht == 0) // 5
-            begin
-                reg_num <= 4'b0101;
-                reg_num_ascii <= ascii_5;
-                seg <= 8'b1011_0110;
-            end
-            else if (en_sht == 1) // (
-            begin 
-                reg_opr <= lpr;
-                reg_opr_ascii <= ascii_lpr;    
-                led <= 8'b0000_0100; 
-            end 
+            reg_num <= 4'b0101;
+            reg_num_ascii <= ascii_5;
+            seg <= 8'b1011_0110;
         end
         else if (swp6)
         begin
-            if (en_sht == 0) // 6
-            begin
-                reg_num <= 4'b0110;
-                reg_num_ascii <= ascii_6;
-                seg <= 8'b1011_1110;
-            end
-            else if (en_sht == 1) // )
-            begin 
-                reg_opr <= rpr;
-                reg_opr_ascii <= ascii_rpr;    
-                led <= 8'b0000_0010; 
-            end 
+            reg_num <= 4'b0110;
+            reg_num_ascii <= ascii_6;
+            seg <= 8'b1011_1110;
         end
         else if (swp7)
         begin
-            if (en_sht == 0)
-            begin
-                reg_num <= 4'b111;
-                reg_num_ascii <= ascii_7;
-                seg <= 8'b1110_0000;
-            end
-            //
+            reg_num <= 4'b111;
+            reg_num_ascii <= ascii_7;
+            seg <= 8'b1110_0000;
         end
         else if (swp8)
         begin
-            if (en_sht == 0)
-            begin
-                reg_num <= 4'b1000;
-                reg_num_ascii <= ascii_8;
-                seg <= 8'b1111_1110;
-            end
-            //
+            reg_num <= 4'b1000;
+            reg_num_ascii <= ascii_8;
+            seg <= 8'b1111_1110;
         end
         else if (swp9)
         begin
-            if (en_sht == 0) // 9
-            begin
-                reg_num <= 4'b1001;
-                reg_num_ascii <= ascii_9;
-                seg <= 8'b1111_0110;
-            end
-            else if (en_sht == 1) // =
-            begin 
-                reg_opr_ascii <= ascii_equ;
-                led <= 8'b0000_0001; 
-            end 
+            reg_num <= 4'b1001;
+            reg_num_ascii <= ascii_9;
+            seg <= 8'b1111_0110;
         end
         else if (swp0)
         begin
-            if (en_sht == 0)
-            begin
-                reg_num <= 4'b0000;
-                reg_num_ascii <= ascii_0;
-                seg <= 8'b1111_1100;
-            end
-            else if (en_sht == 1)
-            begin 
-                reg_trm_sgn <= 1;
-                reg_opr_ascii <= ascii_min;
-                led <= 8'b1000_0000;  
-            end 
+            reg_num <= 4'b0000;
+            reg_num_ascii <= ascii_0;
+            seg <= 8'b1111_1100;
         end
+    end
+end
+
+// dip switch
+reg reg_trm_sgn;
+reg [7:0] reg_opr;
+reg [7:0] reg_opr_ascii;
+always@(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin 
+        reg_trm_sgn <= 0;
+        reg_opr <= 0;
+        reg_opr_ascii <= ascii_blk; 
+        led <= 0; 
+    end
+    else
+    begin
+        if (swd1)
+        begin 
+            reg_trm_sgn <= 1;
+            reg_opr_ascii <= ascii_min;
+            led <= 8'b1000_0000;  
+        end 
+        else if (swd2)
+        begin 
+            reg_opr <= sum;
+            reg_opr_ascii <= ascii_sum;    
+            led <= 8'b0100_0000; 
+        end 
+        else if (swd3)
+        begin 
+            reg_opr <= sub;
+            reg_opr_ascii <= ascii_sub;    
+            led <= 8'b0010_0000; 
+        end 
+        else if (swd4)
+        begin 
+            reg_opr <= mul;
+            reg_opr_ascii <= ascii_mul;    
+            led <= 8'b0001_0000; 
+        end 
+        else if (swd5)
+        begin 
+            reg_opr <= div;
+            reg_opr_ascii <= ascii_div;   
+            led <= 8'b0000_1000;  
+        end 
+        else if (swd6)
+        begin 
+            reg_opr <= lpr;
+            reg_opr_ascii <= ascii_lpr;    
+            led <= 8'b0000_0100; 
+        end 
+        else if (swd7)
+        begin 
+            reg_opr <= rpr;
+            reg_opr_ascii <= ascii_rpr;    
+            led <= 8'b0000_0010; 
+        end 
+        else if (swd8)
+        begin 
+            reg_opr_ascii <= ascii_equ;
+            led <= 8'b0000_0001; 
+        end 
     end
 end
 
 // one shot code of operand
 wire os_perand;
 reg [1:0] reg_os_operand;
-assign sw_operand = ((en_sht == 0) & (swp0 | swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9)) | (en_sht == 1 && swp0);
+assign sw_operand = swp0 | swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9 | swd1;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_os_operand <= 2'b00;
@@ -282,7 +220,7 @@ assign os_operand = reg_os_operand[0] & ~reg_os_operand[1];
 // one shot code of operator, minus, equal, (, )
 wire os_operator;
 reg [1:0] reg_os_operator;
-assign sw_operator = (en_sht == 1) & (swp1 | swp2 | swp3 | swp4 | swp5 | swp6 | swp7 | swp8 | swp9);
+assign sw_operator = swd1 |swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_os_operator <= 2'b00;
@@ -308,7 +246,7 @@ begin
             init :  if (os_operand) state_calc <= operand;
             operand : 
             begin 
-                if (os_operator & en_sht & swp9) state_calc <= result;
+                if (swd8) state_calc <= result;
                 else if (os_operator) state_calc <= operator;
             end
             operator : if (os_operand) state_calc <= operand;
@@ -457,7 +395,7 @@ begin
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
                 end
-            60 : begin // Sign-magnitude form for bcd code
+            30 : begin // Sign-magnitude form for bcd code
                     if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                     begin 
                         reg_rlt_mgn <= ~(reg_rlt - 1);
@@ -480,7 +418,7 @@ begin
         rear_pof <= 0;
         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
     end
-    else if (cnt_result >= 4 && cnt_result < 30)
+    else if (cnt_result >= 4 && cnt_result < 20)
     begin
         if (front_inf != rear_inf) // not empty
         begin
@@ -502,7 +440,7 @@ begin
                 end
                 else
                 begin
-                    if (stk_inf2pof[top_inf2pof[3:0]] + 1 >= que_inf[front_inf[3:0]+1]) // 스택의 맨 위의 연산자가, 들어오는 연산자보다 우선순위가 높거나 같은 경우
+                    if (stk_inf2pof[top_inf2pof[3:0]] + 1 >= que_inf[front_inf[3:0]+1]) // ??? ? ?? ????, ???? ????? ????? ??? ?? ??
                     begin
                         que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[3:0]];
                         top_inf2pof <= top_inf2pof - 1;
@@ -538,7 +476,7 @@ begin
         top_pof2rlt <= 0;
         for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_pof2rlt[i] <= 0;
     end
-    else if (cnt_result >= 30 && cnt_result < 60)
+    else if (cnt_result >= 20 && cnt_result < 30)
     begin
         if (front_pof != rear_pof) // not empty
         begin
@@ -579,25 +517,24 @@ begin
 end
 
 // Binary 2 BCD
-parameter start_bcd = 60;
+parameter start_bcd = 31;
 reg [39:0] reg_rlt_bcd;
 always @(posedge rst or posedge clk_100hz)
 begin
-   if (rst) reg_rlt_bcd <= 0;
-   else if (cnt_result >= start_bcd && cnt_result < start_bcd + 32)
-   begin
-       reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
-       reg_rlt_bcd[4:1] <= (reg_rlt_bcd[3:0]>=4'b0101) ? reg_rlt_bcd[3:0] + 3 : reg_rlt_bcd[3:0];
-       reg_rlt_bcd[4:1] <= (reg_rlt_bcd[3:0]>=4'b0101) ? reg_rlt_bcd[3:0] + 3 : reg_rlt_bcd[3:0];
-       reg_rlt_bcd[8:5] <= (reg_rlt_bcd[7:4]>=4'b0101) ? reg_rlt_bcd[7:4] + 3 : reg_rlt_bcd[7:4];
-       reg_rlt_bcd[12:9] <= (reg_rlt_bcd[11:8]>=4'b0101) ? reg_rlt_bcd[11:8] + 3 : reg_rlt_bcd[11:8];
-       reg_rlt_bcd[16:13] <= (reg_rlt_bcd[15:12]>=4'b0101) ? reg_rlt_bcd[15:12] + 3 : reg_rlt_bcd[15:12];
-       reg_rlt_bcd[20:17] <= (reg_rlt_bcd[19:16]>=4'b0101) ? reg_rlt_bcd[19:16] + 3 : reg_rlt_bcd[19:16];
-       reg_rlt_bcd[24:21] <= (reg_rlt_bcd[23:20]>=4'b0101) ? reg_rlt_bcd[23:20] + 3 : reg_rlt_bcd[23:20];
-       reg_rlt_bcd[28:25] <= (reg_rlt_bcd[27:24]>=4'b0101) ? reg_rlt_bcd[27:24] + 3 : reg_rlt_bcd[27:24];
-       reg_rlt_bcd[31:28] <= (reg_rlt_bcd[23:20]>=4'b0101) ? reg_rlt_bcd[31:28] + 3 : reg_rlt_bcd[31:28];
-   end
-end 
+    if (rst) reg_rlt_bcd <= 0;
+    else if (cnt_result >= start_bcd && cnt_result < start_bcd + 32)
+    begin
+        if (reg_rlt_bcd[3:0] >= 4'b0101) reg_rlt_bcd[3:0] = reg_rlt_bcd[3:0] + 3;
+        if (reg_rlt_bcd[7:4] >= 4'b0101) reg_rlt_bcd[7:4] = reg_rlt_bcd[7:4] + 3;
+        if (reg_rlt_bcd[11:8] >= 4'b0101) reg_rlt_bcd[11:8] = reg_rlt_bcd[11:8] + 3;
+        if (reg_rlt_bcd[15:12] >= 4'b0101) reg_rlt_bcd[15:12] = reg_rlt_bcd[15:12] + 3;
+        if (reg_rlt_bcd[19:16] >= 4'b0101) reg_rlt_bcd[19:16] = reg_rlt_bcd[19:16] + 3;
+        if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
+        if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
+        if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
+        reg_rlt_bcd = {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
+    end
+end
 
 // Result LCD
 localparam start_lcd = start_bcd + 32;
@@ -640,12 +577,12 @@ begin
         reg_lcd <= ascii_blk;
         cnt_lcd <= 0;
     end
-    else if (os_operand) 
+    if (os_operand) 
     begin 
         reg_lcd <= reg_num_ascii;
         cnt_lcd <= cnt_lcd + 1;
     end
-    else if (os_operator) 
+    if (os_operator) 
     begin 
         reg_lcd <= reg_opr_ascii;
         cnt_lcd <= cnt_lcd + 1;
@@ -656,7 +593,7 @@ end
 reg [8*16-1 : 0] reg_lcd_l1;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst)
+    if (rst) 
     begin
         for (i = 0; i < 16; i = i + 1) 
             reg_lcd_l1[8*i +: 8] <= ascii_blk; 

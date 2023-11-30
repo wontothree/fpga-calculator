@@ -148,7 +148,7 @@ begin
     if (rst)
     begin 
         reg_trm_sgn <= 0;
-        reg_opr <= sum;
+        reg_opr <= 0;
         reg_opr_ascii <= ascii_blk; 
         led <= 0; 
     end
