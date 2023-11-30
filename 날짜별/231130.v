@@ -483,7 +483,7 @@ begin
     begin
         if (front_pof != rear_pof) // not empty
         begin
-            if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
+            if (que_pof[front_pof[3:0]+1] > 4'b1010) // operand
             begin
                 stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front_inf[3:0]+1];
                 front_pof <= front_pof + 1;
@@ -491,25 +491,25 @@ begin
             end
             else // operator
             begin
-                if (que_inf[front_inf[3:0]+1] == 4'b0101) // sum
+                if (que_pof[front_pof[3:0]+1] == 4'b0101) // sum
                 begin
                     stk_pof2rlt[top_pof2rlt[3:0]+1] <= stk_pof2rlt[top_pof2rlt[3:0]] + stk_pof2rlt[top_pof2rlt[3:0]-1];
                     top_pof2rlt <= top_pof2rlt - 1;
                     front_pof <= front_pof + 1;
                 end
-                else if (que_inf[front_inf[3:0]+1] == 4'b0110) // sub
+                else if (que_pof[front_pof[3:0]+1] == 4'b0110) // sub
                 begin
                     stk_pof2rlt[top_pof2rlt[3:0]+1] <= stk_pof2rlt[top_pof2rlt[3:0]] - stk_pof2rlt[top_pof2rlt[3:0]-1];
                     top_pof2rlt <= top_pof2rlt - 1;
                     front_pof <= front_pof + 1;
                 end
-                else if (que_inf[front_inf[3:0]+1] == 4'b1001) // mul
+                else if (que_pof[front_pof[3:0]+1] == 4'b1001) // mul
                 begin
                     stk_pof2rlt[top_pof2rlt[3:0]+1] <= stk_pof2rlt[top_pof2rlt[3:0]] * stk_pof2rlt[top_pof2rlt[3:0]-1];
                     top_pof2rlt <= top_pof2rlt - 1;
                     front_pof <= front_pof + 1;
                 end
-                else if (que_inf[front_inf[3:0]+1] == 4'b1010) // div
+                else if (que_pof[front_pof[3:0]+1] == 4'b1010) // div
                 begin
                     //
                 end
