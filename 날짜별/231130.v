@@ -370,14 +370,14 @@ begin
                     que_inf[rear_inf[3:0]+1] <= reg_opr;
                     rear_inf <= rear_inf + 1;
                 end
-            8 : begin // Accumulate the result
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                        div : reg_rlt <= reg_rlt / reg_trm;
-                    endcase
-                end
+            // 8 : begin // Accumulate the result
+            //         case (reg_opr)
+            //             sum : reg_rlt <= reg_rlt + reg_trm;
+            //             sub : reg_rlt <= reg_rlt - reg_trm;
+            //             mul : reg_rlt <= reg_rlt * reg_trm;
+            //             div : reg_rlt <= reg_rlt / reg_trm;
+            //         endcase
+            //     end
             10 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
@@ -393,14 +393,14 @@ begin
                     que_inf[rear_inf[3:0]+1] <= reg_trm; 
                     rear_inf <= rear_inf + 1;
                 end
-            6 : begin // Accumulate the result
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                        div : reg_rlt <= reg_rlt / reg_trm;
-                    endcase
-                end
+            // 6 : begin // Accumulate the result
+            //         case (reg_opr)
+            //             sum : reg_rlt <= reg_rlt + reg_trm;
+            //             sub : reg_rlt <= reg_rlt - reg_trm;
+            //             mul : reg_rlt <= reg_rlt * reg_trm;
+            //             div : reg_rlt <= reg_rlt / reg_trm;
+            //         endcase
+            //     end
             8 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
