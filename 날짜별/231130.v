@@ -495,19 +495,19 @@ begin
                 begin
                     stk_pof2rlt[1] <= stk_pof2rlt[top_pof2rlt[3:0]] + stk_pof2rlt[top_pof2rlt[3:0]-1];
                     top_pof2rlt <= top_pof2rlt - 1;
-                    top_pof2rlt <= top_pof2rlt + 1;
+                    front_pof <= front_pof + 1;
                 end
                 else if (que_inf[front_inf[3:0]+1] == 4'b0110) // sub
                 begin
                     stk_pof2rlt[1] <= stk_pof2rlt[top_pof2rlt[3:0]] - stk_pof2rlt[top_pof2rlt[3:0]-1];
                     top_pof2rlt <= top_pof2rlt - 1;
-                    top_pof2rlt <= top_pof2rlt + 1;
+                    front_pof <= front_pof + 1;
                 end
                 else if (que_inf[front_inf[3:0]+1] == 4'b1001) // mul
                 begin
                     stk_pof2rlt[1] <= stk_pof2rlt[top_pof2rlt[3:0]] * stk_pof2rlt[top_pof2rlt[3:0]-1];
                     top_pof2rlt <= top_pof2rlt - 1;
-                    top_pof2rlt <= top_pof2rlt + 1;
+                    front_pof <= front_pof + 1;
                 end
                 else if (que_inf[front_inf[3:0]+1] == 4'b1010) // div
                 begin
