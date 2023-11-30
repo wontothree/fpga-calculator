@@ -434,7 +434,7 @@ begin
             end
             // else if (
             // else if )
-            else if (que_inf[front_inf[3:0]+1] <= 4'b1010) 
+            else // if (que_inf[front_inf[3:0]+1] <= 4'b1010) 
             begin
                 if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
                 begin 
@@ -485,7 +485,7 @@ begin
         begin
             if (que_pof[front_pof[3:0]+1] > 4'b1010) // operand
             begin
-                stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front_inf[3:0]+1];
+                stk_pof2rlt[top_pof2rlt+1] <= que_pof[front_inf+1];
                 front_pof <= front_pof + 1;
                 top_pof2rlt <= top_pof2rlt + 1;
             end
