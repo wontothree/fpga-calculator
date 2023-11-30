@@ -354,14 +354,14 @@ begin
                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
                     else reg_trm <= reg_trm_mgn;
                 end
-            // 2 : begin // Insert reg_trm in queue
-            //         que_inf[rear_inf[3:0]+1] <= reg_trm; 
-            //         rear_inf <= rear_inf + 1;
-            //     end
-            // 3 : begin // Insert reg_opr in queue
-            //         que_inf[rear_inf[3:0]+1] <= reg_opr;
-            //         rear_inf <= rear_inf + 1;
-            //     end
+            2 : begin // Insert reg_trm in queue
+                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
+                    rear_inf <= rear_inf + 1;
+                end
+            3 : begin // Insert reg_opr in queue
+                    que_inf[rear_inf[3:0]+1] <= reg_opr;
+                    rear_inf <= rear_inf + 1;
+                end
             // 4:  begin
             //         case (reg_opr)
             //             sum : reg_rlt <= reg_rlt + reg_trm;
@@ -394,18 +394,18 @@ begin
                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
                     else reg_trm <= reg_trm_mgn;
                 end
-            // 2 : begin // Insert reg_trm in queue
-            //         que_inf[rear_inf[3:0]+1] <= reg_trm; 
-            //         rear_inf <= rear_inf + 1;
-            //     end
-            3:  begin
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                    endcase
+            2 : begin // Insert reg_trm in queue
+                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
+                    rear_inf <= rear_inf + 1;
                 end
-            4 : begin // Initialize the reg_trm
+            // 3:  begin
+            //         case (reg_opr)
+            //             sum : reg_rlt <= reg_rlt + reg_trm;
+            //             sub : reg_rlt <= reg_rlt - reg_trm;
+            //             mul : reg_rlt <= reg_rlt * reg_trm;
+            //         endcase
+            //     end
+            3 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
                 end
@@ -421,114 +421,114 @@ begin
     end 
 end
 
-// // infix -> postfix
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst)
-//     begin
-//         top_inf2pof <= 0;
-//         for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
-//         front_pof <= 0;
-//         rear_pof <= 0;
-//         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
-//     end
-//     else if (cnt_result >= 4 && cnt_result < 20)
-//     begin
-//         if (front_inf != rear_inf) // not empty
-//         begin
-//             if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
-//             begin
-//                 que_pof[rear_pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> post que
-//                 front_inf <= front_inf + 1; // Infix queue pop
-//                 rear_pof <= rear_pof + 1; // Post queue push
-//             end
-//             // else if (
-//             // else if )
-//             else
-//             begin
-//                 if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
-//                 begin 
-//                     stk_inf2pof[top_inf2pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> infix to postfix stack
-//                     front_inf <= front_inf + 1;
-//                     top_inf2pof <= top_inf2pof + 1; 
-//                 end
-//                 else
-//                 begin
-//                     if (stk_inf2pof[top_inf2pof[3:0]] + 1 >= que_inf[front_inf[3:0]+1]) // ??? ? ?? ????, ???? ????? ????? ??? ?? ??
-//                     begin
-//                         que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[3:0]];
-//                         top_inf2pof <= top_inf2pof - 1;
-//                         rear_pof <= rear_pof + 1;
-//                     end
-//                     else
-//                     begin
-//                         stk_inf2pof[top_inf2pof[3:0]+1] <= que_inf[front_inf[3:0]+1];
-//                         front_inf <= front_inf + 1;
-//                         top_inf2pof <= top_inf2pof + 1;
-//                     end
-//                 end
-//             end
-//         end
-//         else // empty
-//         begin
-//             if (top_inf2pof != 0)
-//             begin
-//                 que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[2:0]];
-//                 top_inf2pof <= top_inf2pof - 1;
-//                 rear_pof <= rear_pof + 1;
-//             end
-//         end
-//     end
-// end
+// infix -> postfix
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        top_inf2pof <= 0;
+        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
+        front_pof <= 0;
+        rear_pof <= 0;
+        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_pof[i] <= 0;
+    end
+    else if (cnt_result >= 4 && cnt_result < 20)
+    begin
+        if (front_inf != rear_inf) // not empty
+        begin
+            if (que_inf[front_inf[3:0]+1] > 4'b1010) // operand
+            begin
+                que_pof[rear_pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> post que
+                front_inf <= front_inf + 1; // Infix queue pop
+                rear_pof <= rear_pof + 1; // Post queue push
+            end
+            // else if (
+            // else if )
+            else
+            begin
+                if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
+                begin 
+                    stk_inf2pof[top_inf2pof[3:0]+1] <= que_inf[front_inf[3:0]+1]; // Infix que -> infix to postfix stack
+                    front_inf <= front_inf + 1;
+                    top_inf2pof <= top_inf2pof + 1; 
+                end
+                else
+                begin
+                    if (stk_inf2pof[top_inf2pof[3:0]] + 1 >= que_inf[front_inf[3:0]+1]) // ??? ? ?? ????, ???? ????? ????? ??? ?? ??
+                    begin
+                        que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[3:0]];
+                        top_inf2pof <= top_inf2pof - 1;
+                        rear_pof <= rear_pof + 1;
+                    end
+                    else
+                    begin
+                        stk_inf2pof[top_inf2pof[3:0]+1] <= que_inf[front_inf[3:0]+1];
+                        front_inf <= front_inf + 1;
+                        top_inf2pof <= top_inf2pof + 1;
+                    end
+                end
+            end
+        end
+        else // empty
+        begin
+            if (top_inf2pof != 0)
+            begin
+                que_pof[rear_pof[3:0]+1] <= stk_inf2pof[top_inf2pof[2:0]];
+                top_inf2pof <= top_inf2pof - 1;
+                rear_pof <= rear_pof + 1;
+            end
+        end
+    end
+end
 
-// // postfix -> result
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst)
-//     begin
-//         reg_rlt <= 0;
-//         top_pof2rlt <= 0;
-//         for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_pof2rlt[i] <= 0;
-//     end
-//     else if (cnt_result >= 20 && cnt_result < 30)
-//     begin
-//         if (front_pof != rear_pof) // not empty
-//         begin
-//             if (que_pof[front_pof[3:0]+1] > 4'b1010) // operand
-//             begin
-//                 stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front_pof[3:0]+1];
-//                 front_pof <= front_pof + 1;
-//                 top_pof2rlt <= top_pof2rlt + 1;
-//             end
-//             else // operator
-//             begin
-//                 if (que_pof[front_pof[3:0]+1] == 4'b0101) // sum
-//                 begin
-//                     front_pof <= front_pof + 1;
-//                     stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] + stk_pof2rlt[top_pof2rlt[3:0]];
-//                     top_pof2rlt <= top_pof2rlt - 1;
-//                 end
-//                 else if (que_pof[front_pof[3:0]+1] == 4'b0110) // sub
-//                 begin
-//                     front_pof <= front_pof + 1;
-//                     stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] - stk_pof2rlt[top_pof2rlt[3:0]];
-//                     top_pof2rlt <= top_pof2rlt - 1;
-//                 end
-//                 else if (que_pof[front_pof[3:0]+1] == 4'b1001) // mul
-//                 begin
-//                     front_pof <= front_pof + 1;
-//                     stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] * stk_pof2rlt[top_pof2rlt[3:0]];
-//                     top_pof2rlt <= top_pof2rlt-1;
-//                 end
-//                 // else if (que_pof[front_pof[3:0]+1] == 4'b1010) // div
-//                 // begin
-//                 //     //
-//                 // end
-//             end
-//         end
-//         else reg_rlt <= stk_pof2rlt[1]; // empty
-//     end
-// end
+// postfix -> result
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        reg_rlt <= 0;
+        top_pof2rlt <= 0;
+        for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_pof2rlt[i] <= 0;
+    end
+    else if (cnt_result >= 20 && cnt_result < 30)
+    begin
+        if (front_pof != rear_pof) // not empty
+        begin
+            if (que_pof[front_pof[3:0]+1] > 4'b1010) // operand
+            begin
+                stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front_pof[3:0]+1];
+                front_pof <= front_pof + 1;
+                top_pof2rlt <= top_pof2rlt + 1;
+            end
+            else // operator
+            begin
+                if (que_pof[front_pof[3:0]+1] == 4'b0101) // sum
+                begin
+                    front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] + stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt - 1;
+                end
+                else if (que_pof[front_pof[3:0]+1] == 4'b0110) // sub
+                begin
+                    front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] - stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt - 1;
+                end
+                else if (que_pof[front_pof[3:0]+1] == 4'b1001) // mul
+                begin
+                    front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] * stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt-1;
+                end
+                // else if (que_pof[front_pof[3:0]+1] == 4'b1010) // div
+                // begin
+                //     //
+                // end
+            end
+        end
+        else reg_rlt <= stk_pof2rlt[1]; // empty
+    end
+end
 
 
 // lcd position passignment
