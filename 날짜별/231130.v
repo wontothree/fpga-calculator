@@ -200,7 +200,7 @@ begin
         else if (swd8)
         begin 
             // reg_opr <= equ;
-            reg_opr_ascii <= ascii_equ; 
+            // reg_opr_ascii <= ascii_equ;
             led <= 8'b0000_0001; 
         end 
     end
@@ -434,7 +434,7 @@ begin
             end
             // else if (
             // else if )
-            else // if (que_inf[front_inf[3:0]+1] <= 4'b1010) 
+            else
             begin
                 if (top_inf2pof == 0) // Stack for transforming infix to postfix is empty
                 begin 
@@ -485,7 +485,7 @@ begin
         begin
             if (que_pof[front_pof[3:0]+1] > 4'b1010) // operand
             begin
-                stk_pof2rlt[top_pof2rlt+1] <= que_pof[front_inf+1];
+                stk_pof2rlt[top_pof2rlt[3:0]+1] <= que_pof[front_pof[3:0]+1];
                 front_pof <= front_pof + 1;
                 top_pof2rlt <= top_pof2rlt + 1;
             end
@@ -493,26 +493,26 @@ begin
             begin
                 if (que_pof[front_pof[3:0]+1] == 4'b0101) // sum
                 begin
-                    stk_pof2rlt[top_pof2rlt[3:0]+1] <= stk_pof2rlt[top_pof2rlt[3:0]] + stk_pof2rlt[top_pof2rlt[3:0]-1];
-                    top_pof2rlt <= top_pof2rlt - 1;
                     front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] + stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt - 1;
                 end
                 else if (que_pof[front_pof[3:0]+1] == 4'b0110) // sub
                 begin
-                    stk_pof2rlt[top_pof2rlt[3:0]+1] <= stk_pof2rlt[top_pof2rlt[3:0]] - stk_pof2rlt[top_pof2rlt[3:0]-1];
-                    top_pof2rlt <= top_pof2rlt - 1;
                     front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] - stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt - 1;
                 end
                 else if (que_pof[front_pof[3:0]+1] == 4'b1001) // mul
                 begin
-                    stk_pof2rlt[top_pof2rlt[3:0]+1] <= stk_pof2rlt[top_pof2rlt[3:0]] * stk_pof2rlt[top_pof2rlt[3:0]-1];
-                    top_pof2rlt <= top_pof2rlt - 1;
                     front_pof <= front_pof + 1;
+                    stk_pof2rlt[top_pof2rlt[3:0]-1] <= stk_pof2rlt[top_pof2rlt[3:0]-1] * stk_pof2rlt[top_pof2rlt[3:0]];
+                    top_pof2rlt <= top_pof2rlt-1;
                 end
-                else if (que_pof[front_pof[3:0]+1] == 4'b1010) // div
-                begin
-                    //
-                end
+                // else if (que_pof[front_pof[3:0]+1] == 4'b1010) // div
+                // begin
+                //     //
+                // end
             end
         end
         else reg_rlt <= stk_pof2rlt[1]; // empty
@@ -531,7 +531,7 @@ begin
     else
     begin
         case (cnt_result)
-            50: begin // Sign-magnitude form for bcd code
+            100: begin // Sign-magnitude form for bcd code
                     if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                     begin 
                         reg_rlt_mgn <= ~(reg_rlt - 1);
@@ -544,7 +544,7 @@ begin
 end
 
 // Binary 2 BCD
-parameter start_bcd = 100;
+parameter start_bcd = 101;
 reg [39:0] reg_rlt_bcd;
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -618,7 +618,7 @@ begin
     end
     if (swd8)
     begin
-        // reg_lcd <= reg_opr_ascii; // *************
+        reg_lcd <= ascii_equ; // *************
         cnt_lcd <= cnt_lcd + 1;
     end
 end
@@ -916,5 +916,4 @@ end
 
  assign lcd_e = clk_100hz;
 
- endmodule
-
+endmodule
