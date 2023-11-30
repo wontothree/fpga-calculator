@@ -362,13 +362,13 @@ begin
             //         que_inf[rear_inf[3:0]+1] <= reg_opr;
             //         rear_inf <= rear_inf + 1;
             //     end
-            4:  begin
-                    case (reg_opr)
-                        sum : reg_rlt <= reg_rlt + reg_trm;
-                        sub : reg_rlt <= reg_rlt - reg_trm;
-                        mul : reg_rlt <= reg_rlt * reg_trm;
-                    endcase
-                end
+            // 4:  begin
+            //         case (reg_opr)
+            //             sum : reg_rlt <= reg_rlt + reg_trm;
+            //             sub : reg_rlt <= reg_rlt - reg_trm;
+            //             mul : reg_rlt <= reg_rlt * reg_trm;
+            //         endcase
+            //     end
             5 : begin // Initialize the reg_trm
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
