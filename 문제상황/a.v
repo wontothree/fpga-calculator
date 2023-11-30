@@ -517,26 +517,8 @@ begin
 end
 
 
-// lcd
-reg [7:0] reg_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) reg_lcd <= ascii_blk;
-    else if (pul_swp_os) reg_lcd <= reg_lcd_swp;
-    else if (pul_swd_os) reg_lcd <= reg_lcd_swd;
-end
-
-// lcd position count
-integer cnt_lcd;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst) cnt_lcd <= 0;
-    else if (pul_swp_os | pul_swd_os) cnt_lcd <= cnt_lcd + 1;
-end
-
 // lcd position passignment
 reg [7:0]
-
         reg_lcd_l2_01,
         reg_lcd_l2_02,
         reg_lcd_l2_03,
@@ -1283,67 +1265,67 @@ begin
                                 end
                             1 : begin
                                     lcd_rs <= 1'b1;
-                                    lcd_data <= reg_lcd_l2[8*15 +: 8];
+                                    lcd_data <= reg_lcd_l2_01;
                                 end
                             2 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*14 +: 8];
+                                    lcd_data <= reg_lcd_l2_02;
                                 end
                             3 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*13 +: 8];
+                                    lcd_data <= reg_lcd_l2_03;
                                 end
                             4 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*12 +: 8];
+                                    lcd_data <= reg_lcd_l2_04;
                                 end
                             5 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*11 +: 8];
+                                    lcd_data <= reg_lcd_l2_05;
                                 end
                             6 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*10 +: 8];
+                                    lcd_data <= reg_lcd_l2_06;
                                 end
                             7 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*9 +: 8];
+                                    lcd_data <= reg_lcd_l2_07;
                                 end
                             8 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*8 +: 8];
+                                    lcd_data <= reg_lcd_l2_08;
                                 end
                             9 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*7 +: 8];
+                                    lcd_data <= reg_lcd_l2_09;
                                 end
                             10 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*6 +: 8];
+                                    lcd_data <= reg_lcd_l2_10;
                                 end
                             11 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*5 +: 8];
+                                    lcd_data <= reg_lcd_l2_11;
                                 end
                             12 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*4 +: 8];
+                                    lcd_data <= reg_lcd_l2_12;
                                 end
                             13 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*3 +: 8];
+                                    lcd_data <= reg_lcd_l2_13;
                                 end
                             14 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*2 +: 8];
+                                    lcd_data <= reg_lcd_l2_14;
                                 end
                             15 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*1 +: 8];
+                                    lcd_data <= reg_lcd_l2_15;
                                 end
                             16 : begin
                                     lcd_rs <= 1'b1; 
-                                    lcd_data <= reg_lcd_l2[8*0 +: 8];
+                                    lcd_data <= reg_lcd_l2_16;
                                 end
                             default : begin
                                     lcd_rs <= 1'b1; 
