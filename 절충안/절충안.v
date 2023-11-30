@@ -354,10 +354,10 @@ begin
                     if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
                     else reg_trm <= reg_trm_mgn;
                 end
-            2 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
-                    rear_inf <= rear_inf + 1;
-                end
+            // 2 : begin // Insert reg_trm in queue
+            //         que_inf[rear_inf[3:0]+1] <= reg_trm; 
+            //         rear_inf <= rear_inf + 1;
+            //     end
             // 3 : begin // Insert reg_opr in queue
             //         que_inf[rear_inf[3:0]+1] <= reg_opr;
             //         rear_inf <= rear_inf + 1;
