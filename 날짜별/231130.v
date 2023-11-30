@@ -65,7 +65,7 @@ end
 
 // push switch
 reg [3:0] reg_num;
-reg [7:0] reg_num_ascii; // reg_lcd_swp
+reg [7:0] reg_num_ascii;
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -142,13 +142,13 @@ end
 // dip switch
 reg reg_trm_sgn;
 reg [7:0] reg_opr;
-reg [7:0] reg_opr_ascii; // reg_lcd_swd
+reg [7:0] reg_opr_ascii;
 always@(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin 
         reg_trm_sgn <= 0;
-        reg_opr <= sum; // sum
+        reg_opr <= 0;
         reg_opr_ascii <= ascii_blk; 
         led <= 0; 
     end
@@ -407,8 +407,6 @@ begin
     end 
 end
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // infix -> postfix
 always @(posedge rst or posedge clk_100hz)
 begin
@@ -592,8 +590,6 @@ begin
     else if (cnt_result == start_lcd+11) if (reg_rlt_sgn) reg_lcd_l2[8*(10-cnt_blk) +: 8] <= ascii_sub;
 end
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 // LCD reg(input) and lcd position count(input)
 reg [7:0] reg_lcd;
 integer cnt_lcd;
@@ -628,8 +624,6 @@ begin
     else if (cnt_lcd >= 1 && cnt_lcd <= 16) reg_lcd_l1[8*(cnt_lcd-1) +: 8] <= reg_lcd;
     else if (os_operand | os_operator) reg_lcd_l1 <= {reg_lcd, reg_lcd_l1[127:16], ascii_lar}; // infinite input
 end
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 parameter
         delay           = 3'b000,
