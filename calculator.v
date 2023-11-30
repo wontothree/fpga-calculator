@@ -598,25 +598,6 @@ begin
        reg_rlt_bcd[31:28] <= (reg_rlt_bcd[23:20]>=4'b0101) ? reg_rlt_bcd[31:28] + 3 : reg_rlt_bcd[31:28];
    end
 end 
-// Binary 2 BCD
-// parameter start_bcd = 60;
-// reg [39:0] reg_rlt_bcd;
-// always @(posedge rst or posedge clk_100hz)
-// begin
-//     if (rst) reg_rlt_bcd <= 0;
-//     else if (cnt_result >= start_bcd && cnt_result < start_bcd + 32)
-//     begin
-//         if (reg_rlt_bcd[3:0] >= 4'b0101) reg_rlt_bcd[3:0] = reg_rlt_bcd[3:0] + 3;
-//         if (reg_rlt_bcd[7:4] >= 4'b0101) reg_rlt_bcd[7:4] = reg_rlt_bcd[7:4] + 3;
-//         if (reg_rlt_bcd[11:8] >= 4'b0101) reg_rlt_bcd[11:8] = reg_rlt_bcd[11:8] + 3;
-//         if (reg_rlt_bcd[15:12] >= 4'b0101) reg_rlt_bcd[15:12] = reg_rlt_bcd[15:12] + 3;
-//         if (reg_rlt_bcd[19:16] >= 4'b0101) reg_rlt_bcd[19:16] = reg_rlt_bcd[19:16] + 3;
-//         if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
-//         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
-//         if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
-//         reg_rlt_bcd = {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
-//     end
-// end
 
 // Result LCD
 localparam start_lcd = start_bcd + 32;
@@ -659,12 +640,12 @@ begin
         reg_lcd <= ascii_blk;
         cnt_lcd <= 0;
     end
-    if (os_operand) 
+    else if (os_operand) 
     begin 
         reg_lcd <= reg_num_ascii;
         cnt_lcd <= cnt_lcd + 1;
     end
-    if (os_operator) 
+    else if (os_operator) 
     begin 
         reg_lcd <= reg_opr_ascii;
         cnt_lcd <= cnt_lcd + 1;
