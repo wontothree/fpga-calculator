@@ -395,7 +395,7 @@ begin
                     reg_trm_sgn <= 0;
                     reg_trm_mgn <= 0;
                 end
-            60 : begin // Sign-magnitude form for bcd code
+            30 : begin // Sign-magnitude form for bcd code
                     if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
                     begin 
                         reg_rlt_mgn <= ~(reg_rlt - 1);
@@ -532,7 +532,7 @@ begin
         if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
         if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
         if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
-        reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
+        reg_rlt_bcd = {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
     end
 end
 
