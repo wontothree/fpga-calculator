@@ -29,6 +29,9 @@ initial begin
     #130 swd4 = 1; // x
     #10 swd4 = 0;
 
+    #130 swd1 = 1; // min
+    #10 swd1 = 0;
+
     #130 swp2 = 1; // 2
     #10 swp2 = 0;
     #130 swp5 = 1; // 5

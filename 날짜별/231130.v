@@ -60,8 +60,7 @@ begin
             cnt_100hz <= 0; 
             clk_100hz <= ~clk_100hz;
         end
-    else
-        cnt_100hz <= cnt_100hz + 1;
+    else cnt_100hz <= cnt_100hz + 1;
 end
 
 // push switch
@@ -199,8 +198,7 @@ begin
         end 
         else if (swd8)
         begin 
-            // reg_opr <= equ;
-            // reg_opr_ascii <= ascii_equ;
+            reg_opr_ascii <= ascii_equ;
             led <= 8'b0000_0001; 
         end 
     end
@@ -219,10 +217,10 @@ end
 assign os_operand = reg_os_operand[0] & ~reg_os_operand[1];
 
 
-// one shot code of operator
+// one shot code of operator, minus, equal, (, )
 wire os_operator;
 reg [1:0] reg_os_operator;
-assign sw_operator = swd2 | swd3 | swd4 | swd5 | swd6 | swd7;
+assign sw_operator = swd1 |swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_os_operator <= 2'b00;
@@ -614,11 +612,6 @@ begin
     if (os_operator) 
     begin 
         reg_lcd <= reg_opr_ascii;
-        cnt_lcd <= cnt_lcd + 1;
-    end
-    if (swd8)
-    begin
-        reg_lcd <= ascii_equ; // *************
         cnt_lcd <= cnt_lcd + 1;
     end
 end
