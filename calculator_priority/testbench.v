@@ -1,4 +1,3 @@
-// ?? ?? ??
 `timescale 10ns / 100ps
 
 module testbench ();

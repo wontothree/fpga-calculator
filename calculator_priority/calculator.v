@@ -220,7 +220,7 @@ assign os_operand = reg_os_operand[0] & ~reg_os_operand[1];
 // one shot code of operator, minus, equal, (, )
 wire os_operator;
 reg [1:0] reg_os_operator;
-assign sw_operator = swd1 |swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
+assign sw_operator = swd1 | swd2 | swd3 | swd4 | swd5 | swd6 | swd7 | swd8;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst) reg_os_operator <= 2'b00;
@@ -288,30 +288,26 @@ begin
     end
 end
 
-integer cnt_operand, cnt_operator, cnt_result;
+integer cnt_operator, cnt_result;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
-        cnt_operand <= 0;
         cnt_operator <= 0;
         cnt_result <= 0;
     end
     else if (en_operand) 
     begin 
-        cnt_operand <= cnt_operand + 1;
         cnt_operator <= 0;
         cnt_result <= 0;
     end
     else if (en_operator) 
     begin 
-        cnt_operand <= 0;
         cnt_operator <= cnt_operator + 1;
         cnt_result <= 0;
     end
     else if (en_result) 
     begin
-        cnt_operand <= 0;
         cnt_operator <= 0;
         cnt_result <= cnt_result + 1;
     end
@@ -336,74 +332,45 @@ reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // Stack for calculating inf
 // operator
 integer i;
 reg [31:0] reg_trm;
-reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
         reg_trm <= 0;
-        reg_rlt <= 0;
         front_inf <= 0;
         rear_inf <= 0;
-        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_inf[i] <= 0;
+        for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_inf[i] <= 0;     
     end
     else
     begin
-        case (cnt_operator)
-            1 : begin // Calculate the reg_trm
-                    if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-                    else reg_trm <= reg_trm_mgn;
-                end
-            2 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
-                    rear_inf <= rear_inf + 1;
-                end
-            3 : begin // Insert reg_opr in queue
-                    que_inf[rear_inf[3:0]+1] <= reg_opr;
-                    rear_inf <= rear_inf + 1;
-                end
-            4 : begin // Initialize the reg_trm
-                    reg_trm_sgn <= 0;
-                    reg_trm_mgn <= 0;
-                end
-        endcase
-    end 
-end
-
-// result
-reg reg_rlt_sgn;
-reg [31:0] reg_rlt_mgn;
-always @(posedge rst or posedge clk_100hz)
-begin
-    if (rst)
-    begin
-        reg_rlt_sgn <= 0;
-        reg_rlt_mgn <= 0;
-    end
-    else
-    begin
-        case (cnt_result)
-            1 : begin // Calculate the reg_trm
-                    if (reg_trm_sgn) reg_trm <= ~reg_trm_mgn + 1;
-                    else reg_trm <= reg_trm_mgn;
-                end
-            2 : begin // Insert reg_trm in queue
-                    que_inf[rear_inf[3:0]+1] <= reg_trm; 
-                    rear_inf <= rear_inf + 1;
-                end
-            3 : begin // Initialize the reg_trm
-                    reg_trm_sgn <= 0;
-                    reg_trm_mgn <= 0;
-                end
-            30 : begin // Sign-magnitude form for bcd code
-                    if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
-                    begin 
-                        reg_rlt_mgn <= ~(reg_rlt - 1);
-                        reg_rlt_sgn <= 1;
+        if (cnt_operator)
+        begin
+            case (cnt_operator)
+                1 : reg_trm <= (reg_trm_sgn) ? (~reg_trm_mgn + 1) : reg_trm_mgn; // Calculate the reg_trm
+                2, 3 :  begin // Insert reg_trm in queue
+                            que_inf[rear_inf[3:0]+1] <= (cnt_operator == 2) ? reg_trm : reg_opr;
+                            rear_inf <= rear_inf + 1;
+                        end
+                4 : begin // Initialize the reg_trm
+                        reg_trm_sgn <= 0;
+                        reg_trm_mgn <= 0;
                     end
-                    else reg_rlt_mgn <= reg_rlt; // positive
-                end
-        endcase
+            endcase
+        end
+        else if (cnt_result) // Result state
+        begin
+            case (cnt_result)
+                1 : reg_trm <= (reg_trm_sgn) ? (~reg_trm_mgn + 1) : reg_trm_mgn; // Calculate the reg_trm
+                2 : begin // Insert reg_trm in queue
+                        que_inf[rear_inf[3:0]+1] <= reg_trm; 
+                        rear_inf <= rear_inf + 1;
+                    end
+                3 : begin // Initialize the reg_trm
+                        reg_trm_sgn <= 0;
+                        reg_trm_mgn <= 0;
+                    end
+            endcase
+        end
     end 
 end
 
@@ -468,6 +435,7 @@ begin
 end
 
 // postfix -> result
+reg [31:0] reg_rlt;
 always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
@@ -516,25 +484,49 @@ begin
     end
 end
 
+reg reg_rlt_sgn;
+reg [31:0] reg_rlt_mgn;
+always @(posedge rst or posedge clk_100hz)
+begin
+    if (rst)
+    begin
+        reg_rlt_sgn <= 0;
+        reg_rlt_mgn <= 0;
+    end
+    else
+    begin
+        if (cnt_result == 30)
+        begin // Sign-magnitude form for bcd code
+            if (reg_rlt >= 32'b1000_0000_0000_0000_0000_0000_0000_0000) // negative
+            begin 
+                reg_rlt_mgn <= ~(reg_rlt - 1);
+                reg_rlt_sgn <= 1;
+            end
+            else reg_rlt_mgn <= reg_rlt; // positive
+        end
+    end 
+end
+
 // Binary 2 BCD
-parameter start_bcd = 31;
+parameter start_bcd = 60;
 reg [39:0] reg_rlt_bcd;
 always @(posedge rst or posedge clk_100hz)
 begin
-    if (rst) reg_rlt_bcd <= 0;
-    else if (cnt_result >= start_bcd && cnt_result < start_bcd + 32)
-    begin
-        if (reg_rlt_bcd[3:0] >= 4'b0101) reg_rlt_bcd[3:0] = reg_rlt_bcd[3:0] + 3;
-        if (reg_rlt_bcd[7:4] >= 4'b0101) reg_rlt_bcd[7:4] = reg_rlt_bcd[7:4] + 3;
-        if (reg_rlt_bcd[11:8] >= 4'b0101) reg_rlt_bcd[11:8] = reg_rlt_bcd[11:8] + 3;
-        if (reg_rlt_bcd[15:12] >= 4'b0101) reg_rlt_bcd[15:12] = reg_rlt_bcd[15:12] + 3;
-        if (reg_rlt_bcd[19:16] >= 4'b0101) reg_rlt_bcd[19:16] = reg_rlt_bcd[19:16] + 3;
-        if (reg_rlt_bcd[23:20] >= 4'b0101) reg_rlt_bcd[23:20] = reg_rlt_bcd[23:20] + 3;
-        if (reg_rlt_bcd[27:24] >= 4'b0101) reg_rlt_bcd[27:24] = reg_rlt_bcd[27:24] + 3;
-        if (reg_rlt_bcd[31:28] >= 4'b0101) reg_rlt_bcd[31:28] = reg_rlt_bcd[31:28] + 3;
-        reg_rlt_bcd = {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
-    end
-end
+   if (rst) reg_rlt_bcd <= 0;
+   else if (cnt_result >= start_bcd && cnt_result < start_bcd + 32)
+   begin
+       reg_rlt_bcd <= {reg_rlt_bcd[38:0], reg_rlt_mgn[31+start_bcd-cnt_result]};
+       reg_rlt_bcd[4:1] <= (reg_rlt_bcd[3:0]>=4'b0101) ? reg_rlt_bcd[3:0] + 3 : reg_rlt_bcd[3:0];
+       reg_rlt_bcd[4:1] <= (reg_rlt_bcd[3:0]>=4'b0101) ? reg_rlt_bcd[3:0] + 3 : reg_rlt_bcd[3:0];
+       reg_rlt_bcd[8:5] <= (reg_rlt_bcd[7:4]>=4'b0101) ? reg_rlt_bcd[7:4] + 3 : reg_rlt_bcd[7:4];
+       reg_rlt_bcd[12:9] <= (reg_rlt_bcd[11:8]>=4'b0101) ? reg_rlt_bcd[11:8] + 3 : reg_rlt_bcd[11:8];
+       reg_rlt_bcd[16:13] <= (reg_rlt_bcd[15:12]>=4'b0101) ? reg_rlt_bcd[15:12] + 3 : reg_rlt_bcd[15:12];
+       reg_rlt_bcd[20:17] <= (reg_rlt_bcd[19:16]>=4'b0101) ? reg_rlt_bcd[19:16] + 3 : reg_rlt_bcd[19:16];
+       reg_rlt_bcd[24:21] <= (reg_rlt_bcd[23:20]>=4'b0101) ? reg_rlt_bcd[23:20] + 3 : reg_rlt_bcd[23:20];
+       reg_rlt_bcd[28:25] <= (reg_rlt_bcd[27:24]>=4'b0101) ? reg_rlt_bcd[27:24] + 3 : reg_rlt_bcd[27:24];
+       reg_rlt_bcd[31:28] <= (reg_rlt_bcd[23:20]>=4'b0101) ? reg_rlt_bcd[31:28] + 3 : reg_rlt_bcd[31:28];
+   end
+end 
 
 // Result LCD
 localparam start_lcd = start_bcd + 32;
@@ -577,14 +569,14 @@ begin
         reg_lcd <= ascii_blk;
         cnt_lcd <= 0;
     end
-    if (os_operand) 
-    begin 
-        reg_lcd <= reg_num_ascii;
-        cnt_lcd <= cnt_lcd + 1;
-    end
-    if (os_operator) 
+    else if (os_operator) 
     begin 
         reg_lcd <= reg_opr_ascii;
+        cnt_lcd <= cnt_lcd + 1;
+    end
+    else if (os_operand) 
+    begin 
+        reg_lcd <= reg_num_ascii;
         cnt_lcd <= cnt_lcd + 1;
     end
 end
