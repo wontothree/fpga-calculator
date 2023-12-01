@@ -1,4 +1,4 @@
-// 기본 요구 사항
+// ?? ?? ??
 `timescale 10ns / 100ps
 
 module testbench ();
@@ -72,7 +72,8 @@ initial begin
     #130 swp0 = 1; // 0
     #10 swp0 = 0;
 
-
+    #130 sht = 1;
+    #10 sht = 0;
     #130 swp9 = 1;
     
 end
