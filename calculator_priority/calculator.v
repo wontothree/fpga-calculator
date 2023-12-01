@@ -329,7 +329,7 @@ reg signed [31:0] stk_inf2pof [0:MAX_STACK_SIZE-1]; // Stack for transforming in
 reg signed [31:0] que_pof [0:MAX_QUEUE_SIZE-1];     // Queue storaging postfix expression
 reg signed [31:0] stk_pof2rlt [0:MAX_STACK_SIZE-1]; // Stack for calculating infix expression
 
-// operator
+// operator************************************ 공사중
 integer i;
 reg [31:0] reg_trm;
 always @(posedge rst or posedge clk_100hz)
@@ -337,7 +337,6 @@ begin
     if (rst)
     begin
         reg_trm <= 0;
-        front_inf <= 0;
         rear_inf <= 0;
         for (i = 0; i < MAX_QUEUE_SIZE; i = i + 1) que_inf[i] <= 0;     
     end
@@ -345,32 +344,35 @@ begin
     begin
         if (cnt_operator)
         begin
-            case (cnt_operator)
+            case (cnt_operator | cnt_result)
                 1 : reg_trm <= (reg_trm_sgn) ? (~reg_trm_mgn + 1) : reg_trm_mgn; // Calculate the reg_trm
-                2, 3 :  begin // Insert reg_trm in queue
-                            que_inf[rear_inf[3:0]+1] <= (cnt_operator == 2) ? reg_trm : reg_opr;
+                2 : begin // Insert reg_trm in queue
+                        que_inf[rear_inf[3:0]+1] <= reg_trm; 
+                        rear_inf <= rear_inf + 1;
+                    end
+                3 : begin
+                        if (cnt_operator)
+                        begin
+                            que_inf[rear_inf[3:0]+1] <= reg_opr;
                             rear_inf <= rear_inf + 1;
                         end
+                    end
                 4 : begin // Initialize the reg_trm
                         reg_trm_sgn <= 0;
                         reg_trm_mgn <= 0;
                     end
             endcase
         end
-        else if (cnt_result) // Result state
-        begin
-            case (cnt_result)
-                1 : reg_trm <= (reg_trm_sgn) ? (~reg_trm_mgn + 1) : reg_trm_mgn; // Calculate the reg_trm
-                2 : begin // Insert reg_trm in queue
-                        que_inf[rear_inf[3:0]+1] <= reg_trm; 
-                        rear_inf <= rear_inf + 1;
-                    end
-                3 : begin // Initialize the reg_trm
-                        reg_trm_sgn <= 0;
-                        reg_trm_mgn <= 0;
-                    end
-            endcase
-        end
+        // else if (cnt_result) // Result state
+        // begin
+        //     case (cnt_result)
+        //         1 : reg_trm <= (reg_trm_sgn) ? (~reg_trm_mgn + 1) : reg_trm_mgn; // Calculate the reg_trm
+        //         2 : begin // Insert reg_trm in queue
+        //                 que_inf[rear_inf[3:0]+1] <= reg_trm; 
+        //                 rear_inf <= rear_inf + 1;
+        //             end
+        //     endcase
+        // end
     end 
 end
 
@@ -379,6 +381,7 @@ always @(posedge rst or posedge clk_100hz)
 begin
     if (rst)
     begin
+        front_inf <= 0;
         top_inf2pof <= 0;
         for (i = 0; i < MAX_STACK_SIZE; i = i + 1) stk_inf2pof[i] <= 0;
         front_pof <= 0;
